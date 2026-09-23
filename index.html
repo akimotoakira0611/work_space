@@ -2,7 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 關鍵修改：強制設定螢幕寬度為 1280px，讓手機模擬電腦版面 -->
+    <meta name="viewport" content="width=1280">
     <title>System Tools - PCIe Gen6</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; }
@@ -12,13 +13,6 @@
         .sidebar a { display: block; color: #bdc3c7; text-decoration: none; padding: 12px 0; }
         .sidebar a:hover { color: white; }
         .main-content { flex-grow: 1; padding: 30px; background-color: #ecf0f1; overflow-y: auto; }
-        
-        @media (max-width: 768px) {
-            .sidebar { width: 35%; padding: 15px 10px; }
-            .sidebar h2 { font-size: 1rem; }
-            .sidebar a { font-size: 0.9rem; }
-            .main-content { padding: 15px; }
-        }
     </style>
 </head>
 <body>
@@ -31,8 +25,8 @@
         </div>
         <div class="main-content">
             <h1>PCIe Gen6 分析工具</h1>
-            <p>這是首頁。左側的導覽列比例已經過優化，現在無論在手機或電腦上都能清晰閱讀。</p>
-            <p>請點擊左側的「DDR5 Margin」來測試網頁切換功能。</p>
+            <p>這是首頁。目前網頁已設定為固定桌面版型 (寬度 1280px)。</p>
+            <p>在手機或平板上開啟時，將呈現完整的電腦版畫面，你可以透過雙指滑動來縮放與瀏覽。</p>
         </div>
     </div>
 </body>
