@@ -2,57 +2,61 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PCIe Margin 分析報告</title>
+    <meta name="viewport" content="width=1280">
+    <title>System Tools - PCIe Gen6</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #d4d4d4; padding: 20px; }
-        h1 { color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .warning { background-color: #d32f2f; color: white; padding: 15px; border-radius: 5px; font-weight: bold; margin-bottom: 20px; display: none; text-align: center; }
-        .card { background-color: #252526; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { border: 1px solid #444; padding: 10px; text-align: center; }
-        th { background-color: #333; color: #4ec9b0; }
-        .pass { color: #4CAF50; font-weight: bold; }
-        .fail { color: #f44336; font-weight: bold; }
-        .worst-highlight { background-color: #5c1818; }
-        input[type="file"] { margin-bottom: 20px; color: #d4d4d4; font-size: 16px; }
+        /* 原有側邊欄架構 */
+        body, html { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; background-color: #f4f6f8; }
+        .container { display: flex; height: 100vh; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px; box-sizing: border-box; flex-shrink: 0; }
+        .sidebar h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
+        .sidebar a { display: block; color: #bdc3c7; text-decoration: none; padding: 12px 0; }
+        .sidebar a:hover { color: white; }
+        .main-content { flex-grow: 1; padding: 30px; overflow-y: auto; }
+        
+        /* 工具區塊專用設計 */
+        .tool-card { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 20px; }
+        .upload-btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 15px; border-radius: 4px; display: inline-block; transition: background 0.3s;}
+        .upload-btn:hover { background-color: #2980b9; }
     </style>
 </head>
 <body>
-    <h1>PCIe Gen6 Margin 分析工具</h1>
-    
-    <input type="file" id="jsonFileInput" multiple accept=".json">
-    <div id="warningBanner" class="warning">⚠️ 數據總量不足 20 筆，僅作參考</div>
-    
-    <div class="card" id="summaryCard" style="display:none;">
-        <h2 style="color: #c586c0; margin-top: 0;">分析摘要</h2>
-        <p>總匯入筆數 (Runs)： <strong id="totalRuns" style="font-size: 1.2rem;">0</strong></p>
-        <p>整體判定 (Criteria)： <span id="overallStatus" style="font-size: 1.2rem;"></span></p>
-        <p>最差通道 (Worst Lane)： <span id="worstLaneInfo" class="fail" style="font-size: 1.2rem;"></span></p>
+    <div class="container">
+        <!-- 恢復你的左側導覽列 -->
+        <div class="sidebar">
+            <h2>System Tools</h2>
+            <a href="index.html" style="color: white;">首頁 (PCIe Gen6 分析)</a>
+            <a href="ddr5.html">DDR5 Margin</a>
+            <a href="outing.html">2026Q3 Outing 票選</a>
+        </div>
+        
+        <!-- 右側操作區 -->
+        <div class="main-content">
+            <h1 style="color: #2c3e50;">PCIe Gen6 分析工具</h1>
+            <p>請於下方上傳由 AMDXIO 生成的 <b>.json</b> 測試報告檔。</p>
+            <p>程式將於背景進行 Margin 數據驗證與最差通道篩選，分析完成後會自動於<b>新分頁</b>彈出完整 HTML 報告。</p>
+            
+            <div class="tool-card">
+                <label for="jsonFileInput" class="upload-btn">📂 選擇 JSON 檔案並開始分析</label>
+                <!-- 隱藏原本醜醜的上傳按鈕，用我們自己設計的按鈕取代 -->
+                <input type="file" id="jsonFileInput" multiple accept=".json" style="display:none;">
+                <p id="statusText" style="margin-top: 15px; color: #555; font-weight: bold;"></p>
+            </div>
+        </div>
     </div>
 
-    <table id="dataTable" style="display:none;">
-        <thead>
-            <tr>
-                <th>Run</th>
-                <th>Lane ID</th>
-                <th>Vref Up</th>
-                <th>Vref Down</th>
-                <th>UI Right-Left</th>
-                <th>Criteria 判定</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
-
+    <!-- 背景分析用 JavaScript -->
     <script>
         document.getElementById('jsonFileInput').addEventListener('change', function(event) {
             const files = event.target.files;
             if (!files.length) return;
             
+            document.getElementById('statusText').innerText = "讀取並分析中...";
+            
             let allRuns = [];
             let filesProcessed = 0;
 
+            // 批次讀取上傳的所有檔案
             Array.from(files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -68,22 +72,25 @@
                     }
                     
                     filesProcessed++;
+                    // 當所有檔案都讀取完畢後，執行產生報告的動作
                     if (filesProcessed === files.length) {
-                        processData(allRuns);
+                        generateReport(allRuns);
+                        document.getElementById('statusText').innerText = "✅ 分析完成！已在新分頁開啟報告。";
+                        document.getElementById('jsonFileInput').value = ""; // 清空上傳區準備下次使用
                     }
                 };
                 reader.readAsText(file);
             });
         });
 
-        function processData(runs) {
+        // 產生新視窗 HTML 報告的函數
+        function generateReport(runs) {
             const totalRuns = runs.length;
-            const warningEl = document.getElementById('warningBanner');
+            let warningHtml = '';
             
+            // 判斷是否滿足 20 Runs
             if (totalRuns < 20) {
-                warningEl.style.display = 'block';
-            } else {
-                warningEl.style.display = 'none';
+                warningHtml = '<div style="background-color: #e74c3c; color: white; padding: 15px; border-radius: 5px; font-weight: bold; margin-bottom: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">⚠️ 數據總量不足 20 筆，不符合 AMD 最低驗證規範，結果僅作參考。</div>';
             }
 
             let overallPass = true;
@@ -91,10 +98,10 @@
             let worstLaneInfo = null;
             let tableRows = '';
 
+            // 第一階段：找最差的通道與整體判定
             runs.forEach((run, index) => {
                 const runId = index + 1;
                 const lanes = run['Margin Data']['Per Lane Data'];
-                
                 lanes.forEach(lane => {
                     const laneId = lane['Lane ID'];
                     const vUp = lane['Vref Up'][0]['Margin Offset'];
@@ -112,43 +119,83 @@
                 });
             });
 
+            // 第二階段：產生表格的 HTML 列
             runs.forEach((run, index) => {
                 const runId = index + 1;
                 const lanes = run['Margin Data']['Per Lane Data'];
-                
                 lanes.forEach(lane => {
                     const laneId = lane['Lane ID'];
                     const vUp = lane['Vref Up'][0]['Margin Offset'];
                     const vDn = lane['Vref Down'][0]['Margin Offset'];
                     const uiRL = lane['UI Right-Left'][0]['Margin Offset'];
                     const isPass = (vUp >= 2 && vDn >= 2 && uiRL >= 1);
-                    const isWorst = (worstLaneInfo.run === runId && worstLaneInfo.lane === laneId);
+                    const isWorst = (worstLaneInfo && worstLaneInfo.run === runId && worstLaneInfo.lane === laneId);
 
-                    tableRows += `<tr class="${isWorst ? 'worst-highlight' : ''}">
-                        <td>Run ${runId}</td>
-                        <td>Lane ${laneId} ${isWorst ? '🚩' : ''}</td>
-                        <td>${vUp}</td>
-                        <td>${vDn}</td>
-                        <td>${uiRL}</td>
-                        <td class="${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</td>
+                    let rowStyle = isWorst ? 'background-color: #fdeaea;' : '';
+                    let passText = isPass ? '<span style="color: #27ae60; font-weight:bold;">PASS</span>' : '<span style="color: #c0392b; font-weight:bold;">FAIL</span>';
+
+                    tableRows += `<tr style="${rowStyle}">
+                        <td style="border: 1px solid #e0e6ed; padding: 10px; text-align: center;">Run ${runId}</td>
+                        <td style="border: 1px solid #e0e6ed; padding: 10px; text-align: center; font-weight: bold;">Lane ${laneId} ${isWorst ? '🚩' : ''}</td>
+                        <td style="border: 1px solid #e0e6ed; padding: 10px; text-align: center;">${vUp}</td>
+                        <td style="border: 1px solid #e0e6ed; padding: 10px; text-align: center;">${vDn}</td>
+                        <td style="border: 1px solid #e0e6ed; padding: 10px; text-align: center;">${uiRL}</td>
+                        <td style="border: 1px solid #e0e6ed; padding: 10px; text-align: center;">${passText}</td>
                     </tr>`;
                 });
             });
 
-            document.getElementById('summaryCard').style.display = 'block';
-            document.getElementById('dataTable').style.display = 'table';
-            document.getElementById('totalRuns').innerText = totalRuns;
-            
-            const statusEl = document.getElementById('overallStatus');
-            statusEl.innerText = overallPass ? "PASS (無違反最低要求)" : "FAIL (未達 Criteria)";
-            statusEl.className = overallPass ? "pass" : "fail";
+            let overallStatusText = overallPass ? '<span style="color: #27ae60;">PASS (滿足最低要求)</span>' : '<span style="color: #c0392b;">FAIL (未達 Criteria)</span>';
+            let worstText = worstLaneInfo ? `Run ${worstLaneInfo.run} | Lane ${worstLaneInfo.lane} (Vref Up: ${worstLaneInfo.vUp}, Vref Down: ${worstLaneInfo.vDn}, UI RL: ${worstLaneInfo.uiRL})` : 'N/A';
 
-            if (worstLaneInfo) {
-                document.getElementById('worstLaneInfo').innerText = 
-                    `Run ${worstLaneInfo.run} 中的 Lane ${worstLaneInfo.lane} (Vref Up: ${worstLaneInfo.vUp}, Vref Down: ${worstLaneInfo.vDn}, UI RL: ${worstLaneInfo.uiRL})`;
-            }
-            
-            document.getElementById('tableBody').innerHTML = tableRows;
+            // 第三階段：組合新頁面的完整 HTML (這就是會彈出來的畫面)
+            const newPageHtml = `
+            <!DOCTYPE html>
+            <html lang="zh-TW">
+            <head>
+                <meta charset="UTF-8">
+                <title>PCIe Margin 分析報告</title>
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #ecf0f1; color: #2c3e50; padding: 30px; }
+                    h1 { color: #2c3e50; border-bottom: 2px solid #bdc3c7; padding-bottom: 10px; }
+                    .card { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border-left: 5px solid #2980b9; }
+                    table { width: 100%; border-collapse: collapse; background-color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden; }
+                    th { background-color: #34495e; color: white; border: 1px solid #2c3e50; padding: 12px; }
+                    tr:hover { background-color: #f1f2f6; }
+                </style>
+            </head>
+            <body>
+                <h1>📈 PCIe Margin 深度分析報告</h1>
+                ${warningHtml}
+                <div class="card">
+                    <h2 style="color: #2980b9; margin-top: 0;">分析摘要</h2>
+                    <p>總匯入筆數 (Runs)： <strong style="font-size: 1.2rem;">${totalRuns}</strong></p>
+                    <p>整體判定 (Criteria)： <strong style="font-size: 1.2rem;">${overallStatusText}</strong></p>
+                    <p>最差通道 (Worst Lane)： <strong style="color: #c0392b; font-size: 1.2rem;">${worstText}</strong></p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Run 編號</th>
+                            <th>Lane ID</th>
+                            <th>Vref Up</th>
+                            <th>Vref Down</th>
+                            <th>UI Right-Left</th>
+                            <th>Criteria 判定</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </body>
+            </html>`;
+
+            // 黑科技：用 JavaScript 開啟新分頁，並把我們剛剛寫好的 HTML 灌進去！
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.open();
+            reportWindow.document.write(newPageHtml);
+            reportWindow.document.close();
         }
     </script>
 </body>
