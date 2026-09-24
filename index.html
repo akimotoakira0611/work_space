@@ -5,17 +5,23 @@
     <meta name="viewport" content="width=1280">
     <title>System Tools - PCIe Gen6</title>
     <style>
-        /* 左側與主畫面基礎架構 */
-        body, html { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; background-color: #f4f6f8; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f8; }
         .container { display: flex; height: 100vh; }
         .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px; box-sizing: border-box; flex-shrink: 0; }
         .sidebar h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
         .sidebar a { display: block; color: #bdc3c7; text-decoration: none; padding: 12px 0; }
         .sidebar a:hover { color: white; }
         .main-content { flex-grow: 1; padding: 30px; overflow-y: auto; }
-        .tool-card { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 20px; }
-        .upload-btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 15px; border-radius: 4px; display: inline-block; transition: background 0.3s;}
-        .upload-btn:hover { background-color: #2980b9; }
+        
+        .tool-card { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 20px; border-left: 5px solid #3498db; }
+        .btn { background-color: #3498db; color: white; border: none; padding: 10px 20px; cursor: pointer; font-size: 14px; border-radius: 4px; display: inline-block; transition: background 0.3s; font-weight: bold;}
+        .btn:hover { background-color: #2980b9; }
+        .btn-download { background-color: #27ae60; margin-left: 10px; display: none; }
+        .btn-download:hover { background-color: #2ecc71; }
+        
+        .settings-group { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc; }
+        .settings-group label { margin-right: 15px; font-weight: bold; color: #2c3e50; font-size: 14px; }
+        .settings-group input { width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -23,31 +29,49 @@
         <!-- 左側導覽列 -->
         <div class="sidebar">
             <h2>System Tools</h2>
-            <a href="index.html" style="color: white;">首頁 (PCIe Gen6 分析)</a>
+            <a href="index.html" style="color: white; font-weight: bold;">PCIe Gen6 分析</a>
             <a href="ddr5.html">DDR5 Margin</a>
             <a href="outing.html">2026Q3 Outing 票選</a>
         </div>
         
         <!-- 右側操作區 -->
         <div class="main-content">
-            <h1 style="color: #2c3e50;">PCIe Gen6 分析工具</h1>
-            <p>請上傳 AMDXIO 生成的 <b>.json</b> 測試報告檔。</p>
-            <p>系統將自動驗證 <b>Bifurcation (Lane 數量是否吻合)</b>，並於新分頁產生視覺化分析報告。</p>
+            <h1 style="color: #2c3e50;">PCIe Gen6 分析工具 (含 Bifurcation 驗證)</h1>
+            <p>請上傳由 AMDXIO 生成的 <b>.json</b> 測試報告檔。系統將自動驗證通道數量並彈出 Dashboard 報告。</p>
             
             <div class="tool-card">
-                <label for="jsonFileInput" class="upload-btn">📂 選擇 JSON 檔案並開始分析</label>
-                <input type="file" id="jsonFileInput" multiple accept=".json" style="display:none;">
+                <div>
+                    <label for="jsonFileInput" class="btn">📂 選擇 JSON 檔案並開始分析</label>
+                    <input type="file" id="jsonFileInput" multiple accept=".json" style="display:none;">
+                    
+                    <!-- 生成報告後顯示的下載按鈕 -->
+                    <button id="downloadBtn" class="btn btn-download">⬇️ Download HTML Report</button>
+                </div>
+                
+                <!-- 手動調整 Criteria 區塊 -->
+                <div class="settings-group">
+                    <p style="margin: 0 0 10px 0; color: #7f8c8d; font-size: 13px;">⚙️ Criteria 設定 (預設為 AMD SP7 Base 規範)</p>
+                    <label>Min Vref (Up/Down): <input type="number" id="critVref" value="4"></label>
+                    <label>Min UI (Right-Left): <input type="number" id="critUi" value="2"></label>
+                    <label>Min Target Runs: <input type="number" id="critRuns" value="20"></label>
+                </div>
+                
                 <p id="statusText" style="margin-top: 15px; color: #555; font-weight: bold;"></p>
             </div>
         </div>
     </div>
 
     <script>
+        let generatedHtmlContent = ""; // 儲存最後生成的 HTML，供下載使用
+        let reportFileName = "PCIe_Margin_Analysis_Report.html";
+
         document.getElementById('jsonFileInput').addEventListener('change', function(event) {
             const files = event.target.files;
             if (!files.length) return;
             
             document.getElementById('statusText').innerText = "讀取並分析中...";
+            document.getElementById('downloadBtn').style.display = "none";
+            
             let allRuns = [];
             let filesProcessed = 0;
 
@@ -68,24 +92,37 @@
                     filesProcessed++;
                     if (filesProcessed === files.length) {
                         generateFancyReport(allRuns);
-                        document.getElementById('statusText').innerText = "✅ 分析完成！已在新分頁開啟報告。";
-                        document.getElementById('jsonFileInput').value = ""; 
                     }
                 };
                 reader.readAsText(file);
             });
         });
 
+        // 下載 HTML 按鈕事件
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            if (!generatedHtmlContent) return;
+            const blob = new Blob([generatedHtmlContent], { type: "text/html" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = reportFileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
         function generateFancyReport(runs) {
+            // 讀取使用者設定的 Criteria
+            const minVref = parseFloat(document.getElementById('critVref').value) || 4;
+            const minUi = parseFloat(document.getElementById('critUi').value) || 2;
+            const targetRuns = parseInt(document.getElementById('critRuns').value) || 20;
+
             const totalRuns = runs.length;
             let errorAlerts = '';
             
-            // 1. 檢查 Criteria：20 Runs 數量
-            if (totalRuns < 20) {
-                errorAlerts += '<div class="alert alert-warn">⚠️ 警告：數據總量不足 20 筆，不符合 AMD 最低驗證規範！</div>';
+            if (totalRuns < targetRuns) {
+                errorAlerts += `<div class="alert alert-warn">⚠️ 警告：數據總量 (${totalRuns}) 未達設定的最少測試筆數 (${targetRuns})。</div>`;
             }
 
-            // 2. 擷取基礎資訊
             let deviceName = "Unknown";
             let linkSpeed = "Unknown";
             let toolVer = "Unknown";
@@ -100,12 +137,11 @@
             let allLaneResults = [];
             let passCount = 0;
             let failCount = 0;
+            let bifurcationFailed = false;
 
-            // 3. 處理每一筆 Run，並包含 Bifurcation 檢查
             runs.forEach((run, index) => {
-                const runId = index + 1;
+                const runId = run["Margin Data"]["Margin Input Parameters"]["Current Run"] || (index + 1);
                 
-                // 嘗試抓取 Device Width (例如 "x16", "x8") 來判斷 Bifurcation
                 let expectedLanes = 0;
                 try {
                     let widthStr = run["POST MARGIN"]["COLLECT DEVICE DETAILS"]["PCIe Device Info"]["Width"];
@@ -118,22 +154,24 @@
                 const lanes = run['Margin Data']['Per Lane Data'] || [];
                 const actualLanes = lanes.length;
 
-                // Bifurcation 驗證防呆機制
+                // 核心：Bifurcation 嚴格檢查
                 if (expectedLanes > 0 && actualLanes !== expectedLanes) {
-                    errorAlerts += `<div class="alert alert-fail">❌ 嚴重錯誤 (Run ${runId})：Bifurcation 異常！預期應有 x${expectedLanes} 條 Lane，但實際僅讀取到 ${actualLanes} 條資料。</div>`;
+                    errorAlerts += `<div class="alert alert-fail">❌ 嚴重錯誤 (Run ${runId})：Bifurcation 異常！裝置識別為 x${expectedLanes}，但日誌僅包含 ${actualLanes} 條 Lane 數據。</div>`;
+                    bifurcationFailed = true;
                 } else if (actualLanes === 0) {
                     errorAlerts += `<div class="alert alert-fail">❌ 嚴重錯誤 (Run ${runId})：未能讀取到任何 Lane 資料！</div>`;
+                    bifurcationFailed = true;
                 }
 
-                // 計算每條 Lane 數值
                 lanes.forEach(lane => {
                     const laneId = lane['Lane ID'];
-                    const vUp = parseFloat(lane['Vref Up'][0]['Margin Offset']) || 0;
-                    const vDn = parseFloat(lane['Vref Down'][0]['Margin Offset']) || 0;
-                    const uiRL = parseFloat(lane['UI Right-Left'][0]['Margin Offset']) || 0;
+                    let vUp = 0, vDn = 0, uiRL = 0;
+                    
+                    try { vUp = parseFloat(lane['Vref Up'][0]['Margin Offset']) || 0; } catch(e){}
+                    try { vDn = parseFloat(lane['Vref Down'][0]['Margin Offset']) || 0; } catch(e){}
+                    try { uiRL = parseFloat(lane['UI Right-Left'][0]['Margin Offset']) || 0; } catch(e){}
 
-                    // Criteria 判定 (Top/Bottom >= 2, RL >= 1)
-                    const isPass = (vUp >= 2 && vDn >= 2 && uiRL >= 1);
+                    const isPass = (vUp >= minVref && vDn >= minVref && uiRL >= minUi);
                     if(isPass) passCount++; else failCount++;
 
                     const area = (vUp + vDn) * uiRL;
@@ -150,12 +188,13 @@
                 });
             });
 
-            // 4. 排序抓出 Top 5 Worst Case
+            // 如果 Bifurcation 失敗，強制將 Overall 設為 FAIL
+            const isOverallPass = (failCount === 0 && totalRuns >= targetRuns && !bifurcationFailed);
+            
             allLaneResults.sort((a, b) => a.area - b.area);
             const top5Worst = allLaneResults.slice(0, 5);
             const absoluteWorst = top5Worst[0] || {lane: "N/A", vUp: 0, vDn: 0, uiRL: 0};
 
-            // 5. 製作 Top 5 表格 HTML
             let top5Rows = '';
             top5Worst.forEach(item => {
                 let statusBadge = item.isPass ? '<span class="badge badge-pass">PASS</span>' : '<span class="badge badge-fail">FAIL</span>';
@@ -171,31 +210,36 @@
                 </tr>`;
             });
 
-            const overallBadge = failCount === 0 && totalRuns >= 20 ? 
+            const overallBadge = isOverallPass ? 
                 '<span class="overall-badge" style="background:#1e8449;">PASS</span>' : 
                 '<span class="overall-badge" style="background:#c0392b;">FAIL</span>';
+            
+            const passRate = allLaneResults.length > 0 ? Math.round((passCount / allLaneResults.length) * 100) : 0;
+            const failRate = allLaneResults.length > 0 ? Math.round((failCount / allLaneResults.length) * 100) : 0;
 
-            // 6. 組合神級 UI 的新分頁 HTML (致敬同事的設計)
-            const reportHtml = `
-            <!DOCTYPE html>
+            const reportDate = new Date().toISOString().slice(0,10);
+            reportFileName = `PCIe_Margin_Report_${reportDate}.html`;
+
+            // 組裝超級華麗版 HTML (完美複製你的參考圖檔樣式)
+            generatedHtmlContent = `<!DOCTYPE html>
             <html lang="en">
             <head>
             <meta charset="utf-8">
             <title>PCIe Margin Analysis Report</title>
             <style>
                 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-                body { background: #eef2f7; color: #2c3e50; font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; }
+                body { background: #eef2f7; color: #2c3e50; font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; min-height: 100vh;}
                 .page-header { background: linear-gradient(90deg, #1a252f 0%, #2c3e50 60%, #34495e 100%); color: #fff; padding: 18px 32px 14px; display: flex; justify-content: space-between; align-items: center; }
                 .page-header h1 { font-size: 20px; font-weight: 700; margin: 0; }
                 .meta { font-size: 11px; color: #95a5a6; text-align: right; line-height: 1.7; }
                 .meta span { color: #bdc3c7; }
-                .banner { display: flex; align-items: center; gap: 24px; background: #fff; border-bottom: 1px solid #e0e6ed; padding: 16px 32px; }
+                .banner { display: flex; align-items: center; gap: 24px; background: #fff; border-bottom: 1px solid #e0e6ed; padding: 16px 32px; flex-wrap: wrap;}
                 .banner-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
                 .big-num { font-size: 28px; font-weight: 800; line-height: 1; color: #2c3e50; }
                 .lbl { font-size: 11px; color: #777; margin-top: 4px; text-transform: uppercase; }
                 .banner-divider { width: 1px; height: 40px; background: #e0e6ed; }
                 .worst-eye { background: #fff8f0; border: 1px solid #f0d3b0; border-radius: 6px; padding: 8px 12px; }
-                .overall-badge { padding: 12px 26px; border-radius: 8px; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: 2px; }
+                .overall-badge { display: inline-block; padding: 12px 26px; border-radius: 8px; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: 2px; box-shadow: 0 3px 0 rgba(0,0,0,0.22); border: 2px solid rgba(255,255,255,0.30);}
                 .container { max-width: 1200px; margin: 24px auto; padding: 0 12px; }
                 .alert { padding: 12px 16px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; font-size: 14px; }
                 .alert-warn { background-color: #fcf8e3; color: #8a6d3b; border: 1px solid #faebcc; }
@@ -215,23 +259,23 @@
             </head>
             <body>
                 <div class="page-header">
-                    <h1>📊 PCIe Margin Analysis Report</h1>
+                    <h1>📈 PCIe Margin Analysis Report</h1>
                     <div class="meta">Tool: <span>AMDXIO v${toolVer}</span><br>Start Time: <span>${startTime}</span></div>
                 </div>
                 
                 <div class="banner">
-                    <div class="banner-item"><span class="big-num" style="color:#1e8449;">${passCount}</span><span class="lbl">PASS Lanes</span></div>
-                    <div class="banner-item"><span class="big-num" style="color:#c0392b;">${failCount}</span><span class="lbl">FAIL Lanes</span></div>
+                    <div class="banner-item"><span class="big-num" style="color:#1e8449;">${passCount}</span><span class="lbl">PASS <small>(${passRate}%)</small></span></div>
+                    <div class="banner-item"><span class="big-num" style="color:#c0392b;">${failCount}</span><span class="lbl">FAIL <small>(${failRate}%)</small></span></div>
                     <div class="banner-divider"></div>
-                    <div class="banner-item"><span class="big-num">${allLaneResults.length}</span><span class="lbl">Total Lanes</span></div>
-                    <div class="banner-item"><span class="big-num">Lane ${absoluteWorst.lane}</span><span class="lbl">Worst Lane</span></div>
+                    <div class="banner-item"><span class="big-num">${allLaneResults.length}</span><span class="lbl">Total Lanes Tested</span></div>
+                    <div class="banner-item"><span class="big-num">Lane ${absoluteWorst.lane}</span><span class="lbl">Global Worst Lane</span></div>
                     <div class="banner-item worst-eye">
-                        <span style="font-size:11px;color:#666;">Worst Eye</span><br>
-                        <span style="font-size:12px;font-weight:700;">VU=${absoluteWorst.vUp} VD=${absoluteWorst.vDn} RL=${absoluteWorst.uiRL}</span>
+                        <span style="font-size:11px;color:#666;">Worst Eye Margin</span><br>
+                        <span style="font-size:12px;font-weight:700;">VU=${absoluteWorst.vUp} &nbsp; VD=${absoluteWorst.vDn} &nbsp; RL=${absoluteWorst.uiRL}</span>
                     </div>
                     <div class="banner-item" style="margin-left:auto;">
                         ${overallBadge}
-                        <div style="font-size:10px;color:#888;margin-top:4px;">Overall</div>
+                        <div style="font-size:10px;color:#888;margin-top:4px;">Overall Status</div>
                     </div>
                 </div>
 
@@ -239,21 +283,21 @@
                     ${errorAlerts}
                     
                     <div class="card">
-                        <div class="card-header">ℹ️ Data Information</div>
+                        <div class="card-header">ℹ️ Data & Criteria Information</div>
                         <div class="card-body">
                             <table>
-                                <tr><th>Device Name (BDF)</th><td>${deviceName}</td><th>Link Speed</th><td>${linkSpeed}</td></tr>
-                                <tr><th>Total Runs</th><td>${totalRuns}</td><th>Target Criteria</th><td>Vref >= 2, UI RL >= 1</td></tr>
+                                <tr><th>Device Name</th><td>${deviceName}</td><th>Link Speed</th><td>${linkSpeed}</td></tr>
+                                <tr><th>Total Runs Included</th><td>${totalRuns}</td><th>Target Criteria Applied</th><td>Vref >= ${minVref}, UI RL >= ${minUi}</td></tr>
                             </table>
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class="card-header">⚠️ Worst Case Summary (Top 5 by Eye Area)</div>
+                        <div class="card-header">⚠️ Worst Case Summary (Top 5 Ranked by Eye Area)</div>
                         <div class="card-body">
                             <table>
                                 <thead>
-                                    <tr><th>Lane (Run)</th><th>Eye Area</th><th>Vref Up</th><th>Vref Down</th><th>UI RL</th></tr>
+                                    <tr><th>Lane (Run)</th><th>Eye Area Proxy</th><th>Vref Up</th><th>Vref Down</th><th>UI Right-Left</th></tr>
                                 </thead>
                                 <tbody>
                                     ${top5Rows}
@@ -265,9 +309,15 @@
             </body>
             </html>`;
 
+            // 在主畫面更新狀態並顯示下載按鈕
+            document.getElementById('statusText').innerText = "✅ 分析完成！已在新分頁開啟報告，您也可以點擊右側按鈕下載。";
+            document.getElementById('downloadBtn').style.display = "inline-block";
+            document.getElementById('jsonFileInput').value = ""; 
+
+            // 自動彈出新分頁預覽
             const reportWindow = window.open('', '_blank');
             reportWindow.document.open();
-            reportWindow.document.write(reportHtml);
+            reportWindow.document.write(generatedHtmlContent);
             reportWindow.document.close();
         }
     </script>
