@@ -2,32 +2,154 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 關鍵修改：強制設定螢幕寬度為 1280px，讓手機模擬電腦版面 -->
-    <meta name="viewport" content="width=1280">
-    <title>System Tools - PCIe Gen6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCIe Margin 分析報告</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; }
-        .container { display: flex; height: 100vh; }
-        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px; box-sizing: border-box; flex-shrink: 0; }
-        .sidebar h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
-        .sidebar a { display: block; color: #bdc3c7; text-decoration: none; padding: 12px 0; }
-        .sidebar a:hover { color: white; }
-        .main-content { flex-grow: 1; padding: 30px; background-color: #ecf0f1; overflow-y: auto; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #d4d4d4; padding: 20px; }
+        h1 { color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .warning { background-color: #d32f2f; color: white; padding: 15px; border-radius: 5px; font-weight: bold; margin-bottom: 20px; display: none; text-align: center; }
+        .card { background-color: #252526; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #444; padding: 10px; text-align: center; }
+        th { background-color: #333; color: #4ec9b0; }
+        .pass { color: #4CAF50; font-weight: bold; }
+        .fail { color: #f44336; font-weight: bold; }
+        .worst-highlight { background-color: #5c1818; }
+        input[type="file"] { margin-bottom: 20px; color: #d4d4d4; font-size: 16px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <h2>System Tools</h2>
-            <a href="index.html" style="color: white;">首頁 (PCIe Gen6 分析)</a>
-            <a href="ddr5.html">DDR5 Margin</a>
-            <a href="outing.html">2026Q3 Outing 票選</a>
-        </div>
-        <div class="main-content">
-            <h1>PCIe Gen6 分析工具</h1>
-            <p>這是首頁。目前網頁已設定為固定桌面版型 (寬度 1280px)。</p>
-            <p>在手機或平板上開啟時，將呈現完整的電腦版畫面，你可以透過雙指滑動來縮放與瀏覽。</p>
-        </div>
+    <h1>PCIe Gen6 Margin 分析工具</h1>
+    
+    <input type="file" id="jsonFileInput" multiple accept=".json">
+    <div id="warningBanner" class="warning">⚠️ 數據總量不足 20 筆，僅作參考</div>
+    
+    <div class="card" id="summaryCard" style="display:none;">
+        <h2 style="color: #c586c0; margin-top: 0;">分析摘要</h2>
+        <p>總匯入筆數 (Runs)： <strong id="totalRuns" style="font-size: 1.2rem;">0</strong></p>
+        <p>整體判定 (Criteria)： <span id="overallStatus" style="font-size: 1.2rem;"></span></p>
+        <p>最差通道 (Worst Lane)： <span id="worstLaneInfo" class="fail" style="font-size: 1.2rem;"></span></p>
     </div>
+
+    <table id="dataTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Run</th>
+                <th>Lane ID</th>
+                <th>Vref Up</th>
+                <th>Vref Down</th>
+                <th>UI Right-Left</th>
+                <th>Criteria 判定</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        document.getElementById('jsonFileInput').addEventListener('change', function(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+            
+            let allRuns = [];
+            let filesProcessed = 0;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (Array.isArray(data)) {
+                            allRuns = allRuns.concat(data);
+                        } else {
+                            allRuns.push(data);
+                        }
+                    } catch (err) {
+                        console.error("無法解析檔案: " + file.name);
+                    }
+                    
+                    filesProcessed++;
+                    if (filesProcessed === files.length) {
+                        processData(allRuns);
+                    }
+                };
+                reader.readAsText(file);
+            });
+        });
+
+        function processData(runs) {
+            const totalRuns = runs.length;
+            const warningEl = document.getElementById('warningBanner');
+            
+            if (totalRuns < 20) {
+                warningEl.style.display = 'block';
+            } else {
+                warningEl.style.display = 'none';
+            }
+
+            let overallPass = true;
+            let worstArea = Infinity;
+            let worstLaneInfo = null;
+            let tableRows = '';
+
+            runs.forEach((run, index) => {
+                const runId = index + 1;
+                const lanes = run['Margin Data']['Per Lane Data'];
+                
+                lanes.forEach(lane => {
+                    const laneId = lane['Lane ID'];
+                    const vUp = lane['Vref Up'][0]['Margin Offset'];
+                    const vDn = lane['Vref Down'][0]['Margin Offset'];
+                    const uiRL = lane['UI Right-Left'][0]['Margin Offset'];
+
+                    const isPass = (vUp >= 2 && vDn >= 2 && uiRL >= 1);
+                    if (!isPass) overallPass = false;
+
+                    const area = (vUp + vDn) * uiRL;
+                    if (area < worstArea) {
+                        worstArea = area;
+                        worstLaneInfo = { run: runId, lane: laneId, vUp, vDn, uiRL, area };
+                    }
+                });
+            });
+
+            runs.forEach((run, index) => {
+                const runId = index + 1;
+                const lanes = run['Margin Data']['Per Lane Data'];
+                
+                lanes.forEach(lane => {
+                    const laneId = lane['Lane ID'];
+                    const vUp = lane['Vref Up'][0]['Margin Offset'];
+                    const vDn = lane['Vref Down'][0]['Margin Offset'];
+                    const uiRL = lane['UI Right-Left'][0]['Margin Offset'];
+                    const isPass = (vUp >= 2 && vDn >= 2 && uiRL >= 1);
+                    const isWorst = (worstLaneInfo.run === runId && worstLaneInfo.lane === laneId);
+
+                    tableRows += `<tr class="${isWorst ? 'worst-highlight' : ''}">
+                        <td>Run ${runId}</td>
+                        <td>Lane ${laneId} ${isWorst ? '🚩' : ''}</td>
+                        <td>${vUp}</td>
+                        <td>${vDn}</td>
+                        <td>${uiRL}</td>
+                        <td class="${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</td>
+                    </tr>`;
+                });
+            });
+
+            document.getElementById('summaryCard').style.display = 'block';
+            document.getElementById('dataTable').style.display = 'table';
+            document.getElementById('totalRuns').innerText = totalRuns;
+            
+            const statusEl = document.getElementById('overallStatus');
+            statusEl.innerText = overallPass ? "PASS (無違反最低要求)" : "FAIL (未達 Criteria)";
+            statusEl.className = overallPass ? "pass" : "fail";
+
+            if (worstLaneInfo) {
+                document.getElementById('worstLaneInfo').innerText = 
+                    `Run ${worstLaneInfo.run} 中的 Lane ${worstLaneInfo.lane} (Vref Up: ${worstLaneInfo.vUp}, Vref Down: ${worstLaneInfo.vDn}, UI RL: ${worstLaneInfo.uiRL})`;
+            }
+            
+            document.getElementById('tableBody').innerHTML = tableRows;
+        }
+    </script>
 </body>
 </html>
