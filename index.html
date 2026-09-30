@@ -1,40 +1,137 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>Howard Learing system</title>
+<!DOCTYPE html> <!-- 告訴瀏覽器這是一份 HTML5 文件，請用最新的標準來解讀 -->
+<html lang="zh-TW"> <!-- 網頁的根元素，lang="zh-TW" 告訴瀏覽器與搜尋引擎這個網站使用的是繁體中文 -->
+<head> <!-- 標頭區塊的開始：負責設定與樣式，畫面看不到 -->
+    <meta charset="UTF-8"> <!-- 設定網頁的文字編碼為 UTF-8，防止中文字變成亂碼 -->
+    <title>Howard Learning system</title> <!-- 設定瀏覽器「分頁標籤」上顯示的文字 -->
     <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background-color: #ffffff; }
-        .sidebar { width: 250px; background-color: #d9d9d9; border-right: 1px solid #dcdfe3; display: flex; flex-direction: column; }
-        .logo { padding: 20px; font-weight: bold; font-size: 14px; color: #0056b3; }
-        .logo span { font-weight: normal; color: #555; font-size: 12px; background: #d0e7ff; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block;}
-        .menu-group { margin-top: 15px; }
-        .menu-title { font-size: 11px; color: #888; padding: 0 20px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .menu-item { padding: 10px 20px; font-size: 13px; color: #333; cursor: pointer; }
-        .menu-item:hover { background-color: #e0e6ed; }
-        .menu-item.active { background-color: #e5f0ff; color: #0056b3; border-left: 3px solid #0056b3; font-weight: bold; }
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
-        .header h1 { margin: 0; font-size: 28px; color: #222; }
-        .header p { color: #666; font-size: 14px; margin-top: 10px; }
-        .card-container { display: flex; gap: 20px; margin-top: 30px; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex: 1; text-align: center; border: 1px dashed #ccc; }
+        /* CSS 樣式設定區塊：控制網頁的長相與排版。格式為 屬性: 值; */
+
+        /* 整個網頁的基底 */
+        body { 
+            margin: 0; /* 清除瀏覽器預設的白邊，讓網頁內容能完全貼齊視窗邊緣 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* 設定字體，優先使用蘋果系統字體，確保不同系統下都好看 */
+            display: flex; /* 啟動「彈性排版魔法」，讓左側邊欄與右側內容可以「左右並排」 */
+            height: 100vh; /* 讓整個網頁的高度剛好等於螢幕可視範圍的 100% (viewport height) */
+            background-color: #d9d9d9; /* 設定網頁最底層的背景色(灰色) */
+        }
+
+        /* 左側邊欄 */
+        .sidebar { 
+            width: 250px; /* 寬度固定為 250 像素 */
+            background-color: #ffffff; /* 側邊欄背景設定為白色 */
+            border-right: 2px solid #000000; /* 在右邊畫一條 2 像素寬、實線 (solid)、黑色的分隔線 */
+            display: flex; flex-direction: column; /* 讓裡面的元素由上到下垂直排列 (column) */
+        }
+
+        /* 左上角名稱 (Logo) */
+        .logo { 
+            padding: 20px; /* 讓文字距離邊框有 20 像素的緩衝空間，不會貼死在邊緣 */
+            font-weight: bold; /* 文字加粗 */
+            font-size: 14px; /* 字體大小設為 14 像素 */
+            color: #000000; /* 文字顏色設為黑色 */
+        }
+
+        /* Logo 裡面的版本號小區塊 */
+        .logo span { 
+            font-weight: normal; /* 取消加粗，恢復一般粗細 */
+            color: #ffffff; /* 文字顏色白色 */
+            font-size: 12px; /* 字體縮小到 12 像素 */
+            background: #000000; /* 黑色的背景區塊 */
+            padding: 2px 6px; /* 上下留白 2 像素，左右留白 6 像素 */
+            border-radius: 4px; /* 讓背景的四個角變成圓角 (弧度 4 像素) */
+            margin-top: 5px; /* 與上方的文字距離 5 像素 */
+            display: inline-block; /* 確保它是一個獨立的小區塊，不會影響其他排版 */
+        }
+
+        /* 每個選單分類的群組 */
+        .menu-group { 
+            margin-top: 15px; /* 上方空出 15 像素的距離，避免與上面內容太擁擠 */
+        }
+
+        /* 選單分類的小灰字 (如「Github學習歷程」) */
+        .menu-title { 
+            font-size: 11px; 
+            color: #708090; /* 岩灰色 */
+            padding: 0 20px; /* 上下不留白，左右留白 20 像素 (對齊 Logo 的留白) */
+            margin-bottom: 5px; /* 與下方實際可點擊的選單保持 5 像素距離 */
+            text-transform: uppercase; /* 若為英文字母，強制轉為大寫 */
+            letter-spacing: 1px; /* 每個字元拉開 1 像素的間距 */
+        }
+
+        /* 實際可點擊的選項 (如「課程一」) */
+        .menu-item { 
+            padding: 10px 20px; /* 撐出一個容易點擊的按鈕範圍 */
+            font-size: 13px; 
+            color: #ffffff; /* 白色 */
+            cursor: pointer; /* 當滑鼠移過去時，游標變成「手指圖案」，提示可點擊 */
+        }
+
+        /* 滑鼠「懸停」在選單上時的特效 */
+        .menu-item:hover { 
+            background-color: #ffa500; /* 滑鼠指到時，背景變成橘色 */
+        }
+
+        /* 目前正在觀看的頁面選單 (高亮顯示) */
+        .menu-item.active { 
+            background-color: #e5f0ff; /* 背景變成明顯的淺藍色 */
+            color: #0056b3; /* 深藍色 */
+            font-weight: bold; 
+            border-left: 3px solid #0056b3; /* 最左邊加上一條 3 像素寬的深藍色實線強化標示 */
+        }
+
+        /* 右側主要的白色內容區 */
+        .main-content { 
+            flex: 1; /* 佔滿扣除左側 250px 後所有剩餘的空間 */
+            padding: 40px; /* 內容與邊界保持 40 像素的寬敞距離 */
+            overflow-y: auto; /* 當右邊內容太多超過螢幕高度時，自動產生上下 (y軸) 捲動軸 */
+            background-color: #ffffff; /* 右側大區塊背景指定為純白色 */
+        }
+
+        /* 右側大標題 */
+        .header h1 { 
+            margin: 0; /* 移除預設的外距 */
+            font-size: 28px; /* 28 像素的大字 */
+            color: #222222; /* 極深的灰色 */
+        }
+
+        /* 右側副標題 */
+        .header p { 
+            color: #666666; /* 中深灰色 */
+            font-size: 14px; 
+            margin-top: 10px; /* 與上方大標題距離 10 像素 */
+        }
+
+        /* 以下為預留的卡片容器排版 (尚未在 HTML 中使用，但先保留並備註) */
+        /* display: flex 啟動並排；gap 設定卡片之間的間距 20 像素 */
+        .card-container { display: flex; gap: 20px; margin-top: 30px; } 
+        /* box-shadow 產生陰影；flex: 1 讓每張卡片平分寬度；text-align 讓文字置中；border 產生 1 像素的虛線 (dashed) 邊框 */
+        .card { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); flex: 1; text-align: center; border: 1px dashed #cccccc; } 
         .card h3 { margin-top: 0; font-size: 16px; }
-        .btn { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        /* border: none 移除預設邊框 */
+        .btn { background-color: #007bff; color: #ffffff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
-<body>
+<body> <!-- 身體區塊：真正顯示在網頁上的內容 -->
+
+    <!-- 左側邊欄區塊：呼叫了 .sidebar 樣式 -->
     <div class="sidebar">
-        <div class="logo">還沒想好先假設這樣<br><span>v1.0.2</span></div>
+        <!-- Logo 區塊：<br> 是換行標籤；<span> 用來包覆版本號以套用藍色小方塊獨立樣式 -->
+        <div class="logo">還沒想好先假設這樣<br><span>v1.0.3</span></div>
+
+        <!-- 選單群組：包含不可點擊的分類標題 (.menu-title) 與可點擊項目 (.menu-item) -->
         <div class="menu-group">
             <div class="menu-title">Homepage</div>
+            <!-- 加上 active 樣式代表這是目前所在的頁面，會套用高亮特效 -->
             <div class="menu-item active">Homepage</div>
         </div>
+
         <div class="menu-group">
             <div class="menu-title">Github學習歷程</div>
             <div class="menu-item">課程一</div>
             <div class="menu-item">課程二</div>
             <div class="menu-item">課程三</div>
         </div>
+
         <div class="menu-group">
             <div class="menu-title">活動規劃</div>
             <div class="menu-item">2026 Outing prepare</div>
@@ -42,9 +139,13 @@
             <div class="menu-item">TBD</div>
         </div>
     </div>
+
+    <!-- 右側大區塊：呼叫了 .main-content 樣式 -->
     <div class="main-content">
         <div class="header">
-            <h1>Howard Learding system</h1>
+            <!-- <h1> 網頁最重要的主標題 (Heading 1) -->
+            <h1>Howard Learning system</h1>
+            <!-- <p> 一般段落文字 (Paragraph) -->
             <p>Each learning will be establish in this website and share to everyone</p>
         </div>
     </div>
