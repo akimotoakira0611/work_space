@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <!-- 此處 <head> 內的設定與 CSS 樣式與 index.html 完全相同 -->
+    <meta charset="UTF-8">
+    <title>Howard Learning system - SP7 MMT 6400 Analyzer</title> <!-- 💡 標題可以稍微修改，方便在分頁辨識 -->
+    <style>
+        /* (為了節省篇幅，這裡的 CSS 與上方 index.html 內的 <style> 完全相同，請直接複製過來即可) */
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background-color: #d9d9d9; }
+        .sidebar { width: 250px; background-color: #ffffff; border-right: 2px solid #000000; display: flex; flex-direction: column; }
+        .logo { padding: 20px; font-weight: bold; font-size: 14px; color: #000000; }
+        .logo span { font-weight: normal; color: #ffffff; font-size: 12px; background: #000000; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block; }
+        .menu-group { margin-top: 15px; }
+        .menu-title { font-size: 11px; font-weight: bold; color: #708090; padding: 0 20px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .menu-item { padding: 10px 20px; font-size: 13px; color: #708090; cursor: pointer; text-decoration: none; display: block; }
+        .sub-menu-item { padding-left: 35px; }
+        .menu-item:hover { background-color: #ffa500; color: #ffffff; }
+        .menu-item.active { background-color: #00ff00; color: #ffffff; font-weight: bold; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; background-color: #ffffff; }
+        .header h1 { margin: 0; font-size: 28px; color: #222222; }
+        .header p { color: #666666; font-size: 14px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">還沒想好先假設這樣<br><span>v1.0.3</span></div>
+
+        <div class="menu-group">
+            <div class="menu-title">Homepage</div>
+            <!-- 💡 注意：因為我們現在不在首頁，所以這裡的 Homepage 移除了 active 類別 -->
+            <a href="index.html" class="menu-item">Homepage</a>
+        </div>
+
+        <div class="menu-group">
+            <div class="menu-title">Github學習歷程</div>
+            <a href="#" class="menu-item sub-menu-item">課程一</a>
+            <a href="#" class="menu-item sub-menu-item">課程二</a>
+            <a href="#" class="menu-item sub-menu-item">課程三</a>
+        </div>
+
+        <div class="menu-group">
+            <div class="menu-title">活動規劃</div>
+            <a href="#" class="menu-item">2026 Outing prepare</a>
+            <a href="#" class="menu-item">1127淡水鐵馬行</a>
+        </div>
+
+        <div class="menu-group">
+            <div class="menu-title">Tool</div>
+            <!-- 💡 關鍵改變：為這個項目加上 active 類別，因為我們現在就在這個網頁上！ -->
+            <a href="sp7-mmt-6400-analyzer.html" class="menu-item sub-menu-item active">SP7-MMT-6400-Analyzer</a>
+            <a href="#" class="menu-item sub-menu-item">SP7-MMT-8000-Analyzer</a>
+            <a href="#" class="menu-item sub-menu-item">SP7-MMT-12800-Analyzer</a>
+        </div>
+    </div>
+
+    <!-- 右側大區塊內容 -->
+    <div class="main-content">
+        <div class="header">
+            <!-- 替換成新工具的標題 -->
+            <h1>SP7 MMT 6400 Analyzer</h1>
+            <p>Upload and process your hardware testing outputs.</p>
+        </div>
+        
+        <!-- 💡 在此處放入處理 AMD MMT tool JSON 結果的介面與腳本 -->
+        <!-- 你已經做好的 SP7-MMT-6400-Analyzer 網頁主體代碼，請從這裡開始往下貼上！ -->
+
+
+    </div>
+</body>
+</html>
