@@ -1,158 +1,61 @@
-<!DOCTYPE html> <!-- 宣告這是一份 HTML5 文件，讓瀏覽器用最新標準解析 -->
-<html lang="zh-TW"> <!-- lang="zh-TW" 設定網頁主要語言為繁體中文，對搜尋引擎與翻譯工具有幫助 -->
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8"> <!-- 設定字元編碼為 UTF-8，確保中文字正常顯示，不會變成亂碼 -->
-    <title>Howard Learning system</title> <!-- 顯示在瀏覽器分頁標籤上的網頁標題 -->
+    <meta charset="UTF-8">
+    <title>Howard Learning system</title>
     <style>
-        /* CSS 樣式表：負責設定網頁的所有視覺外觀與排版 */
-
-        /* 網頁的基礎設定 (Body) */
-        body { 
-            margin: 0; /* 歸零：清除瀏覽器預設的邊距，讓內容完全貼齊視窗邊緣 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* 字體設定：優先使用無襯線系統字體，確保畫面乾淨現代 */
-            display: flex; /* 啟動 Flexbox 彈性排版，讓網頁內容能輕鬆左右並排 */
-            height: 100vh; /* 設定高度為 100vh (Viewport Height)，代表撐滿 100% 的螢幕可視高度 */
-            background-color: #d9d9d9; /* 整個網頁的最底層背景色設為灰色 */
-        }
-
-        /* 左側邊欄 (Sidebar) */
-        .sidebar { 
-            width: 250px; /* 固定寬度為 250 像素 */
-            background-color: #ffffff; /* 側邊欄背景色設為純白色 */
-            border-right: 2px solid #000000; /* 在右側畫一條 2 像素寬的黑色實線分隔線 */
-            display: flex; /* 側邊欄內部也啟用彈性排版 */
-            flex-direction: column; /* 讓側邊欄內部的元素「由上到下」垂直排列 */
-        }
-
-        /* 左上角 Logo 文字區塊 */
-        .logo { 
-            padding: 20px; /* 內邊距：讓文字距離四周邊界保持 20 像素的呼吸空間 */
-            font-weight: bold; /* 字體加粗 */
-            font-size: 14px; /* 字體大小設定為 14 像素 */
-            color: #000000; /* 文字顏色設定為黑色 */
-        }
-
-        /* Logo 旁邊的版本號標籤 (利用 span 包覆獨立設定) */
-        .logo span { 
-            font-weight: normal; /* 取消加粗，恢復正常粗細 */
-            color: #ffffff; /* 文字顏色為純白色 */
-            font-size: 12px; /* 字體縮小為 12 像素 */
-            background: #000000; /* 背景顏色為黑色 */
-            padding: 2px 6px; /* 上下內邊距 2 像素，左右內邊距 6 像素 */
-            border-radius: 4px; /* 設定 4 像素的圓角邊框 */
-            margin-top: 5px; /* 與上方的文字保持 5 像素的外邊距 */
-            display: inline-block; /* 設定為行內區塊，讓它不會佔滿整行，但又能設定上下邊界 */
-        }
-
-        /* 選單分類群組 (包覆標題與選項的容器) */
-        .menu-group { 
-            margin-top: 15px; /* 每個群組上方保持 15 像素的距離，避免版面擁擠 */
-        }
-
-        /* 選單的分類標題 (例如 "Homepage", "Tool") */
-        .menu-title { 
-            font-size: 11px; /* 字體大小為 11 像素 */
-            font-weight: bold; /* 字體加粗 */
-            color: #708090; /* 字體顏色設定為岩灰色 */
-            padding: 0 20px; /* 上下不留白(0)，左右內邊距 20 像素以對齊 Logo */
-            margin-bottom: 5px; /* 與下方的可點擊選項保持 5 像素距離 */
-            text-transform: uppercase; /* 強制將英文字母全部轉換為大寫 */
-            letter-spacing: 1px; /* 增加字母之間的間距 1 像素，提升閱讀質感 */
-        }
-
-        /* 💡 進階修改：可點擊的選單選項 (結合了 <a> 超連結標籤的特性) */
-        .menu-item { 
-            padding: 10px 20px; /* 上下內邊距 10 像素，左右 20 像素，撐出足夠的點擊範圍 */
-            font-size: 13px; /* 字體大小 13 像素 */
-            color: #708090; /* 預設文字顏色為岩灰色 */
-            cursor: pointer; /* 當滑鼠游標移過去時，顯示為「點擊手指」圖示 */
-            text-decoration: none; /* [超連結專用] 移除 <a> 標籤預設的藍色底線 */
-            display: block; /* [超連結專用] 讓 <a> 標籤像 div 一樣佔據整行寬度，這樣點擊整行都有反應 */
-        }
+        /* (這裡的 CSS 與之前大致相同，只微調了 main-content 讓 iframe 能完美塞滿) */
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background-color: #d9d9d9; }
+        .sidebar { width: 250px; background-color: #ffffff; border-right: 2px solid #000000; display: flex; flex-direction: column; }
+        .logo { padding: 20px; font-weight: bold; font-size: 14px; color: #000000; }
+        .logo span { font-weight: normal; color: #ffffff; font-size: 12px; background: #000000; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block; }
+        .menu-group { margin-top: 15px; }
+        .menu-title { font-size: 11px; font-weight: bold; color: #708090; padding: 0 20px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .menu-item { padding: 10px 20px; font-size: 13px; color: #708090; cursor: pointer; text-decoration: none; display: block; }
+        .sub-menu-item { padding-left: 35px; }
+        .menu-item:hover { background-color: #ffa500; color: #ffffff; }
+        .menu-item.active { background-color: #00ff00; color: #ffffff; font-weight: bold; }
         
-        /* 子選單縮排設定 */
-        .sub-menu-item {
-            padding-left: 35px; /* 覆蓋原本的左側 20px，改為 35px 產生往右縮排的視覺層級效果 */
-        }
-
-        /* 滑鼠「懸停(Hover)」在選單上時的特效 */
-        .menu-item:hover { 
-            background-color: #ffa500; /* 背景變成橘色 */
-            color: #ffffff; /* 文字變成白色 */
-        }
-
-        /* 正在觀看的當前頁面 (Active) 高亮特效 */
-        .menu-item.active { 
-            background-color: #00ff00; /* 背景變成鮮綠色 */
-            color: #ffffff; /* 文字為純白色 */
-            font-weight: bold; /* 字體加粗突顯 */
-        }
-
-        /* 右側的主內容顯示區塊 */
-        .main-content { 
-            flex: 1; /* 佔滿扣除左側 250px 後的剩餘所有畫面寬度 */
-            padding: 40px; /* 內容與邊界保持 40 像素的寬敞距離 */
-            overflow-y: auto; /* 當右側內容超過螢幕高度時，自動出現垂直捲軸 */
-            background-color: #ffffff; /* 主內容區塊背景設定為純白色 */
-        }
-
-        /* 主內容區的標題 (Heading 1) */
-        .header h1 { 
-            margin: 0; /* 移除預設外邊距 */
-            font-size: 28px; /* 字體大小 28 像素 */
-            color: #222222; /* 極深的灰色 */
-        }
-
-        /* 主內容區的副標題段落 (Paragraph) */
-        .header p { 
-            color: #666666; /* 中深灰色 */
-            font-size: 14px; /* 字體大小 14 像素 */
-            margin-top: 10px; /* 與上方大標題保持 10 像素的距離 */
-        }
+        /* 💡 讓右側區塊沒有多餘的白邊，完全交給內嵌的 iframe 去呈現 */
+        .main-content { flex: 1; background-color: #ffffff; overflow: hidden; }
+        /* 💡 設定 iframe 撐滿整個右側，且沒有邊框 */
+        .content-frame { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <!-- Logo 區塊 -->
         <div class="logo">還沒想好先假設這樣<br><span>v1.0.3</span></div>
 
-        <!-- 💡 導覽選單群組：使用 <a href="檔案名"> 來實作跨網頁跳轉 -->
         <div class="menu-group">
             <div class="menu-title">Homepage</div>
-            <!-- href="index.html" 表示點擊會連到 index.html；因為現在就在首頁，所以加上 active 類別 -->
-            <a href="index.html" class="menu-item active">Homepage</a>
-        </div>
-
-        <div class="menu-group">
-            <div class="menu-title">Github學習歷程</div>
-            <!-- href="#" 是一個佔位符，代表目前還沒有連結目標，點了不會跳轉 -->
-            <a href="#" class="menu-item sub-menu-item">課程一</a>
-            <a href="#" class="menu-item sub-menu-item">課程二</a>
-            <a href="#" class="menu-item sub-menu-item">課程三</a>
-        </div>
-
-        <div class="menu-group">
-            <div class="menu-title">活動規劃</div>
-            <a href="#" class="menu-item">2026 Outing prepare</a>
-            <a href="#" class="menu-item">1127淡水鐵馬行</a>
+            <!-- 💡 target="content_frame" 代表點擊後，要在右邊的 iframe 打開它 -->
+            <a href="home.html" target="content_frame" class="menu-item active">Homepage</a>
         </div>
 
         <div class="menu-group">
             <div class="menu-title">Tool</div>
-            <!-- 💡 將這行連結指向你即將建立的 SP7 分析器網頁 -->
-            <a href="sp7-mmt-6400-analyzer.html" class="menu-item sub-menu-item">SP7-MMT-6400-Analyzer</a>
-            <a href="#" class="menu-item sub-menu-item">SP7-MMT-8000-Analyzer</a>
-            <a href="#" class="menu-item sub-menu-item">SP7-MMT-12800-Analyzer</a>
+            <a href="sp7-mmt-6400-analyzer.html" target="content_frame" class="menu-item sub-menu-item">SP7-MMT-6400-Analyzer</a>
         </div>
     </div>
 
-    <!-- 右側大區塊內容 -->
     <div class="main-content">
-        <div class="header">
-            <h1>Howard Learning system</h1>
-            <p>Each learning will be establish in this website and share to everyone</p>
-        </div>
-        <!-- 首頁的其他內容可以繼續加在這裡 -->
+        <!-- 💡 這是右側的「投影幕」，name="content_frame" 要對應上方 a 標籤的 target，預設顯示 home.html -->
+        <iframe name="content_frame" class="content-frame" src="home.html"></iframe>
     </div>
+
+    <!-- 💡 加入一小段 JavaScript，讓點擊選單時，綠色的 active 標示會自動切換 -->
+    <script>
+        // 抓取畫面上所有的 menu-item
+        const menuItems = document.querySelectorAll('.menu-item');
+        // 為每一個選項綁定「點擊」事件
+        menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // 先把所有選項的 active 樣式移除
+                menuItems.forEach(i => i.classList.remove('active'));
+                // 再幫剛才被點擊的那個選項加上 active 樣式
+                this.classList.add('active');
+            });
+        });
+    </script>
 </body>
 </html>
