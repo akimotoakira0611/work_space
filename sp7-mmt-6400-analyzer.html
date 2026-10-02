@@ -3,35 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 💡 更新網頁分頁標籤名稱 -->
     <title>SP7-MMT-Analyst</title>
-    <!-- 引入 Tailwind CSS (快速排版工具) -->
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         
-        /* 側邊欄細長卷軸的客製化樣式 */
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         
-        /* 報表表格的標題與儲存格樣式 */
-        .table-header { background-color: #e2e8f0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; border-color: #cbd5e1; }
+        /* 💡 為了配合 Sticky Header (固定標題)，背景色與邊界需要特殊處理，避免滾動時透明破圖 */
+        .table-header { background-color: #e2e8f0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; border: 1px solid #cbd5e1; background-clip: padding-box; }
         .table-cell { font-size: 0.875rem; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.4rem; }
         
-        /* 門檻值輸入框的專屬樣式 */
         .criteria-input { width: 42px; padding: 2px 0; font-size: 0.75rem; border: 1px solid #ccc; border-radius: 4px; text-align: center; outline: none; }
         .criteria-input:focus { border-color: #3b82f6; }
         .criteria-input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border-color: #e5e7eb; }
         
-        /* 隱藏數字輸入框右側預設的上下微調小箭頭 */
         .criteria-input::-webkit-outer-spin-button, .criteria-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .criteria-input[type=number] { -moz-appearance: textfield; }
 
-        /* 數值判定的顏色標示 */
         .val-green { color: #15803d; font-weight: 600; } 
         .val-orange { color: #d97706; font-weight: 600; } 
         .val-red { color: #dc2626; font-weight: 600; } 
@@ -45,14 +39,12 @@
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
         
-        <!-- 💡 更新系統標題為 SP7-MMT-Analyst -->
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
         </div>
         
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
             
-            <!-- 1. 群組模式切換 (Group Mode) -->
             <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
                     <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-folder text-yellow-400 mr-2"></i>GROUP MODE</span>
@@ -73,7 +65,7 @@
                 </div>
             </div>
 
-            <!-- 2. 檔案上傳區塊 (Drag & Drop) -->
+            <!-- 檔案上傳區塊 -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
                 <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
@@ -84,7 +76,7 @@
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
 
-            <!-- 3. 門檻值設定區塊 (Criteria Preset) -->
+            <!-- 門檻值設定區塊 -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
                 
@@ -96,7 +88,6 @@
                 </div>
 
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
-                    
                     <div class="flex items-center pb-2 border-b border-gray-200">
                         <span class="font-semibold text-gray-700 w-10">Item</span>
                         <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
@@ -158,7 +149,8 @@
     </aside>
 
     <!-- ================= 右側主要報表顯示區 ================= -->
-    <main class="flex-1 overflow-y-auto p-6 bg-gray-100 flex flex-col gap-6">
+    <!-- 💡 確保 main 區塊擁有正常的區塊排版與間距 (block space-y-6) 讓整體頁面可滾動 -->
+    <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
         
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
             <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Margin Report</h2>
@@ -170,12 +162,14 @@
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
-                <!-- 💡 更新標題欄的顯示名稱 -->
                 Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
             </div>
-            <div class="overflow-x-auto p-4">
+            
+            <!-- 💡 表格內部卷軸容器：限制最大高度為 55vh (視窗高度的55%)，超過則出現獨立卷軸 -->
+            <div class="overflow-auto max-h-[55vh] relative p-0 bg-white">
                 <table class="w-full border-collapse" id="mainReportTable">
-                    <thead>
+                    <!-- 💡 讓 thead 固定在頂部 (sticky top-0 z-20)，確保往下滾動時標題依然可見 -->
+                    <thead class="sticky top-0 z-20 shadow-sm bg-gray-200">
                         <tr>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
@@ -219,15 +213,17 @@
                     </select>
                 </div>
             </div>
-            <div class="p-4 overflow-x-auto">
-                <table class="w-full border-collapse text-sm text-left">
-                    <thead>
+            
+            <!-- 💡 DIMM 資訊也加上內部卷軸保護 (max-h-[30vh]) -->
+            <div class="overflow-auto max-h-[30vh] relative p-0 bg-white">
+                <table class="w-full border-collapse text-sm text-center">
+                    <thead class="sticky top-0 z-20 shadow-sm">
                         <tr class="bg-gray-100 text-gray-600 text-xs uppercase">
-                            <th class="p-2 border-b">Position (Bank Locator)</th>
-                            <th class="p-2 border-b">Manufacturer</th>
-                            <th class="p-2 border-b">Part Number</th>
-                            <th class="p-2 border-b">Serial Number</th>
-                            <th class="p-2 border-b text-right">Speed</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Position (Bank Locator)</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Manufacturer</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Part Number</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Serial Number</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 text-right">Speed</th>
                         </tr>
                     </thead>
                     <tbody id="dimmInfoBody">
@@ -263,14 +259,12 @@
 
     <!-- ================= JavaScript 邏輯核心 ================= -->
     <script>
-        // 【1. 系統全域變數】
         let uploadedFiles = []; 
         let groupMode = false;  
-        let definedGroups = []; // 空白群組陣列，等待使用者新增
+        let definedGroups = []; 
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
 
-        // 【2. 門檻值資料庫 (Preset Data)】
         const presetData = {
             "6400": {
                 Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9},
@@ -296,7 +290,6 @@
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
         let currentPresetLabel = "Custom"; 
 
-        // 【3. 門檻值按鈕切換邏輯】
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 presetBtns.forEach(b => {
@@ -341,7 +334,6 @@
         const mainReportBody = document.getElementById('mainReportBody');
         const infoModal = document.getElementById('infoModal');
         
-        // 【4. 群組管理功能 (Group Manager)】
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
             const msg = document.getElementById('noGroupsMsg');
@@ -385,9 +377,8 @@
             renderFileList();
         });
 
-        // 【5. 檔案拖曳與點擊上傳】
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-50', 'border-blue-400');
@@ -414,7 +405,6 @@
 
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
 
-        // 【6. 產生報表與補齊資訊視窗 (Modal)】
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
             updateCriteria(); 
@@ -547,7 +537,6 @@
             });
         }
 
-        // 【7. JSON 資料提取核心】
         function extractMmtData(json) {
             let dimms = [];
             let vendors = new Set();
@@ -663,7 +652,6 @@
             }
         }
 
-        // 💡 【8. 繪製最終報表與動態合併儲存格】
         function renderMainReport() {
             mainReportBody.innerHTML = '';
             
@@ -675,7 +663,6 @@
                     groups[g].push(f);
                 });
             } else {
-                // 💡 關鍵修正：若未開啟群組，將所有檔案倒進同一個 "All Files" 的池子中，這樣就能合併畫在同一個表格區塊裡
                 groups["All Files"] = uploadedFiles;
             }
 

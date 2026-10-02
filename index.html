@@ -1,147 +1,63 @@
-<!DOCTYPE html> <!-- 宣告 HTML5 文件格式 -->
-<html lang="zh-TW"> <!-- 語系設定為繁體中文 -->
+<!DOCTYPE html>
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8"> <!-- 確保中文字元正常顯示的 UTF-8 編碼 -->
-    <title>Howard Learning system</title> <!-- 瀏覽器分頁上顯示的標題文字 -->
+    <meta charset="UTF-8">
+    <title>Howard Learning system</title>
     <style>
-        /* ================= CSS 排版與顏色設定區 ================= */
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; height: 100vh; background-color: #d9d9d9; }
+        .sidebar { width: 250px; background-color: #ffffff; border-right: 2px solid #000000; display: flex; flex-direction: column; }
+        .logo { padding: 20px; font-weight: bold; font-size: 14px; color: #000000; }
+        .logo span { font-weight: normal; color: #ffffff; font-size: 12px; background: #000000; padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block; }
+        .menu-group { margin-top: 15px; }
+        .menu-title { font-size: 11px; font-weight: bold; color: #708090; padding: 0 20px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .menu-item { padding: 10px 20px; font-size: 13px; color: #708090; cursor: pointer; text-decoration: none; display: block; }
+        .sub-menu-item { padding-left: 35px; }
+        .menu-item:hover { background-color: #ffa500; color: #ffffff; }
+        .menu-item.active { background-color: #00ff00; color: #ffffff; font-weight: bold; }
         
-        /* 網頁基礎設定 */
-        body { 
-            margin: 0; /* 移除瀏覽器預設的四周留白 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* 設定優先使用的字體 */
-            display: flex; /* 啟用彈性排版，讓側邊欄與右側內容可以左右並排 */
-            height: 100vh; /* 讓網頁高度剛好填滿整個螢幕 (100% Viewport Height) */
-            background-color: #d9d9d9; /* 整個網頁的最底層背景色 (淺灰色) */
-        }
-        
-        /* 左側邊欄 (Sidebar) */
-        .sidebar { 
-            width: 250px; /* 固定側邊欄的寬度為 250 像素 */
-            background-color: #ffffff; /* 側邊欄背景色 (純白) */
-            border-right: 2px solid #000000; /* 側邊欄右側的垂直分隔線：2像素、實線、黑色 */
-            display: flex; /* 讓側邊欄內部的元素也可以彈性排版 */
-            flex-direction: column; /* 讓側邊欄內部的元素「由上往下」垂直排列 */
-        }
-        
-        /* 左上角 Logo 區塊文字 */
-        .logo { 
-            padding: 20px; /* 四周留白 20 像素，避免文字貼死邊緣 */
-            font-weight: bold; /* 字體加粗 */
-            font-size: 14px; /* 字體大小 */
-            color: #000000; /* 文字顏色 (黑色) */
-        }
-        
-        /* Logo 區塊內的版本號小標籤 (v1.0.4) */
-        .logo span { 
-            font-weight: normal; /* 取消加粗 */
-            color: #ffffff; /* 文字顏色 (純白) */
-            font-size: 12px; /* 字體大小 */
-            background: #000000; /* 標籤背景色 (黑色) */
-            padding: 2px 6px; /* 上下留白 2 像素，左右留白 6 像素 */
-            border-radius: 4px; /* 標籤邊角的圓滑程度 (數值越大越圓) */
-            margin-top: 5px; /* 與上方文字保持 5 像素的距離 */
-            display: inline-block; /* 讓這個標籤獨立成一個小區塊 */
-        }
-        
-        /* 選單分類的大群組 (例如 HOMEPAGE、TOOL 區塊) */
-        .menu-group { 
-            margin-top: 15px; /* 每個群組上方留出 15 像素距離，避免擁擠 */
-        }
-        
-        /* 選單分類標題 (全大寫的灰色小字，如 HOMEPAGE) */
-        .menu-title { 
-            font-size: 11px; /* 字體大小 */
-            font-weight: bold; /* 字體加粗 */
-            color: #708090; /* 文字顏色 (岩灰色) */
-            padding: 0 20px; /* 上下不留白，左右留白 20 像素 (與 Logo 對齊) */
-            margin-bottom: 5px; /* 與下方可點擊選項保持 5 像素距離 */
-            text-transform: uppercase; /* 強制所有英文字母變為大寫 */
-            letter-spacing: 1px; /* 字母間距拉開 1 像素，提升質感 */
-        }
-        
-        /* 可點擊的選項按鈕 (如 Homepage, SP7-MMT...) */
-        .menu-item { 
-            padding: 10px 20px; /* 上下留白 10 像素，左右留白 20 像素 */
-            font-size: 13px; /* 字體大小 */
-            color: #708090; /* 預設文字顏色 (岩灰色) */
-            cursor: pointer; /* 滑鼠游標移過時會變成「點擊手指」圖示 */
-            text-decoration: none; /* 移除超連結預設的藍色底線 */
-            display: block; /* 讓選項佔滿整行寬度，方便點擊 */
-        }
-        
-        /* 💡 子類別縮排設定 (用來讓選項往右縮) */
-        .sub-menu-item { 
-            padding-left: 35px; /* 將左側留白從預設的 20px 增加到 35px，達到往右縮排的效果 */
-        }
-        
-        /* 滑鼠懸停 (Hover) 在選項上時的特效 */
-        .menu-item:hover { 
-            background-color: #ffa500; /* 滑鼠指到時的背景色 (橘色) */
-            color: #ffffff; /* 滑鼠指到時的文字色 (純白) */
-        }
-        
-        /* 目前正在瀏覽的頁面 (Active) 高亮特效 */
-        .menu-item.active { 
-            background-color: #00ff00; /* 啟動時的背景色 (鮮綠色) */
-            color: #ffffff; /* 啟動時的文字色 (純白) */
-            font-weight: bold; /* 字體加粗突顯 */
-        }
-        
-        /* 右側用來顯示其他網頁的大區塊 */
+        /* 💡 關鍵修復：將右側主區塊設定為 flex 容器，嚴格限制其高度不得超過 100vh */
         .main-content { 
-            flex: 1; /* 佔滿扣除左側 250px 之後的所有剩餘螢幕寬度 */
-            background-color: #ffffff; /* 右側大區塊預設背景色 (純白) */
-            overflow: hidden; /* 隱藏溢出的內容，捲動軸交給 iframe 內部的網頁自己處理 */
+            flex: 1; 
+            background-color: #ffffff; 
+            overflow: hidden; 
+            display: flex;           /* 新增此行 */
+            flex-direction: column;  /* 新增此行 */
         }
         
-        /* 內嵌網頁框架 (iframe) 的設定 */
+        /* 💡 關鍵修復：讓 iframe 絕對服從父元素的尺寸，內部網頁才能正常產生自己的卷軸 */
         .content-frame { 
-            width: 100%; /* 寬度 100% 填滿 .main-content */
-            height: 100%; /* 高度 100% 填滿 .main-content */
-            border: none; /* 移除 iframe 預設的邊框 */
+            flex: 1;                 /* 新增此行 */
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: block;          /* 新增此行 */
         }
     </style>
 </head>
 <body>
-    <!-- 側邊欄開始 -->
     <div class="sidebar">
-        <!-- 左上角 Logo 與版本號 -->
         <div class="logo">Howard Space<br><span>v1.0.4</span></div>
 
-        <!-- 第一個群組：Homepage -->
         <div class="menu-group">
             <div class="menu-title">Homepage</div>
-            <!-- 💡 這裡加上了 sub-menu-item 類別，讓它與下方的 SP7 選項對齊 -->
-            <!-- target="content_frame" 代表點擊後將連結內容投影到右側名為 content_frame 的 iframe 中 -->
             <a href="home.html" target="content_frame" class="menu-item sub-menu-item active">Homepage</a>
         </div>
 
-        <!-- 第二個群組：Tool -->
         <div class="menu-group">
             <div class="menu-title">Tool</div>
             <a href="sp7-mmt-6400-analyzer.html" target="content_frame" class="menu-item sub-menu-item">SP7-MMT-6400-Analyzer</a>
         </div>
     </div>
 
-    <!-- 右側主要內容區塊開始 -->
     <div class="main-content">
-        <!-- iframe 就是網頁中的「畫中畫」，name 屬性必須與上方 a 標籤的 target 屬性完全一致 -->
-        <!-- src="home.html" 代表一進來這個網頁，右邊預設顯示的畫面 -->
         <iframe name="content_frame" class="content-frame" src="home.html"></iframe>
     </div>
 
-    <!-- ================= JavaScript 互動功能區 ================= -->
     <script>
-        // 抓取畫面上所有帶有 'menu-item' 類別的選單項目
         const menuItems = document.querySelectorAll('.menu-item');
-        
-        // 針對每一個選單項目設定「點擊 (click)」的監聽器
         menuItems.forEach(item => {
             item.addEventListener('click', function() {
-                // 當任何一個選項被點擊時，先用迴圈把「所有人」的 active (鮮綠色) 樣式移除
                 menuItems.forEach(i => i.classList.remove('active'));
-                // 接著，只把 active 樣式加回「剛才被點擊的那一個 (this)」身上
                 this.classList.add('active');
             });
         });
