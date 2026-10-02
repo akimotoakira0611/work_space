@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 網頁分頁標籤名稱 -->
     <title>SP7-MMT-Analyst</title>
     <!-- 引入 Tailwind CSS (快速排版工具) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +18,7 @@
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         
-        /* 💡 為了配合 Sticky Header (固定標題)，背景色與邊界需要特殊處理，避免滾動時透明破圖 */
+        /* 報表表格的標題與儲存格樣式 */
         .table-header { background-color: #e2e8f0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; border: 1px solid #cbd5e1; background-clip: padding-box; }
         .table-cell { font-size: 0.875rem; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.4rem; }
         
@@ -44,6 +45,7 @@
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
         
+        <!-- 系統標題為 SP7-MMT-Analyst -->
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
         </div>
@@ -62,7 +64,6 @@
                 
                 <div class="text-xs text-gray-600 mt-2 mb-1">Enable Group Mode</div>
                 
-                <!-- 定義群組的隱藏區塊 -->
                 <div id="groupManagerContainer" class="hidden flex flex-col gap-2">
                     <div id="noGroupsMsg" class="text-center text-xs text-gray-400 py-1">No groups created</div>
                     <div id="groupList" class="space-y-2"></div>
@@ -72,7 +73,7 @@
                 </div>
             </div>
 
-            <!-- 2. 檔案上傳區塊 -->
+            <!-- 2. 檔案上傳區塊 (Drag & Drop) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
                 <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
@@ -83,7 +84,7 @@
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
 
-            <!-- 3. 門檻值設定區塊 -->
+            <!-- 3. 門檻值設定區塊 (Criteria Preset) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
                 
@@ -95,6 +96,7 @@
                 </div>
 
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+                    
                     <div class="flex items-center pb-2 border-b border-gray-200">
                         <span class="font-semibold text-gray-700 w-10">Item</span>
                         <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
@@ -171,10 +173,8 @@
                 Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
             </div>
             
-            <!-- 💡 表格內部卷軸容器：限制最大高度為 55vh，超過則出現獨立卷軸 -->
             <div class="overflow-auto max-h-[55vh] relative p-0 bg-white">
                 <table class="w-full border-collapse" id="mainReportTable">
-                    <!-- 💡 讓 thead 固定在頂部 (sticky top-0 z-20) -->
                     <thead class="sticky top-0 z-20 shadow-sm bg-gray-200">
                         <tr>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
@@ -220,7 +220,6 @@
                 </div>
             </div>
             
-            <!-- 💡 DIMM 資訊也加上內部卷軸保護 (max-h-[30vh]) -->
             <div class="overflow-auto max-h-[30vh] relative p-0 bg-white">
                 <table class="w-full border-collapse text-sm text-center">
                     <thead class="sticky top-0 z-20 shadow-sm">
@@ -265,12 +264,14 @@
 
     <!-- ================= JavaScript 邏輯核心 ================= -->
     <script>
+        // 【1. 系統全域變數】
         let uploadedFiles = []; 
         let groupMode = false;  
         let definedGroups = []; // 空白群組陣列，等待使用者新增
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
 
+        // 【2. 門檻值資料庫 (Preset Data)】
         const presetData = {
             "6400": {
                 Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9},
@@ -296,6 +297,7 @@
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
         let currentPresetLabel = "Custom"; 
 
+        // 【3. 門檻值按鈕切換邏輯】
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 presetBtns.forEach(b => {
@@ -340,6 +342,7 @@
         const mainReportBody = document.getElementById('mainReportBody');
         const infoModal = document.getElementById('infoModal');
         
+        // 【4. 群組管理功能 (Group Manager)】
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
             const msg = document.getElementById('noGroupsMsg');
@@ -383,17 +386,21 @@
             renderFileList();
         });
 
-        // 💡 關鍵修復點：dragleave 事件語法正確化
+        // 【5. 檔案拖曳與點擊上傳】
+        // 💡 確保這裡的箭頭函式撰寫正確，沒有多餘的符號
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
+        
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-50', 'border-blue-400');
             handleFiles(e.dataTransfer.files);
         });
+        
         dropZone.addEventListener('click', (e) => {
             if (e.target !== fileInput) fileInput.click();
         });
+        
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
         groupModeToggle.addEventListener('change', (e) => {
@@ -412,6 +419,7 @@
 
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
 
+        // 【6. 產生報表與補齊資訊視窗 (Modal)】
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
             updateCriteria(); 
@@ -544,6 +552,7 @@
             });
         }
 
+        // 【7. JSON 資料提取核心】
         function extractMmtData(json) {
             let dimms = [];
             let vendors = new Set();
