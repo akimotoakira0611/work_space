@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>01-PerRank Analyzer</title>
+    <!-- 💡 更新網頁分頁標籤名稱 -->
+    <title>SP7-MMT-Analyst</title>
     <!-- 引入 Tailwind CSS (快速排版工具) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Font Awesome 圖標庫 -->
@@ -44,8 +45,9 @@
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
         
+        <!-- 💡 更新系統標題為 SP7-MMT-Analyst -->
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>PerRank Analyzer</h1>
+            <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
         </div>
         
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
@@ -62,7 +64,6 @@
                 
                 <div class="text-xs text-gray-600 mt-2 mb-1">Enable Group Mode</div>
                 
-                <!-- 定義群組的隱藏區塊 -->
                 <div id="groupManagerContainer" class="hidden flex flex-col gap-2">
                     <div id="noGroupsMsg" class="text-center text-xs text-gray-400 py-1">No groups created</div>
                     <div id="groupList" class="space-y-2"></div>
@@ -169,7 +170,8 @@
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
-                Analyzer: <strong>SP7_PerRank Analyzer</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
+                <!-- 💡 更新標題欄的顯示名稱 -->
+                Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
             </div>
             <div class="overflow-x-auto p-4">
                 <table class="w-full border-collapse" id="mainReportTable">
@@ -264,7 +266,7 @@
         // 【1. 系統全域變數】
         let uploadedFiles = []; 
         let groupMode = false;  
-        let definedGroups = []; // 空白群組陣列，使用者需自行點擊 Add 增加
+        let definedGroups = []; // 空白群組陣列，等待使用者新增
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
 
@@ -661,7 +663,7 @@
             }
         }
 
-        // 💡 【8. 繪製最終報表與動態合併儲存格 (核心除錯修正版)】
+        // 💡 【8. 繪製最終報表與動態合併儲存格】
         function renderMainReport() {
             mainReportBody.innerHTML = '';
             
@@ -673,9 +675,8 @@
                     groups[g].push(f);
                 });
             } else {
-                uploadedFiles.forEach(f => {
-                    groups[f.name] = [f];
-                });
+                // 💡 關鍵修正：若未開啟群組，將所有檔案倒進同一個 "All Files" 的池子中，這樣就能合併畫在同一個表格區塊裡
+                groups["All Files"] = uploadedFiles;
             }
 
             document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
@@ -751,7 +752,6 @@
                             html += `<td rowspan="${items.length}" class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
                         }
                         
-                        // 🚨 關鍵修復：這裡加入 parseFloat 強制將字串轉換為數字，避免 JSON 格式異常導致 toFixed(2) 崩潰斷尾！
                         let minV = item && item.minVref !== null && !isNaN(item.minVref) ? parseFloat(item.minVref) : null;
                         let maxV = item && item.maxVref !== null && !isNaN(item.maxVref) ? parseFloat(item.maxVref) : null;
                         let minD = item && item.minDelay !== null && !isNaN(item.minDelay) ? parseFloat(item.minDelay) : null;
