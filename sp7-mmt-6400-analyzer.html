@@ -4,76 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>01-PerRank Analyzer</title>
-    <!-- 引入 Tailwind CSS (這是一個免寫傳統 CSS 就能快速排版的框架，例如 class="w-72" 代表寬度設定) -->
+    <!-- 引入 Tailwind CSS (快速排版工具) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Font Awesome 圖標庫 (網頁中看到的資料夾、微處理器等小圖示都是來自這裡) -->
+    <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
-        /* 基礎字體與整體背景顏色設定 */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
         
-        /* 側邊欄細長卷軸的客製化樣式，讓卷軸看起來更現代、不佔空間 */
+        /* 側邊欄細長卷軸的客製化樣式 */
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         
-        /* 報表表格的標題 (th) 與 儲存格 (td) 樣式 */
+        /* 報表表格的標題與儲存格樣式 */
         .table-header { background-color: #e2e8f0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; border-color: #cbd5e1; }
         .table-cell { font-size: 0.875rem; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.4rem; }
         
         /* 門檻值輸入框的專屬樣式 */
         .criteria-input { width: 42px; padding: 2px 0; font-size: 0.75rem; border: 1px solid #ccc; border-radius: 4px; text-align: center; outline: none; }
-        /* 點擊輸入框時，邊框亮起藍色 */
         .criteria-input:focus { border-color: #3b82f6; }
-        /* 當輸入框被鎖定(唯讀 read-only)時的樣式：灰底、文字變淡、滑鼠游標變成禁止符號 */
         .criteria-input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border-color: #e5e7eb; }
         
-        /* 隱藏數字輸入框右側預設的「上下微調小箭頭」，讓畫面保持乾淨不擁擠 */
+        /* 隱藏數字輸入框右側預設的上下微調小箭頭 */
         .criteria-input::-webkit-outer-spin-button, .criteria-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .criteria-input[type=number] { -moz-appearance: textfield; }
 
-        /* 數值判定的顏色標示 (對應 JS 內的 getColorClass 函式) */
-        .val-green { color: #15803d; font-weight: 600; } /* 數值安全 (Pass) */
-        .val-orange { color: #d97706; font-weight: 600; } /* 數值逼近邊緣 (Marginal) */
-        .val-red { color: #dc2626; font-weight: 600; } /* 數值超標 (Fail) */
+        /* 數值判定的顏色標示 */
+        .val-green { color: #15803d; font-weight: 600; } 
+        .val-orange { color: #d97706; font-weight: 600; } 
+        .val-red { color: #dc2626; font-weight: 600; } 
         
-        /* 彈出視窗(Modal)的隱藏與顯示切換 */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
-        .modal.active { display: flex; } /* 透過 JS 加上 active 類別時，視窗就會跳出來 */
+        .modal.active { display: flex; } 
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
     
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
-    <!-- w-72 設定寬度，border-r 設定右邊框，flex-col 讓內部元素垂直排列 -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
         
-        <!-- 系統標題區塊 -->
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>PerRank Analyzer</h1>
         </div>
         
-        <!-- 可上下捲動的側邊欄主要內容區 -->
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
             
             <!-- 1. 群組模式切換 (Group Mode) -->
             <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-layer-group text-yellow-500 mr-2"></i>Enable Group Mode</span>
-                    <!-- Tailwind 特製的漂亮開關 (Toggle) -->
+                    <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-folder text-yellow-400 mr-2"></i>GROUP MODE</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="groupModeToggle" class="sr-only peer">
                         <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                 </div>
-                <!-- 定義群組的隱藏區塊 (開啟 Group Mode 時，JS 會移除 hidden 讓它顯示) -->
-                <div id="groupManagerContainer" class="hidden border-t border-gray-200 pt-3 mt-3">
-                    <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase">Define Groups</h3>
-                    <div id="groupList" class="space-y-1 mb-2"></div>
-                    <!-- 新增群組的按鈕 -->
-                    <button id="addGroupBtn" class="w-full text-xs bg-white text-blue-600 hover:bg-blue-50 py-1.5 rounded border border-blue-200 transition-colors">
-                        <i class="fa-solid fa-plus mr-1"></i> Add Group
+                
+                <div class="text-xs text-gray-600 mt-2 mb-1">Enable Group Mode</div>
+                
+                <!-- 定義群組的隱藏區塊 -->
+                <div id="groupManagerContainer" class="hidden flex flex-col gap-2">
+                    <div id="noGroupsMsg" class="text-center text-xs text-gray-400 py-1">No groups created</div>
+                    <div id="groupList" class="space-y-2"></div>
+                    <button id="addGroupBtn" class="w-full text-xs bg-white text-gray-700 hover:bg-gray-50 py-1.5 rounded border border-gray-300 transition-colors mt-1">
+                        + Add Group
                     </button>
                 </div>
             </div>
@@ -81,13 +75,11 @@
             <!-- 2. 檔案上傳區塊 (Drag & Drop) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
-                <!-- 拖曳互動區域 -->
                 <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
                     <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-2"></i>
                     <p class="text-xs text-gray-500">Drag & Drop MMT JSON files<br><span class="text-blue-500">or click to browse</span></p>
                     <input type="file" id="fileInput" multiple accept=".json,.csv,.tsv" class="hidden">
                 </div>
-                <!-- 顯示已上傳檔案的清單位置 -->
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
 
@@ -95,19 +87,15 @@
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
                 
-                <!-- 門檻值快捷按鈕 (2x2 網格排版 grid-cols-2) -->
                 <div class="grid grid-cols-2 gap-1.5 mb-2">
                     <button class="bg-blue-600 text-white text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="custom">Custom</button>
-                    <!-- data-preset 裡面的名字，必須與下面 JS 程式碼的 presetData 字典名稱完全一致 -->
                     <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="6400">6400 RDIMM</button>
                     <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="8000">8000 RDIMM</button>
                     <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="12800">12800 MRDIMM</button>
                 </div>
 
-                <!-- 門檻數值輸入面板 -->
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
                     
-                    <!-- 表頭標籤 -->
                     <div class="flex items-center pb-2 border-b border-gray-200">
                         <span class="font-semibold text-gray-700 w-10">Item</span>
                         <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
@@ -118,7 +106,6 @@
                         </div>
                     </div>
                     
-                    <!-- Read 輸入列 (預設 Custom 模式留空) -->
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-blue-600 w-10">Read</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
@@ -129,7 +116,6 @@
                         </div>
                     </div>
                     
-                    <!-- Write 輸入列 -->
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-green-600 w-10">Write</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
@@ -140,7 +126,6 @@
                         </div>
                     </div>
                     
-                    <!-- CA 輸入列 -->
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-orange-500 w-10">CA</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
@@ -151,7 +136,6 @@
                         </div>
                     </div>
                     
-                    <!-- CS 輸入列 -->
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-purple-600 w-10">CS</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
@@ -165,7 +149,6 @@
             </div>
         </div>
         
-        <!-- 產生報表按鈕 -->
         <div class="p-4 border-t border-gray-200 bg-white">
             <button id="generateBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition-colors flex items-center justify-center">
                 <i class="fa-solid fa-file-invoice mr-2"></i> Generate Report
@@ -173,10 +156,9 @@
         </div>
     </aside>
 
-    <!-- ================= 右側主要報表顯示區 (Main Content) ================= -->
+    <!-- ================= 右側主要報表顯示區 ================= -->
     <main class="flex-1 overflow-y-auto p-6 bg-gray-100 flex flex-col gap-6">
         
-        <!-- 頂部標題與匯出按鈕 -->
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
             <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Margin Report</h2>
             <div class="space-x-2">
@@ -185,7 +167,6 @@
             </div>
         </div>
 
-        <!-- Margin Report 報表顯示表格 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
                 Analyzer: <strong>SP7_PerRank Analyzer</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
@@ -193,7 +174,6 @@
             <div class="overflow-x-auto p-4">
                 <table class="w-full border-collapse" id="mainReportTable">
                     <thead>
-                        <!-- 表頭第一層：左側基礎資訊橫跨兩列(rowspan="2")，右邊的數值資訊橫跨三行(colspan="3") -->
                         <tr>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
@@ -205,12 +185,10 @@
                             <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
-                            <!-- 數值區塊上層大標題 -->
                             <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
                             <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
                         </tr>
-                        <!-- 表頭第二層：數值區塊的小標題 -->
                         <tr>
                             <th class="table-header border border-gray-300 py-1">Min Vref</th>
                             <th class="table-header border border-gray-300 py-1">Max Vref</th>
@@ -220,7 +198,6 @@
                             <th class="table-header border border-gray-300 py-1">Total Delay</th>
                         </tr>
                     </thead>
-                    <!-- JS 生成的報表內容會塞在這裡 -->
                     <tbody id="mainReportBody">
                         <tr>
                             <td colspan="17" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td>
@@ -230,7 +207,6 @@
             </div>
         </div>
 
-        <!-- 記憶體 DIMM 資訊表格 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
@@ -262,7 +238,7 @@
         </div>
     </main>
 
-    <!-- ================= Modal 彈出視窗 (用於補齊 JSON 內沒有的基礎資訊) ================= -->
+    <!-- ================= Modal 彈出視窗 (補齊資訊) ================= -->
     <div id="infoModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl w-96 overflow-hidden">
             <div class="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
@@ -271,7 +247,6 @@
             </div>
             <div class="p-6 space-y-4">
                 <p class="text-xs text-gray-600 mb-4">The following fields are not found in the JSON. Please provide them to complete the report.</p>
-                <!-- 對應左側報表的共通欄位 -->
                 <div><label class="block text-xs font-bold text-gray-700 mb-1">Agesa Code</label><input type="text" id="modal-agesa" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
                 <div><label class="block text-xs font-bold text-gray-700 mb-1">Type (e.g. RDIMM)</label><input type="text" id="modal-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
                 <div><label class="block text-xs font-bold text-gray-700 mb-1">Rank (e.g. 2R)</label><input type="text" id="modal-rank" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
@@ -287,16 +262,13 @@
     <!-- ================= JavaScript 邏輯核心 ================= -->
     <script>
         // 【1. 系統全域變數】
-        let uploadedFiles = []; // 存放所有上傳並解析後的檔案資料
-        let groupMode = false;  // 記錄是否開啟群組模式
-        // 預設的群組名稱，開啟 Group Mode 時會預設產生這兩個
-        let definedGroups = ["Group A", "Group B"]; 
-        // 彈出視窗的預設值，避免每次產生報表都要重新輸入
+        let uploadedFiles = []; 
+        let groupMode = false;  
+        let definedGroups = []; // 空白群組陣列，使用者需自行點擊 Add 增加
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
-        let currentCriteria = {}; // 目前套用、準備進行判定計算的門檻值
+        let currentCriteria = {}; 
 
-        // 💡 【2. 門檻值資料庫 (Preset Data)】
-        // 若未來有新規格 (例如 16000)，直接在這裡加上一組新的字典即可，並在 HTML 新增一顆對應按鈕
+        // 【2. 門檻值資料庫 (Preset Data)】
         const presetData = {
             "6400": {
                 Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9},
@@ -318,46 +290,38 @@
             }
         };
 
-        // 取得所有帶有 preset-btn class 的按鈕
         const presetBtns = document.querySelectorAll('.preset-btn');
-        // 取得所有的門檻值輸入框
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
-        let currentPresetLabel = "Custom"; // 記錄目前選擇的按鈕名稱，會顯示在報表左上角
+        let currentPresetLabel = "Custom"; 
 
         // 【3. 門檻值按鈕切換邏輯】
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // 視覺效果：先把所有按鈕還原成「灰底灰字」
                 presetBtns.forEach(b => {
                     b.classList.remove('bg-blue-600', 'text-white');
                     b.classList.add('bg-gray-200', 'text-gray-700');
                 });
-                // 再把被點擊的按鈕變成「藍底白字」
                 e.target.classList.remove('bg-gray-200', 'text-gray-700');
                 e.target.classList.add('bg-blue-600', 'text-white');
 
-                // 取得按鈕上綁定的 data-preset 標籤 (例如 "6400")
                 const mode = e.target.getAttribute('data-preset');
                 currentPresetLabel = e.target.innerText; 
                 
                 if (mode === 'custom') {
-                    // 👉 如果選 Custom 模式：所有欄位清空，並解除鎖定允許修改 (readOnly = false)
                     allCriteriaInputs.forEach(input => {
                         input.readOnly = false;
                         input.value = "";
                     });
                 } else {
-                    // 👉 如果選特定規格模式：把資料庫的數值填入，並鎖定為唯讀 (readOnly = true)
                     const data = presetData[mode];
                     const types = ["Read", "Write", "CA", "CS"];
                     types.forEach(t => {
-                        // 根據 id 動態寫入值，例如 crit-read-vmax
                         document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax;
                         document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
                         document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax;
                         document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
                     });
-                    // 鎖定所有格子，避免誤觸修改
+                    
                     allCriteriaInputs.forEach(input => {
                         input.readOnly = true;
                     });
@@ -365,7 +329,6 @@
             });
         });
 
-        // 綁定 DOM 元素供後續函式呼叫
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
@@ -377,21 +340,27 @@
         const infoModal = document.getElementById('infoModal');
         
         // 【4. 群組管理功能 (Group Manager)】
-        // 渲染「定義群組」的小面板
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
+            const msg = document.getElementById('noGroupsMsg');
             gl.innerHTML = '';
+            
+            if (definedGroups.length > 0) {
+                msg.classList.add('hidden');
+            } else {
+                msg.classList.remove('hidden');
+            }
+
             definedGroups.forEach((grp, idx) => {
                 gl.innerHTML += `
-                    <div class="flex items-center gap-1 mb-1">
-                        <input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)">
-                        <button onclick="removeDefinedGroup(${idx})" class="text-red-400 hover:text-red-600 px-1"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="flex items-center gap-2">
+                        <input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)">
+                        <button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button>
                     </div>
                 `;
             });
         }
 
-        // 修改群組名稱時，同步更新已上傳的檔案所屬群組
         window.updateDefinedGroup = function(idx, val) {
             let oldVal = definedGroups[idx];
             definedGroups[idx] = val;
@@ -399,7 +368,6 @@
             renderFileList();
         }
 
-        // 刪除群組時，將該群組的檔案自動歸類到預設的第一個群組
         window.removeDefinedGroup = function(idx) {
             let oldVal = definedGroups[idx];
             definedGroups.splice(idx, 1);
@@ -408,7 +376,6 @@
             renderFileList();
         }
 
-        // 💡 點擊「新增群組」按鈕時，利用 ASCII 碼 (65對應'A') 自動推算 Group A, B, C...
         document.getElementById('addGroupBtn').addEventListener('click', () => {
             let nextChar = String.fromCharCode(65 + definedGroups.length); 
             definedGroups.push("Group " + nextChar);
@@ -425,57 +392,47 @@
             handleFiles(e.dataTransfer.files);
         });
         dropZone.addEventListener('click', (e) => {
-            // 防呆設計：確認點擊的不是 input 本身，避免觸發兩次造成當機
             if (e.target !== fileInput) fileInput.click();
         });
-        // 檔案選擇完畢後開始解析
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-        // 切換 Group Mode 開關的行為
         groupModeToggle.addEventListener('change', (e) => {
             groupMode = e.target.checked;
             if (groupMode) {
-                // 開啟時，顯示群組管理面板
                 document.getElementById('groupManagerContainer').classList.remove('hidden');
                 renderGroupManager();
-                // 把尚未分類的檔案預設派給第一個群組
                 uploadedFiles.forEach(f => {
                     if (!f.group && definedGroups.length > 0) f.group = definedGroups[0];
                 });
             } else {
-                // 關閉時，隱藏群組管理面板
                 document.getElementById('groupManagerContainer').classList.add('hidden');
             }
             renderFileList();
         });
 
-        // 記憶體資訊的下拉選單連動
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
 
         // 【6. 產生報表與補齊資訊視窗 (Modal)】
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
-            updateCriteria(); // 從網頁上抓取數值存進 currentCriteria
+            updateCriteria(); 
             
-            // 帶入前次填寫的預設值，避免重複打字
             document.getElementById('modal-agesa').value = globalMissingInfo.agesa === "-" ? "" : globalMissingInfo.agesa;
             document.getElementById('modal-type').value = globalMissingInfo.type === "-" ? "" : globalMissingInfo.type;
             document.getElementById('modal-rank').value = globalMissingInfo.rank === "-" ? "" : globalMissingInfo.rank;
             document.getElementById('modal-size').value = globalMissingInfo.size === "-" ? "" : globalMissingInfo.size;
             
             if(groupMode) {
-                // 若開啟群組模式，Motherboard (MB) 欄位將由群組名稱取代，故隱藏 MB 輸入框
                 document.getElementById('modal-mb-container').style.display = 'none';
             } else {
                 document.getElementById('modal-mb-container').style.display = 'block';
                 document.getElementById('modal-mb').value = globalMissingInfo.mb === "All Files" ? "" : globalMissingInfo.mb;
             }
-            infoModal.classList.add('active'); // 顯示視窗
+            infoModal.classList.add('active'); 
         });
 
         function closeModal() { infoModal.classList.remove('active'); }
 
-        // 確認送出視窗資訊後，開始繪圖
         function submitModal() {
             globalMissingInfo.agesa = document.getElementById('modal-agesa').value || "-";
             globalMissingInfo.type = document.getElementById('modal-type').value || "-";
@@ -484,19 +441,18 @@
             if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "All Files";
             
             closeModal();
-            renderMainReport(); // 呼叫表格渲染函式
+            renderMainReport(); 
         }
 
-        // 非同步讀取 JSON 檔案內容
         async function handleFiles(files) {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                if (!file.name.endsWith('.json')) continue; // 僅處理 JSON
+                if (!file.name.endsWith('.json')) continue; 
                 
                 const text = await file.text();
                 try {
-                    const json = JSON.parse(text); // 將純文字轉為 JS 物件
-                    const parsedData = extractMmtData(json); // 呼叫核心函式提取所需欄位
+                    const json = JSON.parse(text); 
+                    const parsedData = extractMmtData(json); 
                     
                     uploadedFiles.push({
                         id: 'file_' + Date.now() + '_' + i,
@@ -509,12 +465,11 @@
                     console.error(e);
                 }
             }
-            fileInput.value = ''; // 必須清空 input 值，否則下次拖曳同名檔案不會觸發 change 事件
+            fileInput.value = ''; 
             renderFileList();
             updateDimmSelect();
         }
 
-        // 渲染左側上傳的檔案清單
         function renderFileList() {
             fileList.innerHTML = '';
             uploadedFiles.forEach((file, index) => {
@@ -523,8 +478,9 @@
                 
                 let groupSelector = '';
                 if (groupMode) {
-                    // 若開啟 Group Mode，為每個檔案產生一個對應的群組選擇下拉選單
                     let options = definedGroups.map(g => `<option value="${g}" ${file.group === g ? 'selected' : ''}>${g}</option>`).join('');
+                    if (definedGroups.length === 0) options = `<option value="">-- Create a group first --</option>`;
+
                     groupSelector = `
                         <div class="mt-1 flex items-center">
                             <span class="text-gray-500 mr-2">Group:</span>
@@ -535,7 +491,6 @@
                     `;
                 }
 
-                // 檔案區塊的 HTML，包含檔名與右上的紅色刪除小按鈕
                 fileDiv.innerHTML = `
                     <div class="flex justify-between items-start">
                         <span class="font-semibold text-gray-700 truncate pr-4" title="${file.name}">${file.name}</span>
@@ -557,7 +512,6 @@
             uploadedFiles[idx].group = val;
         }
 
-        // 下方 DIMM 資訊的選擇選單更新
         function updateDimmSelect() {
             dimmFileSelect.innerHTML = '<option value="">-- Select a file --</option>';
             uploadedFiles.forEach(f => {
@@ -569,7 +523,6 @@
             dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
         }
 
-        // 渲染所選檔案的 DIMM 詳細資料
         window.renderDimmInfo = function(fileId) {
             if(!fileId) {
                 dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
@@ -592,7 +545,7 @@
             });
         }
 
-        // 💡 【7. JSON 資料提取核心 (精確捕捉多筆測試紀錄)】
+        // 【7. JSON 資料提取核心】
         function extractMmtData(json) {
             let dimms = [];
             let vendors = new Set();
@@ -600,12 +553,10 @@
             let cpu = "-";
             let speed = "-";
             
-            // 讀取基礎環境資訊
             if(json["Memory Configuration Info"]) {
                 speed = json["Memory Configuration Info"].frequency || "-";
             }
             
-            // 讀取處理器與記憶體細節
             if(json.DMI_Details) {
                 if(json.DMI_Details["Processor Details"] && json.DMI_Details["Processor Details"].length > 0) {
                     cpu = json.DMI_Details["Processor Details"][0].Package || "-";
@@ -625,17 +576,14 @@
                 }
             }
             
-            // 💡 測試紀錄的分群邏輯
-            let records = []; // 用來裝載所有獨立的測試循環 (Iteration / Rank)
-            let currentRecord = { Read: null, Write: null, CA: null, CS: null }; // 目前正在填寫的容器
+            let records = []; 
+            let currentRecord = { Read: null, Write: null, CA: null, CS: null }; 
             
             if(json["Margin Results"]) {
                 Object.values(json["Margin Results"]).forEach(res => {
                     if(res.output && res.output.systemmargin) {
-                        const type = res.output["bus type"]; // 取得當前項目，例如 "Read"
+                        const type = res.output["bus type"]; 
                         
-                        // 如果目前的容器裡面已經有了 Read 的資料，代表我們遇到了一組「全新的測試循環」
-                        // 這時候就要把舊的打包推入 records 陣列，並開一個新容器來裝新的
                         if (currentRecord[type] !== null) {
                             records.push({...currentRecord});
                             currentRecord = { Read: null, Write: null, CA: null, CS: null };
@@ -643,9 +591,6 @@
                         
                         const sysMarg = res.output.systemmargin;
                         if(sysMarg.length >= 3) {
-                            // sysMarg[0] 通常是 Min Delay (負值)
-                            // sysMarg[1] 包含 Vref
-                            // sysMarg[2] 是 Max Delay
                             currentRecord[type] = {
                                 minDelay: sysMarg[0]["Delay (UI)"],
                                 maxDelay: sysMarg[2]["Delay (UI)"],
@@ -656,7 +601,6 @@
                     }
                 });
                 
-                // 迴圈結束後，要把最後一組還有裝資料的容器也推入陣列中，避免遺漏
                 if (currentRecord.Read !== null || currentRecord.Write !== null || currentRecord.CA !== null || currentRecord.CS !== null) {
                     records.push(currentRecord);
                 }
@@ -667,11 +611,10 @@
                 parts: Array.from(parts).join("<br>"),
                 cpu,
                 speed,
-                records // 回傳陣列格式，讓後端可以知道這個檔案跑了多少次測試
+                records 
             };
         }
 
-        // 把畫面上的輸入框數值存起來做後續計算
         function updateCriteria() {
             currentCriteria = {
                 Read: {
@@ -701,67 +644,54 @@
             };
         }
 
-        // 💡 【8. 顏色判定邏輯】
         function getColorClass(val, limit, isMax) {
-            // 防呆：如果 JSON 裡面沒有數值，就不塗色
             if (val === null || val === undefined || isNaN(val)) return "";
-            // 如果門檻值未設定(Custom 全空白)，也就不做判定，維持黑字
             if (isNaN(limit)) return ""; 
             
-            // 給予 5% 的寬容度作為「逼近邊緣(Marginal)」的判定標準
             let safeLimit = limit * 1.05;
             
             if (isMax) {
-                // 正值判定：越大越好
-                if (val >= safeLimit) return "val-green"; // 輕鬆過關
-                if (val >= limit) return "val-orange";    // 壓線過關
-                return "val-red";                         // 不及格
+                if (val >= safeLimit) return "val-green"; 
+                if (val >= limit) return "val-orange";    
+                return "val-red";                         
             } else {
-                // 負值判定：越小越好 (例如 limit 是 -50，-55 是安全，-45 是失敗)
                 if (val <= safeLimit) return "val-green";
                 if (val <= limit) return "val-orange";
                 return "val-red";
             }
         }
 
-        // 💡 【9. 繪製最終報表與動態合併儲存格 (Rowspan)】
+        // 💡 【8. 繪製最終報表與動態合併儲存格 (核心除錯修正版)】
         function renderMainReport() {
             mainReportBody.innerHTML = '';
             
             let groups = {};
             if (groupMode) {
-                // 如果開啟群組模式，將檔案依照設定的 Group 做分類
                 uploadedFiles.forEach(f => {
                     const g = f.group || "Ungrouped";
                     if(!groups[g]) groups[g] = [];
                     groups[g].push(f);
                 });
             } else {
-                // 如果未開啟群組，就把所有檔案都當成獨立的分類來處理 (檔名為群組名)
                 uploadedFiles.forEach(f => {
                     groups[f.name] = [f];
                 });
             }
 
-            // 更新報表上方的標籤名稱
             document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
 
-            // 迴圈 1：走訪每一個群組 (或單一檔案)
             for (const [groupName, files] of Object.entries(groups)) {
                 if (files.length === 0) continue;
                 
-                // 將這個群組(或檔案)內所有的迭代紀錄，集中到 allItems 陣列中
                 let allItems = { Read: [], Write: [], CA: [], CS: [] };
                 let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
                 
                 files.forEach(f => {
-                    // 蒐集這個群組內所有的基礎資訊 (用 Set 避免重複)
                     if(f.data.vendors && f.data.vendors !== "-") f.data.vendors.split(", ").forEach(v => vendors.add(v));
                     if(f.data.parts && f.data.parts !== "-") f.data.parts.split("<br>").forEach(p => parts.add(p));
                     if(f.data.cpu !== "-") cpus.add(f.data.cpu);
                     if(f.data.speed !== "-") speeds.add(f.data.speed);
                     
-                    // 將提取出來的測試紀錄丟進分類籃子裡
                     f.data.records.forEach(rec => {
                         if (rec.Read) allItems.Read.push(rec.Read);
                         if (rec.Write) allItems.Write.push(rec.Write);
@@ -770,49 +700,39 @@
                     });
                 });
 
-                // 防呆處理：確保每種項目至少有一列空間可以畫表格，避免因為缺少資料導致右側儲存格破圖
                 ["Read", "Write", "CA", "CS"].forEach(bt => {
                     if (allItems[bt].length === 0) allItems[bt].push(null);
                 });
 
-                // 💡 計算這個群組左側的基礎資訊總共需要「跨越幾列 (Rowspan)」
                 let totalRows = allItems.Read.length + allItems.Write.length + allItems.CA.length + allItems.CS.length;
                 
-                // 整理要顯示的文字 (若無資料顯示 -)
                 let vStr = Array.from(vendors).join(", ") || "-";
                 let pStr = Array.from(parts).join("<br>") || "-";
                 let cpuStr = Array.from(cpus).join(", ") || "-";
                 let speedStr = Array.from(speeds).join(", ") || "-";
                 let groupMb = groupMode ? groupName : globalMissingInfo.mb;
                 
-                // 開關：標記是否為整個大群組區塊的「第一行」
                 let isFirstOverallRow = true;
 
-                // 迴圈 2：依序畫出 Read, Write, CA, CS 的區塊
                 ["Read", "Write", "CA", "CS"].forEach(bt => {
                     let items = allItems[bt];
-                    // 開關：標記是否為該測試項目 (例如 Read 區塊) 的「第一行」
                     let isFirstRowOfItem = true;
                     
-                    // 迴圈 3：畫出該項目內的所有測試迭代紀錄
                     items.forEach((item, itemIndex) => {
                         const tr = document.createElement('tr');
                         
-                        // 視覺優化：若是該項目的最後一筆紀錄，使用較深的底線 (border-gray-300) 做區分
                         if (itemIndex === items.length - 1) {
                             tr.className = "border-b border-gray-300 hover:bg-gray-50/70";
                         } else {
                             tr.className = "border-b border-gray-100 hover:bg-gray-50/70";
                         }
                         
-                        // 視覺優化：若是整個群組大區塊的第一行，上方加上粗灰線區隔上一個群組
                         if (isFirstOverallRow) {
                             tr.classList.add("border-t-[3px]", "border-gray-400");
                         }
 
                         let html = "";
                         
-                        // 💡 左半部的基礎資訊 (重點：只在整個大區塊的第一行寫入，並設定 rowspan 跨越總列數，後面幾行就不用寫了)
                         if (isFirstOverallRow) {
                             html += `
                                 <td rowspan="${totalRows}" class="table-cell font-medium align-middle bg-white">${vStr}</td>
@@ -827,22 +747,20 @@
                             `;
                         }
                         
-                        // 💡 項目名稱 (例如 Read) (重點：只在該項目的第一行寫入，並設定 rowspan 跨越該項目的測試次數)
                         if (isFirstRowOfItem) {
                             html += `<td rowspan="${items.length}" class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
                         }
                         
-                        // 提取目前紀錄的數值
-                        let minV = item ? item.minVref : null;
-                        let maxV = item ? item.maxVref : null;
-                        let minD = item ? item.minDelay : null;
-                        let maxD = item ? item.maxDelay : null;
+                        // 🚨 關鍵修復：這裡加入 parseFloat 強制將字串轉換為數字，避免 JSON 格式異常導致 toFixed(2) 崩潰斷尾！
+                        let minV = item && item.minVref !== null && !isNaN(item.minVref) ? parseFloat(item.minVref) : null;
+                        let maxV = item && item.maxVref !== null && !isNaN(item.maxVref) ? parseFloat(item.maxVref) : null;
+                        let minD = item && item.minDelay !== null && !isNaN(item.minDelay) ? parseFloat(item.minDelay) : null;
+                        let maxD = item && item.maxDelay !== null && !isNaN(item.maxDelay) ? parseFloat(item.maxDelay) : null;
                         
                         let totV = (maxV !== null && minV !== null) ? (maxV - minV).toFixed(2) : "-";
                         let totD = (maxD !== null && minD !== null) ? (maxD - minD).toFixed(2) : "-";
                         let crit = currentCriteria[bt];
                         
-                        // 產生帶有顏色 class 的 HTML
                         let minV_html = minV !== null ? `<span class="${getColorClass(minV, crit.vMin, false)}">${minV.toFixed(2)}</span>` : "-";
                         let maxV_html = maxV !== null ? `<span class="${getColorClass(maxV, crit.vMax, true)}">${maxV.toFixed(2)}</span>` : "-";
                         let totV_html = totV !== "-" ? `<span class="font-bold text-green-700">${totV}</span>` : "-";
@@ -851,7 +769,6 @@
                         let maxD_html = maxD !== null ? `<span class="${getColorClass(maxD, crit.dMax, true)}">${maxD.toFixed(2)}</span>` : "-";
                         let totD_html = totD !== "-" ? `<span class="font-bold text-green-700">${totD}</span>` : "-";
                         
-                        // 寫入當前列的右半邊測試數值
                         html += `
                             <td class="table-cell">${minV_html}</td>
                             <td class="table-cell">${maxV_html}</td>
@@ -861,16 +778,15 @@
                             <td class="table-cell bg-green-50/20">${totD_html}</td>
                         `;
                         
-                        // 💡 最右側的 Note 備註欄 (與左側邏輯相同，只在第一行寫入並往下跨列)
                         if (isFirstOverallRow) {
                             html += `<td rowspan="${totalRows}" class="table-cell align-middle bg-white text-gray-400 text-xs"></td>`;
-                            isFirstOverallRow = false; // 大群組的第一行畫完了，關閉開關
+                            isFirstOverallRow = false; 
                         }
                         
-                        if (isFirstRowOfItem) isFirstRowOfItem = false; // 該項目的第一行畫完了，關閉開關
+                        if (isFirstRowOfItem) isFirstRowOfItem = false; 
                         
                         tr.innerHTML = html;
-                        mainReportBody.appendChild(tr); // 渲染這完整的一列
+                        mainReportBody.appendChild(tr); 
                     });
                 });
             }
