@@ -4,31 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>01-PerRank Analyzer</title>
-    <!-- 引入 Tailwind CSS 框架 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 基礎字體與背景設定 */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        
-        /* 自定義側邊欄的細長捲軸樣式 */
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-        
-        /* 表格標題與儲存格樣式 */
         .table-header { background-color: #e2e8f0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; }
         .table-cell { font-size: 0.875rem; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.5rem; }
         
-        /* 門檻值輸入框樣式 */
-        .criteria-input { width: 50px; padding: 2px 4px; font-size: 0.75rem; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        /* 💡 修正 1：稍微縮小寬度，並取消左右 padding 以爭取空間 */
+        .criteria-input { width: 42px; padding: 2px 0; font-size: 0.75rem; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
         
-        /* 測試結果的顏色標示 (綠:通過, 橘:邊緣, 紅:失敗) */
+        /* 💡 修正 2：隱藏數字輸入框預設的上下箭頭，讓畫面更乾淨不擁擠 */
+        .criteria-input::-webkit-outer-spin-button,
+        .criteria-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .criteria-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
         .val-green { color: #15803d; font-weight: 600; }
         .val-orange { color: #d97706; font-weight: 600; }
         .val-red { color: #dc2626; font-weight: 600; }
-        
-        /* 彈出視窗 (Modal) 的遮罩與顯示控制 */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
         .modal.active { display: flex; }
     </style>
@@ -42,86 +42,98 @@
         </div>
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
             
-            <!-- 群組模式開關 (Group Mode Toggle) -->
-            <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-layer-group text-yellow-500 mr-2"></i>Enable Group Mode</span>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="groupModeToggle" class="sr-only peer">
-                    <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
+            <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-layer-group text-yellow-500 mr-2"></i>Enable Group Mode</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="groupModeToggle" class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div id="groupManagerContainer" class="hidden border-t border-gray-200 pt-3 mt-3">
+                    <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase">Define Groups</h3>
+                    <div id="groupList" class="space-y-1 mb-2"></div>
+                    <button id="addGroupBtn" class="w-full text-xs bg-white text-blue-600 hover:bg-blue-50 py-1.5 rounded border border-blue-200 transition-colors">
+                        <i class="fa-solid fa-plus mr-1"></i> Add Group
+                    </button>
+                </div>
             </div>
 
-            <!-- 📁 檔案上傳區塊 (Drag & Drop) -->
+            <!-- 檔案上傳區塊 -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
-                <!-- 拖曳互動區域 -->
                 <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
                     <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-2"></i>
                     <p class="text-xs text-gray-500">Drag & Drop MMT JSON files<br><span class="text-blue-500">or click to browse</span></p>
                     <input type="file" id="fileInput" multiple accept=".json,.csv,.tsv" class="hidden">
                 </div>
-                <!-- 已上傳檔案列表 -->
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
 
-            <!-- ⚙️ 門檻值設定區塊 (Criteria Preset) -->
+            <!-- 💡 門檻值設定區塊 (排版優化版) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
-                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs space-y-3">
-                    <div class="flex items-center justify-between pb-2 border-b border-gray-200">
-                        <span class="font-semibold text-gray-700">Test Item</span>
-                        <div class="flex gap-2 text-gray-500">
-                            <span class="w-[50px] text-center">V-Max</span>
-                            <span class="w-[50px] text-center">V-Min</span>
-                            <span class="w-[50px] text-center">D-Max</span>
-                            <span class="w-[50px] text-center">D-Min</span>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+                    
+                    <!-- 表頭 -->
+                    <div class="flex items-center pb-2 border-b border-gray-200">
+                        <span class="font-semibold text-gray-700 w-10">Item</span> <!-- 鎖定標籤寬度 -->
+                        <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
+                            <span class="w-[42px] text-center">V-Max</span>
+                            <span class="w-[42px] text-center">V-Min</span>
+                            <span class="w-[42px] text-center">D-Max</span>
+                            <span class="w-[42px] text-center">D-Min</span>
                         </div>
                     </div>
+                    
                     <!-- Read -->
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-blue-600">Read</span>
-                        <div class="flex gap-2">
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-blue-600 w-10">Read</span> <!-- 鎖定標籤寬度 -->
+                        <div class="flex gap-1.5 flex-1 justify-end">
                             <input type="number" id="crit-read-vmax" value="70" class="criteria-input">
                             <input type="number" id="crit-read-vmin" value="-52" class="criteria-input">
                             <input type="number" id="crit-read-dmax" value="9" class="criteria-input">
                             <input type="number" id="crit-read-dmin" value="-9" class="criteria-input">
                         </div>
                     </div>
+                    
                     <!-- Write -->
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-green-600">Write</span>
-                        <div class="flex gap-2">
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-green-600 w-10">Write</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
                             <input type="number" id="crit-write-vmax" value="71" class="criteria-input">
                             <input type="number" id="crit-write-vmin" value="-60" class="criteria-input">
                             <input type="number" id="crit-write-dmax" value="10" class="criteria-input">
                             <input type="number" id="crit-write-dmin" value="-10" class="criteria-input">
                         </div>
                     </div>
+                    
                     <!-- CA -->
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-orange-500">CA</span>
-                        <div class="flex gap-2">
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-orange-500 w-10">CA</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
                             <input type="number" id="crit-ca-vmax" value="100" class="criteria-input">
                             <input type="number" id="crit-ca-vmin" value="-100" class="criteria-input">
                             <input type="number" id="crit-ca-dmax" value="12" class="criteria-input">
                             <input type="number" id="crit-ca-dmin" value="-12" class="criteria-input">
                         </div>
                     </div>
+                    
                     <!-- CS -->
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold text-purple-600">CS</span>
-                        <div class="flex gap-2">
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-purple-600 w-10">CS</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
                             <input type="number" id="crit-cs-vmax" value="100" class="criteria-input">
                             <input type="number" id="crit-cs-vmin" value="-100" class="criteria-input">
                             <input type="number" id="crit-cs-dmax" value="45" class="criteria-input">
                             <input type="number" id="crit-cs-dmin" value="-45" class="criteria-input">
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>
         
-        <!-- 產生報表按鈕 -->
         <div class="p-4 border-t border-gray-200 bg-white">
             <button id="generateBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition-colors flex items-center justify-center">
                 <i class="fa-solid fa-file-invoice mr-2"></i> Generate Report
@@ -129,7 +141,7 @@
         </div>
     </aside>
 
-    <!-- ================= 右側主要報表顯示區 (Main Content) ================= -->
+    <!-- ================= 右側主要報表顯示區 ================= -->
     <main class="flex-1 overflow-y-auto p-6 bg-gray-100 flex flex-col gap-6">
         
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
@@ -140,7 +152,7 @@
             </div>
         </div>
 
-        <!-- Part 1: Margin Report Table -->
+        <!-- Margin Report Table -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
                 Analyzer: <strong>SP7_PerRank Analyzer</strong> / Criteria Preset: <strong>Custom</strong>
@@ -176,7 +188,7 @@
             </div>
         </div>
 
-        <!-- Part 2: DIMM Information -->
+        <!-- DIMM Information -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
@@ -208,7 +220,7 @@
         </div>
     </main>
 
-    <!-- 補齊資訊用的跳出視窗 (Modal) -->
+    <!-- Modal 彈出視窗 -->
     <div id="infoModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl w-96 overflow-hidden">
             <div class="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
@@ -231,9 +243,9 @@
 
     <!-- ================= JavaScript 邏輯核心 ================= -->
     <script>
-        // 【1. 變數與 DOM 元素綁定】
         let uploadedFiles = [];
         let groupMode = false;
+        let definedGroups = ["090", "089"]; 
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {};
 
@@ -246,24 +258,68 @@
         const dimmInfoBody = document.getElementById('dimmInfoBody');
         const mainReportBody = document.getElementById('mainReportBody');
         const infoModal = document.getElementById('infoModal');
+        
+        function renderGroupManager() {
+            const gl = document.getElementById('groupList');
+            gl.innerHTML = '';
+            definedGroups.forEach((grp, idx) => {
+                gl.innerHTML += `
+                    <div class="flex items-center gap-1 mb-1">
+                        <input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)">
+                        <button onclick="removeDefinedGroup(${idx})" class="text-red-400 hover:text-red-600 px-1"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `;
+            });
+        }
 
-        // 【2. 檔案拖曳與點擊上傳邏輯】 (這就是上次遺漏的關鍵區塊)
-        // 當檔案拖曳進區域時，改變背景顏色給予視覺回饋
+        window.updateDefinedGroup = function(idx, val) {
+            let oldVal = definedGroups[idx];
+            definedGroups[idx] = val;
+            uploadedFiles.forEach(f => {
+                if (f.group === oldVal) f.group = val;
+            });
+            renderFileList();
+        }
+
+        window.removeDefinedGroup = function(idx) {
+            let oldVal = definedGroups[idx];
+            definedGroups.splice(idx, 1);
+            uploadedFiles.forEach(f => {
+                if (f.group === oldVal) f.group = definedGroups[0] || "";
+            });
+            renderGroupManager();
+            renderFileList();
+        }
+
+        document.getElementById('addGroupBtn').addEventListener('click', () => {
+            definedGroups.push("New Group " + (definedGroups.length + 1));
+            renderGroupManager();
+            renderFileList();
+        });
+
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
-        // 釋放滑鼠(Drop)時，讀取檔案並丟給 handleFiles 處理
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-50', 'border-blue-400');
             handleFiles(e.dataTransfer.files);
         });
-        // 點擊區域也能觸發隱藏的 input 來選擇檔案
-        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('click', (e) => {
+            if (e.target !== fileInput) fileInput.click();
+        });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-        // 【3. 互動功能與 Modal 控制】
         groupModeToggle.addEventListener('change', (e) => {
             groupMode = e.target.checked;
+            if (groupMode) {
+                document.getElementById('groupManagerContainer').classList.remove('hidden');
+                renderGroupManager();
+                uploadedFiles.forEach(f => {
+                    if (!f.group && definedGroups.length > 0) f.group = definedGroups[0];
+                });
+            } else {
+                document.getElementById('groupManagerContainer').classList.add('hidden');
+            }
             renderFileList();
         });
 
@@ -300,23 +356,20 @@
             renderMainReport();
         }
 
-        // 【4. 解析 AMD MMT tool 產生的 JSON 檔案】
         async function handleFiles(files) {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                if (!file.name.endsWith('.json')) {
-                    console.warn("Only JSON processing implemented in this demo.");
-                    continue;
-                }
+                if (!file.name.endsWith('.json')) continue;
+                
                 const text = await file.text();
                 try {
-                    const json = JSON.parse(text); // 將純文字轉為 JSON 物件
-                    const parsedData = extractMmtData(json); // 提取伺服器硬體測試結果
+                    const json = JSON.parse(text);
+                    const parsedData = extractMmtData(json);
                     
                     uploadedFiles.push({
                         id: 'file_' + Date.now() + '_' + i,
                         name: file.name,
-                        group: "",
+                        group: (groupMode && definedGroups.length > 0) ? definedGroups[0] : "",
                         data: parsedData
                     });
                 } catch (e) {
@@ -324,6 +377,7 @@
                     console.error(e);
                 }
             }
+            fileInput.value = '';
             renderFileList();
             updateDimmSelect();
         }
@@ -333,21 +387,27 @@
             uploadedFiles.forEach((file, index) => {
                 const fileDiv = document.createElement('div');
                 fileDiv.className = 'bg-white border border-gray-200 rounded p-2 text-xs flex flex-col gap-1 relative shadow-sm';
-                let content = `
+                
+                let groupSelector = '';
+                if (groupMode) {
+                    let options = definedGroups.map(g => `<option value="${g}" ${file.group === g ? 'selected' : ''}>${g}</option>`).join('');
+                    groupSelector = `
+                        <div class="mt-1 flex items-center">
+                            <span class="text-gray-500 mr-2">Group:</span>
+                            <select class="border border-gray-300 rounded px-1 flex-1 py-0.5 outline-none" onchange="updateGroup(${index}, this.value)">
+                                ${options}
+                            </select>
+                        </div>
+                    `;
+                }
+
+                fileDiv.innerHTML = `
                     <div class="flex justify-between items-start">
                         <span class="font-semibold text-gray-700 truncate pr-4" title="${file.name}">${file.name}</span>
                         <button onclick="removeFile(${index})" class="text-red-400 hover:text-red-600 absolute top-2 right-2"><i class="fa-solid fa-times"></i></button>
                     </div>
+                    ${groupSelector}
                 `;
-                if (groupMode) {
-                    content += `
-                        <div class="mt-1 flex items-center">
-                            <span class="text-gray-500 mr-2">Group:</span>
-                            <input type="text" class="border border-gray-300 rounded px-1 flex-1 py-0.5" value="${file.group}" placeholder="e.g. 089" onchange="updateGroup(${index}, this.value)">
-                        </div>
-                    `;
-                }
-                fileDiv.innerHTML = content;
                 fileList.appendChild(fileDiv);
             });
         }
@@ -395,7 +455,6 @@
             });
         }
 
-        // 提取 JSON 中 Margin Results 的資料
         function extractMmtData(json) {
             let dimms = [];
             let vendors = new Set();
@@ -427,18 +486,26 @@
             }
             
             let margins = { Read: null, Write: null, CA: null, CS: null };
+            
             if(json["Margin Results"]) {
                 Object.values(json["Margin Results"]).forEach(res => {
                     if(res.output && res.output.systemmargin) {
                         const type = res.output["bus type"];
                         const sysMarg = res.output.systemmargin;
-                        if(sysMarg.length >= 3) {
-                            margins[type] = {
-                                minDelay: sysMarg[0]["Delay (UI)"],
-                                maxDelay: sysMarg[2]["Delay (UI)"],
-                                minVref: sysMarg[1]["Min Vref (mV)"],
-                                maxVref: sysMarg[1]["Max Vref (mV)"]
-                            };
+                        if(sysMarg.length >= 3 && margins[type] !== undefined) {
+                            if (margins[type] === null) {
+                                margins[type] = {
+                                    minDelay: sysMarg[0]["Delay (UI)"],
+                                    maxDelay: sysMarg[2]["Delay (UI)"],
+                                    minVref: sysMarg[1]["Min Vref (mV)"],
+                                    maxVref: sysMarg[1]["Max Vref (mV)"]
+                                };
+                            } else {
+                                if (sysMarg[0]["Delay (UI)"] > margins[type].minDelay) margins[type].minDelay = sysMarg[0]["Delay (UI)"];
+                                if (sysMarg[2]["Delay (UI)"] < margins[type].maxDelay) margins[type].maxDelay = sysMarg[2]["Delay (UI)"];
+                                if (sysMarg[1]["Min Vref (mV)"] > margins[type].minVref) margins[type].minVref = sysMarg[1]["Min Vref (mV)"];
+                                if (sysMarg[1]["Max Vref (mV)"] < margins[type].maxVref) margins[type].maxVref = sysMarg[1]["Max Vref (mV)"];
+                            }
                         }
                     }
                 });
@@ -496,7 +563,6 @@
             }
         }
 
-        // 【5. 繪製最終報表表格】
         function renderMainReport() {
             mainReportBody.innerHTML = '';
             
@@ -508,10 +574,11 @@
                     groups[g].push(f);
                 });
             } else {
-                groups["All Files"] = uploadedFiles;
+                uploadedFiles.forEach(f => {
+                    groups[f.name] = [f];
+                });
             }
 
-            // 🚨 【關鍵修復】: 將前一次出錯的 files]] 改正為正確的 files] 
             for (const [groupName, files] of Object.entries(groups)) {
                 if (files.length === 0) continue;
                 
