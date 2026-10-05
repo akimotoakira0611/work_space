@@ -15,28 +15,27 @@
         .menu-item:hover { background-color: #ffa500; color: #ffffff; }
         .menu-item.active { background-color: #00ff00; color: #ffffff; font-weight: bold; }
         
-        /* 💡 關鍵修復：將右側主區塊設定為 flex 容器，嚴格限制其高度不得超過 100vh */
         .main-content { 
             flex: 1; 
             background-color: #ffffff; 
             overflow: hidden; 
-            display: flex;           /* 新增此行 */
-            flex-direction: column;  /* 新增此行 */
+            display: flex;           
+            flex-direction: column;  
         }
         
-        /* 💡 關鍵修復：讓 iframe 絕對服從父元素的尺寸，內部網頁才能正常產生自己的卷軸 */
         .content-frame { 
-            flex: 1;                 /* 新增此行 */
+            flex: 1;                 
             width: 100%; 
             height: 100%; 
             border: none; 
-            display: block;          /* 新增此行 */
+            display: block;          
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo">Howard Space<br><span>v1.0.4</span></div>
+        <!-- 💡 更新版本號為 v1.0.5 以標示加入了 Detail 版本 -->
+        <div class="logo">Howard Space<br><span>v1.0.5</span></div>
 
         <div class="menu-group">
             <div class="menu-title">Homepage</div>
@@ -45,8 +44,10 @@
 
         <div class="menu-group">
             <div class="menu-title">Tool</div>
-            <!-- 💡 檔案名稱已更新為 sp7-mmt-analyzer.html -->
+            <!-- 原本的 SP7 總表分析器 -->
             <a href="sp7-mmt-analyzer.html" target="content_frame" class="menu-item sub-menu-item">SP7-MMT-Analyst</a>
+            <!-- 💡 新增的 SP7 明細分析器 (連向新建立的檔案) -->
+            <a href="SP7-MMT-Detail-Analyst.html" target="content_frame" class="menu-item sub-menu-item">SP7-MMT-Detail-Analyst</a>
         </div>
     </div>
 
