@@ -8,19 +8,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 💡 新增：引入 Plotly.js，用來繪製專業的折線圖與盒鬚圖 (Box Plot) -->
+    <!-- 引入 Plotly.js，繪製專業折線圖與盒鬚圖 -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <!-- 引入 html2canvas 與 SheetJS (匯出功能) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
+    <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
         body { font-family: 'Calibri', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #f3f4f6; font-size: 13px; }
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         
-        /* 表格樣式 */
-        .table-header { background-color: #f8fafc; font-size: 12px; text-transform: uppercase; font-weight: 700; color: #475569; border: 1px solid #cbd5e1; padding: 0.5rem; }
+        /* 報表表格樣式 */
+        .table-header { background-color: #e2e8f0; font-size: 12px; text-transform: uppercase; font-weight: 700; color: #475569; border: 1px solid #cbd5e1; padding: 0.5rem; background-clip: padding-box; }
         .table-cell { font-size: 13px; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.4rem; font-weight: 500;}
         
         .criteria-input { width: 42px; padding: 2px 0; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; text-align: center; outline: none; }
@@ -28,12 +29,11 @@
         .criteria-input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border-color: #e5e7eb; }
         .criteria-input::-webkit-outer-spin-button, .criteria-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 數值顏色標示 */
         .val-green { color: #15803d; font-weight: 700; } 
         .val-orange { color: #d97706; font-weight: 700; } 
         .val-red { color: #dc2626; font-weight: 700; } 
         
-        /* 💡 標籤按鈕群組 (Toggle Group) 的自訂樣式 */
+        /* 標籤按鈕群組 (Toggle Group) 樣式 */
         .toggle-btn { padding: 4px 16px; border: 1px solid #cbd5e1; background-color: #ffffff; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .toggle-btn:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
         .toggle-btn:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-left: none; }
@@ -47,8 +47,7 @@
 </head>
 <body class="h-screen flex overflow-hidden">
     
-    <!-- ================= 左側控制面板 ================= -->
-    <!-- (這裡的程式碼與原本完全相同，維持一致的操作體驗) -->
+    <!-- ================= 左側控制面板 (Sidebar) ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm shrink-0">
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7 Detail Analyst</h1>
@@ -129,16 +128,17 @@
         
         <div class="p-4 border-t border-gray-200 bg-white">
             <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow transition-colors flex items-center justify-center">
-                <i class="fa-solid fa-chart-line mr-2"></i> Update Dashboard
+                <i class="fa-solid fa-chart-line mr-2"></i> Generate All
             </button>
         </div>
     </aside>
 
-    <!-- ================= 右側主要報表顯示區 (Dashboard) ================= -->
-    <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-4 block">
+    <!-- ================= 右側主要報表顯示區 ================= -->
+    <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block" id="reportContainer">
         
-        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-magnifying-glass-chart text-blue-500 mr-2"></i>Per-UMC / Per-Rank Detail</h2>
+        <!-- 全域匯出與標題區 -->
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-layer-group text-blue-500 mr-2"></i>Comprehensive Analyst</h2>
             <div class="space-x-2">
                 <button id="exportPngBtn" class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700 transition-colors">
                     <i class="fa-regular fa-image mr-1 text-purple-600"></i>Export PNG
@@ -149,11 +149,52 @@
             </div>
         </div>
 
-        <!-- 💡 控制面板：用來切換圖表要顯示的 項目、指標、以及圖表種類 -->
+        <!-- 💡 Part 1: Margin Report (原本的總表功能) -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600 flex justify-between items-center">
+                <div><i class="fa-solid fa-file-lines text-red-500 mr-2"></i><strong>Summary Margin Report</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong></div>
+            </div>
+            <div class="overflow-x-auto relative p-0 bg-white">
+                <table class="w-full border-collapse" id="mainReportTable">
+                    <thead class="bg-gray-200 shadow-sm">
+                        <tr>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Type</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Size</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">MB / Group</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
+                            <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
+                            <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
+                        </tr>
+                        <tr>
+                            <th class="table-header border border-gray-300 py-1">Min Vref</th>
+                            <th class="table-header border border-gray-300 py-1">Max Vref</th>
+                            <th class="table-header border border-gray-300 py-1">Total Vref</th>
+                            <th class="table-header border border-gray-300 py-1">Min Delay</th>
+                            <th class="table-header border border-gray-300 py-1">Max Delay</th>
+                            <th class="table-header border border-gray-300 py-1">Total Delay</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mainReportBody">
+                        <tr>
+                            <td colspan="17" class="text-center text-gray-400 py-10 text-sm">Please generate report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 💡 Part 2: Per-UMC / Per-Rank Detail (圖表與明細區塊) -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div class="flex flex-col gap-4">
-                
-                <!-- 第一排：Quadrant (測試項目) -->
+            <h3 class="font-bold text-gray-700 text-sm mb-4"><i class="fa-solid fa-magnifying-glass-chart text-blue-500 mr-2"></i>Per-UMC / Per-Rank Dashboard</h3>
+            
+            <div class="flex flex-col gap-4 mb-4">
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-bold text-gray-500 w-16">Quadrant:</span>
                     <div class="flex" id="quadrantToggleGroup">
@@ -163,8 +204,6 @@
                         <button class="toggle-btn" data-val="CS">CS</button>
                     </div>
                 </div>
-
-                <!-- 第二排：Metric (要查看的指標) -->
                 <div class="flex items-center gap-3">
                     <span class="text-xs font-bold text-gray-500 w-16">Metric:</span>
                     <div class="flex" id="metricToggleGroup">
@@ -174,36 +213,32 @@
                         <button class="toggle-btn" data-val="minVref">Min Vref</button>
                     </div>
                 </div>
-
-                <!-- 第三排：Chart Type (圖表種類) -->
                 <div class="flex items-center gap-3">
-                    <span class="text-xs font-bold text-gray-500 w-16">Chart Type:</span>
+                    <span class="text-xs font-bold text-gray-500 w-16">Chart:</span>
                     <div class="flex" id="chartTypeToggleGroup">
                         <button class="toggle-btn active" data-val="line"><i class="fa-solid fa-chart-line mr-1 text-blue-500"></i>Line Chart</button>
                         <button class="toggle-btn" data-val="box"><i class="fa-solid fa-boxes-stacked mr-1 text-orange-500"></i>Box Plot</button>
                     </div>
                 </div>
-
             </div>
             
-            <!-- 💡 圖表繪製區塊 (交給 Plotly.js 渲染) -->
-            <div id="chartContainer" class="w-full h-[400px] mt-6 border-t border-gray-100 pt-4"></div>
-        </div>
-
-        <!-- 💡 下方的資料明細 Table 區塊 -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center gap-3">
-                <span class="font-bold text-gray-700 text-sm">Table - Source Filter:</span>
-                <!-- 這個下拉選單會動態塞入 "All Data" 以及你上傳的所有檔案與群組名稱 -->
-                <select id="tableSourceFilter" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]">
-                    <option value="all">-- Show All Data --</option>
-                </select>
+            <!-- Plotly 圖表繪製區 -->
+            <div id="chartContainer" class="w-full h-[350px] border-t border-gray-100 pt-4"></div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-gray-700 text-sm">Table Source Filter:</span>
+                    <select id="tableSourceFilter" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]">
+                        <option value="all">-- Show All Data --</option>
+                    </select>
+                </div>
             </div>
             
-            <div class="overflow-x-auto relative p-0 bg-white">
+            <!-- Detail Table 區塊 -->
+            <div class="overflow-x-auto relative p-0 bg-white mt-4 border border-gray-200 rounded">
                 <table class="w-full border-collapse" id="detailReportTable">
-                    <thead class="sticky top-0 z-20 shadow-sm bg-white" id="detailReportHead">
-                        <!-- 表頭會由 JS 根據選取的 Quadrant 動態生成 -->
+                    <thead class="bg-gray-100 shadow-sm" id="detailReportHead">
+                        <!-- 表頭由 JS 動態生成 -->
                     </thead>
                     <tbody id="detailReportBody">
                         <tr><td colspan="8" class="text-center text-gray-400 py-10 text-sm">Please generate dashboard first.</td></tr>
@@ -211,9 +246,38 @@
                 </table>
             </div>
         </div>
+
+        <!-- 💡 Part 3: DIMM Information -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
+                <div class="flex items-center text-sm">
+                    <span class="mr-2 text-gray-600 text-xs">File:</span>
+                    <select id="dimmFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]">
+                        <option value="">-- Select a file --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="overflow-x-auto relative p-0 bg-white">
+                <table class="w-full border-collapse text-sm text-center">
+                    <thead class="shadow-sm bg-gray-100">
+                        <tr class="text-gray-600 text-xs uppercase">
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Position (Bank Locator)</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Manufacturer</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Part Number</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100">Serial Number</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 text-right">Speed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dimmInfoBody">
+                        <tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
-    <!-- Modal 彈出視窗 (補齊資訊，不影響主功能先隱藏處理即可) -->
+    <!-- Modal 彈出視窗 -->
     <div id="infoModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl w-96 overflow-hidden">
             <div class="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
@@ -221,47 +285,39 @@
                 <button onclick="closeModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="p-6 text-center text-sm text-gray-600">
-                Data parsing is ready. Generating Dashboard...
+                Data parsing completed. Preparing your comprehensive report...
             </div>
             <div class="bg-gray-50 p-4 border-t flex justify-center">
-                <button onclick="submitModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded text-sm w-full">Draw Charts</button>
+                <button onclick="submitModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded text-sm w-full">Generate Now</button>
             </div>
         </div>
     </div>
 
     <!-- ================= JavaScript 邏輯核心 ================= -->
     <script>
-        // 【1. 系統全域變數與控制狀態】
         let uploadedFiles = []; 
         let groupMode = false;  
         let definedGroups = []; 
         let currentCriteria = {}; 
         
-        // 💡 紀錄儀表板目前的選擇狀態 (預設看 Read 的 Max Delay 折線圖)
-        let dashState = {
-            quadrant: 'Read',
-            metric: 'maxDelay',
-            chartType: 'line',
-            tableSource: 'all'
-        };
+        let dashState = { quadrant: 'Read', metric: 'maxDelay', chartType: 'line', tableSource: 'all' };
 
-        // 門檻值資料庫
         const presetData = {
             "6400": { Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9}, Write: {vMax: 71, vMin: -60, dMax: 10, dMin: -10}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
             "8000": { Read: {vMax: 70, vMin: -50, dMax: 10, dMin: -8}, Write: {vMax: 60, vMin: -49, dMax: 8, dMin: -8}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
             "12800": { Read: {vMax: 45, vMin: -45, dMax: 6, dMin: -6}, Write: {vMax: 49, vMin: -49, dMax: 6, dMin: -6}, CA: {vMax: 60, vMin: -60, dMax: 7, dMin: -7}, CS: {vMax: 200, vMin: -200, dMax: 40, dMin: -40} }
         };
 
-        // UI 綁定
         const presetBtns = document.querySelectorAll('.preset-btn');
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
-        
+        let currentPresetLabel = "Custom"; 
+
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 presetBtns.forEach(b => { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('bg-gray-200', 'text-gray-700'); });
                 e.target.classList.remove('bg-gray-200', 'text-gray-700'); e.target.classList.add('bg-blue-600', 'text-white');
                 const mode = e.target.getAttribute('data-preset');
-                
+                currentPresetLabel = e.target.innerText; 
                 if (mode === 'custom') {
                     allCriteriaInputs.forEach(input => { input.readOnly = false; input.value = ""; });
                 } else {
@@ -277,20 +333,14 @@
             });
         });
 
-        // 💡 【按鈕群組綁定邏輯】處理 Quadrant, Metric, Chart Type 的切換
         function setupToggleGroup(groupId, stateKey) {
-            const container = document.getElementById(groupId);
-            const btns = container.querySelectorAll('.toggle-btn');
+            const btns = document.getElementById(groupId).querySelectorAll('.toggle-btn');
             btns.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     btns.forEach(b => b.classList.remove('active'));
                     e.target.classList.add('active');
                     dashState[stateKey] = e.target.getAttribute('data-val');
-                    
-                    // 只要一切換，立刻重繪圖表與表格！
-                    if(uploadedFiles.length > 0) {
-                        renderDashboard();
-                    }
+                    if(uploadedFiles.length > 0) { drawPlotlyChart(); renderDetailTable(); }
                 });
             });
         }
@@ -298,7 +348,6 @@
         setupToggleGroup('metricToggleGroup', 'metric');
         setupToggleGroup('chartTypeToggleGroup', 'chartType');
 
-        // 表格來源 Filter 綁定
         document.getElementById('tableSourceFilter').addEventListener('change', (e) => {
             dashState.tableSource = e.target.value;
             if(uploadedFiles.length > 0) renderDetailTable();
@@ -308,17 +357,20 @@
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
         const generateBtn = document.getElementById('generateBtn');
+        const infoModal = document.getElementById('infoModal');
+        const dimmFileSelect = document.getElementById('dimmFileSelect');
 
-        // 上傳與群組管理 (沿用上一版)
         document.getElementById('groupModeToggle').addEventListener('change', (e) => {
             groupMode = e.target.checked;
             document.getElementById('groupManagerContainer').classList.toggle('hidden', !groupMode);
             renderFileList(); updateTableFilterOptions();
         });
+
         document.getElementById('addGroupBtn').addEventListener('click', () => {
             definedGroups.push("Group " + String.fromCharCode(65 + definedGroups.length));
             renderGroupManager(); renderFileList(); updateTableFilterOptions();
         });
+
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
             document.getElementById('noGroupsMsg').classList.toggle('hidden', definedGroups.length > 0);
@@ -327,7 +379,7 @@
                 gl.innerHTML += `<div class="flex items-center gap-2"><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)"><button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button></div>`;
             });
         }
-        window.updateDefinedGroup = function(idx, val) { let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList(); updateTableFilterOptions(); }
+        window.updateDefinedGroup = function(idx, val) { definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === definedGroups[idx]) f.group = val; }); renderFileList(); updateTableFilterOptions(); }
         window.removeDefinedGroup = function(idx) { let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList(); updateTableFilterOptions(); }
 
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
@@ -345,11 +397,10 @@
                     const json = JSON.parse(text); 
                     const parsedData = extractMmtData(json); 
                     uploadedFiles.push({ id: 'file_' + Date.now() + '_' + i, name: file.name, group: (groupMode && definedGroups.length > 0) ? definedGroups[0] : "", data: parsedData });
-                } catch (e) { alert(`Error parsing ${file.name}`); }
+                } catch (e) { alert(`Error parsing ${file.name}`); console.error(e); }
             }
             fileInput.value = ''; 
-            renderFileList();
-            updateTableFilterOptions();
+            renderFileList(); updateTableFilterOptions(); updateDimmSelect();
         }
 
         function renderFileList() {
@@ -368,57 +419,104 @@
             });
         }
 
-        window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); updateTableFilterOptions(); }
+        window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); updateTableFilterOptions(); updateDimmSelect(); }
         window.updateGroup = function(idx, val) { uploadedFiles[idx].group = val; updateTableFilterOptions(); }
 
-        // 更新下拉選單的選項
         function updateTableFilterOptions() {
             const sel = document.getElementById('tableSourceFilter');
             let currentVal = sel.value;
             sel.innerHTML = '<option value="all">-- Show All Data --</option>';
-            
             if (groupMode) {
                 let activeGroups = [...new Set(uploadedFiles.map(f => f.group).filter(g => g))];
                 activeGroups.forEach(g => { sel.innerHTML += `<option value="group||${g}">Group: ${g}</option>`; });
             }
             uploadedFiles.forEach(f => { sel.innerHTML += `<option value="file||${f.id}">File: ${f.name}</option>`; });
-            
-            // 嘗試維持原本的選擇
-            let found = Array.from(sel.options).some(opt => opt.value === currentVal);
-            if(found) sel.value = currentVal;
-            else dashState.tableSource = 'all';
+            if(Array.from(sel.options).some(opt => opt.value === currentVal)) sel.value = currentVal; else dashState.tableSource = 'all';
+        }
+
+        dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
+        function updateDimmSelect() {
+            dimmFileSelect.innerHTML = '<option value="">-- Select a file --</option>';
+            uploadedFiles.forEach(f => { const opt = document.createElement('option'); opt.value = f.id; opt.textContent = f.name; dimmFileSelect.appendChild(opt); });
+            renderDimmInfo("");
+        }
+        window.renderDimmInfo = function(fileId) {
+            const tbody = document.getElementById('dimmInfoBody');
+            if(!fileId) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>'; return; }
+            const file = uploadedFiles.find(f => f.id === fileId);
+            if(!file || !file.data.dimms) return;
+            tbody.innerHTML = '';
+            file.data.dimms.forEach(dimm => {
+                tbody.innerHTML += `<tr class="border-b border-gray-100 hover:bg-gray-50"><td class="p-2">${dimm.locator}</td><td class="p-2">${dimm.mfg}</td><td class="p-2">${dimm.part}</td><td class="p-2">${dimm.sn}</td><td class="p-2 text-right">${dimm.speed}</td></tr>`;
+            });
         }
 
         // =========================================================================
-        // 【核心提取邏輯】精準提取字典，並確保 UMC/Rank 的順序自然排序
+        // 💡 【雙核提取引擎：同時產出 summaryRecords (總表用) 與 rawRecords (細節用)】
         // =========================================================================
         function extractMmtData(json) {
-            let rawRecords = {}; 
+            let dimms = [];
+            let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
+            
+            if(json["Memory Configuration Info"] && json["Memory Configuration Info"].frequency) speeds.add(json["Memory Configuration Info"].frequency);
+            if(json.DMI_Details) {
+                if(json.DMI_Details["Processor Details"] && json.DMI_Details["Processor Details"].length > 0) { cpus.add(json.DMI_Details["Processor Details"][0].Package || "-"); }
+                if(json.DMI_Details["Memory Details"]) {
+                    json.DMI_Details["Memory Details"].forEach(mem => {
+                        dimms.push({ locator: mem["Bank Locator"] || "-", mfg: mem["Manufacturer"] || "-", part: mem["Part Number"] ? mem["Part Number"].trim() : "-", sn: mem["Serial Number"] || "-", speed: mem["Configured Memory Speed"] || "-" });
+                        if(mem["Manufacturer"]) vendors.add(mem["Manufacturer"]);
+                        if(mem["Part Number"]) parts.add(mem["Part Number"].trim());
+                    });
+                }
+            }
+            
+            let rawRecords = {}; // 負責紀錄每一個 UMC/Rank 的詳細測試數據
+            let summaryRecords = { Read: null, Write: null, CA: null, CS: null }; // 負責記錄該檔案的最嚴苛極端值
             
             if(json["Margin Results"]) {
                 Object.values(json["Margin Results"]).forEach(res => {
                     if(res.output && res.output.systemmargin) {
                         const type = res.output["bus type"]; 
-                        
-                        let target = res.output.Target || res.output.target || res.output.UMC || res.output.Channel || "Unknown";
+                        // 支援多種常見 MMT JSON 標籤
+                        let target = res.output.Target || res.output.target || res.output.UMC || res.output.Channel || res.output.Instance || "Unknown";
                         let rank = res.output.Rank !== undefined ? `R${res.output.Rank}` : (res.output["Target Rank"] !== undefined ? `R${res.output["Target Rank"]}` : "");
                         let umcRank = `${target} ${rank}`.trim(); 
 
-                        if (!rawRecords[umcRank]) rawRecords[umcRank] = { Read: null, Write: null, CA: null, CS: null };
+                        if (!rawRecords[umcRank]) rawRecords[umcRank] = {};
                         
                         const sysMarg = res.output.systemmargin;
                         if(sysMarg.length >= 3) {
-                            rawRecords[umcRank][type] = {
-                                minDelay: sysMarg[0]["Delay (UI)"] !== null ? parseFloat(sysMarg[0]["Delay (UI)"]) : null,
-                                maxDelay: sysMarg[2]["Delay (UI)"] !== null ? parseFloat(sysMarg[2]["Delay (UI)"]) : null,
-                                minVref: sysMarg[1]["Min Vref (mV)"] !== null ? parseFloat(sysMarg[1]["Min Vref (mV)"]) : null,
-                                maxVref: sysMarg[1]["Max Vref (mV)"] !== null ? parseFloat(sysMarg[1]["Max Vref (mV)"]) : null
-                            };
+                            let minD = sysMarg[0]["Delay (UI)"] !== null && sysMarg[0]["Delay (UI)"] !== undefined ? parseFloat(sysMarg[0]["Delay (UI)"]) : null;
+                            let maxD = sysMarg[2]["Delay (UI)"] !== null && sysMarg[2]["Delay (UI)"] !== undefined ? parseFloat(sysMarg[2]["Delay (UI)"]) : null;
+                            let minV = sysMarg[1]["Min Vref (mV)"] !== null && sysMarg[1]["Min Vref (mV)"] !== undefined ? parseFloat(sysMarg[1]["Min Vref (mV)"]) : null;
+                            let maxV = sysMarg[1]["Max Vref (mV)"] !== null && sysMarg[1]["Max Vref (mV)"] !== undefined ? parseFloat(sysMarg[1]["Max Vref (mV)"]) : null;
+
+                            // 儲存至 rawRecords (Detail Table 與 Chart 使用)
+                            if (!rawRecords[umcRank][type]) {
+                                rawRecords[umcRank][type] = { minDelay: minD, maxDelay: maxD, minVref: minV, maxVref: maxV };
+                            } else {
+                                let ex = rawRecords[umcRank][type];
+                                if (minD !== null && (ex.minDelay === null || minD > ex.minDelay)) ex.minDelay = minD;
+                                if (maxD !== null && (ex.maxDelay === null || maxD < ex.maxDelay)) ex.maxDelay = maxD;
+                                if (minV !== null && (ex.minVref === null || minV > ex.minVref)) ex.minVref = minV;
+                                if (maxV !== null && (ex.maxVref === null || maxV < ex.maxVref)) ex.maxVref = maxV;
+                            }
+
+                            // 儲存至 summaryRecords (Margin Report 總表使用，聚合最差邊界)
+                            if (!summaryRecords[type]) {
+                                summaryRecords[type] = { minDelay: minD, maxDelay: maxD, minVref: minV, maxVref: maxV };
+                            } else {
+                                let sumEx = summaryRecords[type];
+                                if (minD !== null && (sumEx.minDelay === null || minD > sumEx.minDelay)) sumEx.minDelay = minD;
+                                if (maxD !== null && (sumEx.maxDelay === null || maxD < sumEx.maxDelay)) sumEx.maxDelay = maxD;
+                                if (minV !== null && (sumEx.minVref === null || minV > sumEx.minVref)) sumEx.minVref = minV;
+                                if (maxV !== null && (sumEx.maxVref === null || maxV < sumEx.maxVref)) sumEx.maxVref = maxV;
+                            }
                         }
                     }
                 });
             }
-            return { rawRecords }; 
+            return { dimms, vendors: Array.from(vendors).join(", ") || "-", parts: Array.from(parts).join("<br>") || "-", cpu: Array.from(cpus).join(", ") || "-", speed: Array.from(speeds).join(", ") || "-", rawRecords, summaryRecords }; 
         }
 
         function updateCriteria() {
@@ -431,27 +529,161 @@
             };
         }
 
-        // =========================================================================
-        // 【Dashboard 渲染引擊】統籌圖表與表格的更新
-        // =========================================================================
+        function getColorClass(val, limit, isMax) {
+            if (val === null || val === undefined || isNaN(val)) return "";
+            if (isNaN(limit)) return ""; 
+            let safeLimit = limit * 1.05;
+            if (isMax) {
+                if (val >= safeLimit) return "val-green"; 
+                if (val >= limit) return "val-orange";    
+                return "val-red";                         
+            } else {
+                if (val <= safeLimit) return "val-green";
+                if (val <= limit) return "val-orange";
+                return "val-red";
+            }
+        }
+
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
             updateCriteria(); 
-            infoModal.classList.add('active'); // 跳出 Modal
+            infoModal.classList.add('active'); 
         });
         function closeModal() { infoModal.classList.remove('active'); }
         function submitModal() {
             closeModal();
-            renderDashboard(); // 開始渲染
-        }
-
-        function renderDashboard() {
-            updateCriteria();
+            renderSummaryReport();
             drawPlotlyChart();
             renderDetailTable();
         }
 
-        // 取得過濾後的檔案清單
+        // =========================================================================
+        // 【8-1. 繪製 Margin Report (原本的合併大總表)】
+        // =========================================================================
+        function renderSummaryReport() {
+            const tbody = document.getElementById('mainReportBody');
+            tbody.innerHTML = '';
+            document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
+
+            let groups = {};
+            if (groupMode) {
+                uploadedFiles.forEach(f => { const g = f.group || "Ungrouped"; if(!groups[g]) groups[g] = []; groups[g].push(f); });
+            } else {
+                // 若未開啟 Group，將每一份檔案獨立成為一筆報表
+                uploadedFiles.forEach(f => { groups[f.name] = [f]; });
+            }
+
+            for (const [groupName, files] of Object.entries(groups)) {
+                if (files.length === 0) continue;
+                
+                let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
+                let agg = {
+                    Read: { minDelay: -Infinity, maxDelay: Infinity, minVref: -Infinity, maxVref: Infinity },
+                    Write: { minDelay: -Infinity, maxDelay: Infinity, minVref: -Infinity, maxVref: Infinity },
+                    CA: { minDelay: -Infinity, maxDelay: Infinity, minVref: -Infinity, maxVref: Infinity },
+                    CS: { minDelay: -Infinity, maxDelay: Infinity, minVref: -Infinity, maxVref: Infinity }
+                };
+                let hasAnyData = { Read: false, Write: false, CA: false, CS: false };
+
+                files.forEach(f => {
+                    if(f.data.vendors && f.data.vendors !== "-") f.data.vendors.split(", ").forEach(v => vendors.add(v));
+                    if(f.data.parts && f.data.parts !== "-") f.data.parts.split("<br>").forEach(p => parts.add(p));
+                    if(f.data.cpu !== "-") cpus.add(f.data.cpu);
+                    if(f.data.speed !== "-") speeds.add(f.data.speed);
+
+                    // 聚合該群組/檔案內的最差數值
+                    ["Read", "Write", "CA", "CS"].forEach(bt => {
+                        let sum = f.data.summaryRecords[bt];
+                        if (sum) {
+                            hasAnyData[bt] = true;
+                            if (sum.maxDelay !== null && sum.maxDelay < agg[bt].maxDelay) agg[bt].maxDelay = sum.maxDelay;
+                            if (sum.minDelay !== null && sum.minDelay > agg[bt].minDelay) agg[bt].minDelay = sum.minDelay;
+                            if (sum.maxVref !== null && sum.maxVref < agg[bt].maxVref) agg[bt].maxVref = sum.maxVref;
+                            if (sum.minVref !== null && sum.minVref > agg[bt].minVref) agg[bt].minVref = sum.minVref;
+                        }
+                    });
+                });
+
+                ["Read", "Write", "CA", "CS"].forEach(bt => {
+                    if (!hasAnyData[bt]) agg[bt] = null;
+                    else {
+                        if (agg[bt].maxDelay === Infinity) agg[bt].maxDelay = null;
+                        if (agg[bt].minDelay === -Infinity) agg[bt].minDelay = null;
+                        if (agg[bt].maxVref === Infinity) agg[bt].maxVref = null;
+                        if (agg[bt].minVref === -Infinity) agg[bt].minVref = null;
+                    }
+                });
+
+                let vStr = Array.from(vendors).join(", ") || "-";
+                let pStr = Array.from(parts).join("<br>") || "-";
+                let cpuStr = Array.from(cpus).join(", ") || "-";
+                let speedStr = Array.from(speeds).join(", ") || "-";
+                let groupMb = groupMode ? groupName : "All Files"; // 獨立模式下顯示 All Files
+
+                let isFirstOverallRow = true;
+
+                ["Read", "Write", "CA", "CS"].forEach((bt, idx) => {
+                    if(!agg[bt]) return;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-100 hover:bg-gray-50/70";
+                    if (idx === 3) tr.className = "border-b border-gray-300 hover:bg-gray-50/70";
+                    if (isFirstOverallRow) tr.classList.add("border-t-[3px]", "border-gray-400");
+
+                    let html = "";
+                    if (isFirstOverallRow) {
+                        html += `
+                            <td rowspan="4" class="table-cell font-medium align-middle bg-white">${vStr}</td>
+                            <td rowspan="4" class="table-cell align-middle bg-white">-</td>
+                            <td rowspan="4" class="table-cell text-[10px] leading-tight text-left pl-2 align-middle bg-white">${pStr}</td>
+                            <td rowspan="4" class="table-cell align-middle bg-white">-</td>
+                            <td rowspan="4" class="table-cell align-middle bg-white">-</td>
+                            <td rowspan="4" class="table-cell align-middle bg-white">${speedStr}</td>
+                            <td rowspan="4" class="table-cell align-middle bg-white">-</td>
+                            <td rowspan="4" class="table-cell align-middle bg-white">${cpuStr}</td>
+                            <td rowspan="4" class="table-cell font-bold text-blue-800 align-middle bg-white">${groupMb}</td>
+                        `;
+                    }
+                    
+                    html += `<td class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
+                    
+                    let minV = agg[bt].minVref;
+                    let maxV = agg[bt].maxVref;
+                    let minD = agg[bt].minDelay;
+                    let maxD = agg[bt].maxDelay;
+                    let crit = currentCriteria[bt];
+                    
+                    let totV = (maxV !== null && minV !== null) ? (maxV - minV).toFixed(2) : "-";
+                    let totD = (maxD !== null && minD !== null) ? (maxD - minD).toFixed(2) : "-";
+                    
+                    let minV_html = minV !== null ? `<span class="${getColorClass(minV, crit.vMin, false)}">${minV.toFixed(2)}</span>` : "-";
+                    let maxV_html = maxV !== null ? `<span class="${getColorClass(maxV, crit.vMax, true)}">${maxV.toFixed(2)}</span>` : "-";
+                    let minD_html = minD !== null ? `<span class="${getColorClass(minD, crit.dMin, false)}">${minD.toFixed(2)}</span>` : "-";
+                    let maxD_html = maxD !== null ? `<span class="${getColorClass(maxD, crit.dMax, true)}">${maxD.toFixed(2)}</span>` : "-";
+                    
+                    html += `
+                        <td class="table-cell">${minV_html}</td>
+                        <td class="table-cell">${maxV_html}</td>
+                        <td class="table-cell bg-green-50/20 font-bold text-green-700">${totV}</td>
+                        <td class="table-cell">${minD_html}</td>
+                        <td class="table-cell">${maxD_html}</td>
+                        <td class="table-cell bg-green-50/20 font-bold text-green-700">${totD}</td>
+                    `;
+                    
+                    if (isFirstOverallRow) {
+                        html += `<td rowspan="4" class="table-cell align-middle bg-white text-gray-400 text-xs"></td>`;
+                        isFirstOverallRow = false; 
+                    }
+                    
+                    tr.innerHTML = html;
+                    tbody.appendChild(tr); 
+                });
+            }
+        }
+
+        // =========================================================================
+        // 【8-2. 繪製 Dashboard (圖表與明細表)】
+        // =========================================================================
         function getFilteredFiles() {
             if (dashState.tableSource === 'all') return uploadedFiles;
             let parts = dashState.tableSource.split('||');
@@ -460,23 +692,18 @@
             return uploadedFiles;
         }
 
-        // 收集目前所有檔案擁有的 UMC/Rank 鍵值並自然排序 (例如 P0-A-A 排在 P0-B-A 前面)
         function getSortedUmcKeys(files) {
             let keys = new Set();
             files.forEach(f => Object.keys(f.data.rawRecords).forEach(k => keys.add(k)));
             return Array.from(keys).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
         }
 
-        // 💡 【繪製 Plotly 圖表】
         function drawPlotlyChart() {
             const container = document.getElementById('chartContainer');
-            const q = dashState.quadrant; // Read, Write...
-            const m = dashState.metric; // maxDelay, minVref...
+            const q = dashState.quadrant; 
+            const m = dashState.metric; 
             
-            // 決定這個指標是尋找最大值還是最小值 (決定是否為紅色警戒線)
             const isMaxMetric = (m === 'maxDelay' || m === 'maxVref');
-            
-            // 抓出對應的 Criteria 門檻值做為紅線標準
             let limitValue = null;
             if (m === 'maxDelay') limitValue = currentCriteria[q].dMax;
             if (m === 'minDelay') limitValue = currentCriteria[q].dMin;
@@ -494,7 +721,6 @@
             let traces = [];
 
             if (dashState.chartType === 'line') {
-                // 💡 Line Chart: 每一條線代表一個上傳的檔案
                 files.forEach(f => {
                     let yValues = xCategories.map(x => {
                         let item = f.data.rawRecords[x];
@@ -502,91 +728,50 @@
                     });
                     
                     traces.push({
-                        x: xCategories,
-                        y: yValues,
-                        mode: 'lines+markers',
+                        x: xCategories, y: yValues, mode: 'lines+markers',
                         name: f.name.substring(0, 20) + '...',
-                        line: { shape: 'spline', smoothing: 0.3 }, // 讓線條稍微平滑
-                        marker: { size: 6 }
+                        line: { shape: 'spline', smoothing: 0.3 }, marker: { size: 6 }
                     });
                 });
             } else {
-                // 💡 Box Plot: 依照群組畫出盒鬚圖 (若無群組，則視為一個 All Data 的大盒鬚)
                 let groupingDict = {};
-                if (groupMode) {
-                    files.forEach(f => { let g = f.group || "Ungrouped"; if(!groupingDict[g]) groupingDict[g] = []; groupingDict[g].push(f); });
-                } else {
-                    groupingDict["All Files"] = files;
-                }
+                if (groupMode) { files.forEach(f => { let g = f.group || "Ungrouped"; if(!groupingDict[g]) groupingDict[g] = []; groupingDict[g].push(f); }); } 
+                else { groupingDict["All Files"] = files; }
 
                 for (const [gName, gFiles] of Object.entries(groupingDict)) {
-                    let xData = [];
-                    let yData = [];
-                    // Boxplot 在 Plotly 的做法是給予一堆散落的 X 與 Y，它會自動將相同 X 的 Y 值裝進同一個箱子裡
+                    let xData = []; let yData = [];
                     gFiles.forEach(f => {
                         xCategories.forEach(x => {
                             let item = f.data.rawRecords[x];
-                            if (item && item[q] && !isNaN(item[q][m])) {
-                                xData.push(x);
-                                yData.push(item[q][m]);
-                            }
+                            if (item && item[q] && !isNaN(item[q][m])) { xData.push(x); yData.push(item[q][m]); }
                         });
                     });
-                    
-                    if (xData.length > 0) {
-                        traces.push({
-                            type: 'box',
-                            x: xData,
-                            y: yData,
-                            name: gName,
-                            boxpoints: 'all', // 顯示箱子旁邊所有的資料點
-                            jitter: 0.3,
-                            pointpos: -1.8
-                        });
-                    }
+                    if (xData.length > 0) traces.push({ type: 'box', x: xData, y: yData, name: gName, boxpoints: 'all', jitter: 0.3, pointpos: -1.8 });
                 }
             }
 
-            // 圖表排版設定
             let layout = {
                 margin: { l: 40, r: 20, t: 30, b: 60 },
                 xaxis: { tickangle: -45, tickfont: { size: 10, color: '#64748b' } },
                 yaxis: { title: `${dashState.metric} (${m.includes('Delay') ? 'UI' : 'mV'})` },
-                hovermode: 'closest',
-                showlegend: true,
-                legend: { orientation: 'h', y: 1.15 }
+                hovermode: 'closest', showlegend: true, legend: { orientation: 'h', y: 1.15 }
             };
 
-            // 如果有設定門檻值，畫一條紅色的虛線 (Pass Criteria)
             if (!isNaN(limitValue) && limitValue !== null) {
-                layout.shapes = [{
-                    type: 'line',
-                    xref: 'paper', x0: 0, x1: 1,
-                    yref: 'y', y0: limitValue, y1: limitValue,
-                    line: { color: '#ef4444', width: 2, dash: 'dash' }
-                }];
-                // 在右上角標示紅線的意義
-                layout.annotations = [{
-                    xref: 'paper', x: 1, yref: 'y', y: limitValue,
-                    xanchor: 'left', yanchor: 'middle',
-                    text: `Pass Criteria ${isMaxMetric ? '≥' : '≤'} ${limitValue}`,
-                    font: { color: '#ef4444', size: 10 },
-                    showarrow: false
-                }];
+                layout.shapes = [{ type: 'line', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: limitValue, y1: limitValue, line: { color: '#ef4444', width: 2, dash: 'dash' } }];
+                layout.annotations = [{ xref: 'paper', x: 1, yref: 'y', y: limitValue, xanchor: 'left', yanchor: 'middle', text: `Pass Criteria ${isMaxMetric ? '≥' : '≤'} ${limitValue}`, font: { color: '#ef4444', size: 10 }, showarrow: false }];
             }
 
             Plotly.newPlot(container, traces, layout, {responsive: true, displayModeBar: false});
         }
 
-        // 💡 【繪製對應的 Detail Table 實作】 (對齊你圖二的需求)
         function renderDetailTable() {
             const head = document.getElementById('detailReportHead');
             const tbody = document.getElementById('detailReportBody');
             
             const q = dashState.quadrant; 
-            const crit = currentCriteria[q]; // 取出當前 Quadrant 的 4 個門檻值
+            const crit = currentCriteria[q]; 
             
-            // 1. 動態建立表頭 (加上條件說明)
             let headHtml = `
                 <tr>
                     <th class="table-header text-left pl-4 py-3">UMC / Rank</th>
@@ -602,18 +787,12 @@
             head.innerHTML = headHtml;
 
             let files = getFilteredFiles();
-            if (files.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-sm">No data matching the filter.</td></tr>';
-                return;
-            }
+            if (files.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-sm">No data matching the filter.</td></tr>'; return; }
 
             let xCategories = getSortedUmcKeys(files);
             let bodyHtml = "";
 
-            // 走訪每一個 UMC/Rank (例如 P0-A-A R0)
             xCategories.forEach((umcKey, idx) => {
-                
-                // 為了在表格中彙整，我們需要找出這個 UMC 在所選檔案中的「最差表現 (Worst Case)」
                 let agg = { maxDelay: Infinity, minDelay: -Infinity, maxVref: Infinity, minVref: -Infinity };
                 let hasData = false;
 
@@ -621,7 +800,6 @@
                     let item = f.data.rawRecords[umcKey];
                     if (item && item[q]) {
                         let data = item[q];
-                        // 最嚴格邊界邏輯：Max 取最小 (眼圖上限越低越差)，Min 取最大 (眼圖下限越高越差)
                         if (data.maxDelay !== null && !isNaN(data.maxDelay)) { agg.maxDelay = Math.min(agg.maxDelay, data.maxDelay); hasData = true; }
                         if (data.minDelay !== null && !isNaN(data.minDelay)) { agg.minDelay = Math.max(agg.minDelay, data.minDelay); hasData = true; }
                         if (data.maxVref !== null && !isNaN(data.maxVref)) { agg.maxVref = Math.min(agg.maxVref, data.maxVref); hasData = true; }
@@ -629,19 +807,16 @@
                     }
                 });
 
-                if (!hasData) return; // 這個 UMC 在所有選中的檔案裡都沒這項測試資料
+                if (!hasData) return; 
 
-                // 轉回 null
                 if (agg.maxDelay === Infinity) agg.maxDelay = null;
                 if (agg.minDelay === -Infinity) agg.minDelay = null;
                 if (agg.maxVref === Infinity) agg.maxVref = null;
                 if (agg.minVref === -Infinity) agg.minVref = null;
 
-                // 2. 進行 Margin 運算與 Fail 診斷
                 let fails = [];
                 let margins = [];
 
-                // Margin % 運算輔助函式：正向 (大於門檻過關)
                 const calcMaxMargin = (val, limit, nameStr) => {
                     if (val === null || isNaN(limit)) return;
                     let pct = (val / limit) * 100;
@@ -649,7 +824,6 @@
                     if (val < limit) fails.push(`${nameStr} ${val} (Limit: ${limit})`);
                 };
                 
-                // Margin % 運算輔助函式：反向 (小於門檻過關，因數值為負，除以負數會得正百分比)
                 const calcMinMargin = (val, limit, nameStr) => {
                     if (val === null || isNaN(limit)) return;
                     let pct = (val / limit) * 100;
@@ -667,7 +841,6 @@
                 if (margins.length > 0) {
                     let worstMargin = Math.min(...margins);
                     worstMarginStr = worstMargin.toFixed(1) + "%";
-                    // 根據 Margin 給予顏色 (100% 以下紅色，105% 以內橘色，以上綠色)
                     if (worstMargin < 100) marginColorClass = "text-red-600 font-bold";
                     else if (worstMargin <= 105) marginColorClass = "text-orange-500 font-bold";
                     else marginColorClass = "text-green-600 font-bold";
@@ -684,7 +857,6 @@
                     }
                 }
 
-                // 產生 HTML 儲存格
                 let maxD_html = agg.maxDelay !== null ? `<span class="${getColorClass(agg.maxDelay, crit.dMax, true)}">${agg.maxDelay.toFixed(1)}</span>` : "-";
                 let minD_html = agg.minDelay !== null ? `<span class="${getColorClass(agg.minDelay, crit.dMin, false)}">${agg.minDelay.toFixed(1)}</span>` : "-";
                 let maxV_html = agg.maxVref !== null ? `<span class="${getColorClass(agg.maxVref, crit.vMax, true)}">${agg.maxVref.toFixed(1)}</span>` : "-";
@@ -713,12 +885,12 @@
         // 【10. 匯出功能】
         // =========================================================================
         document.getElementById('exportPngBtn').addEventListener('click', () => {
-            const tableElement = document.getElementById('detailReportTable');
-            if (!tableElement || uploadedFiles.length === 0) return alert("No data to export!");
+            const container = document.getElementById('reportContainer');
+            if (uploadedFiles.length === 0) return alert("No data to export!");
             
-            html2canvas(tableElement, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+            html2canvas(container, { scale: 2, backgroundColor: "#f3f4f6" }).then(canvas => {
                 const link = document.createElement('a'); 
-                link.download = `Detail_Margin_Report_${new Date().getTime()}.png`; 
+                link.download = `Comprehensive_Report_${new Date().getTime()}.png`; 
                 link.href = canvas.toDataURL('image/png'); 
                 link.click(); 
             });
@@ -727,11 +899,34 @@
         document.getElementById('exportExcelBtn').addEventListener('click', () => {
             if (uploadedFiles.length === 0) return alert("No data to export!");
 
-            const tableElement = document.getElementById('detailReportTable');
-            const wb1 = XLSX.utils.table_to_book(tableElement, { sheet: "Detail Report" });
-            XLSX.writeFile(wb1, `Detail_Margin_Report_${new Date().getTime()}.xlsx`);
-        });
+            const wb = XLSX.utils.book_new(); 
+            
+            // 匯出 Summary 表格
+            const summaryTable = document.getElementById('mainReportTable');
+            const ws1 = XLSX.utils.table_to_book(summaryTable, { sheet: "Summary Report" }).Sheets["Summary Report"];
+            XLSX.utils.book_append_sheet(wb, ws1, "Summary Report");
 
+            // 匯出 Detail 表格
+            const detailTable = document.getElementById('detailReportTable');
+            const ws2 = XLSX.utils.table_to_book(detailTable, { sheet: "Detail Report" }).Sheets["Detail Report"];
+            XLSX.utils.book_append_sheet(wb, ws2, "Detail Report");
+
+            // 匯出 DIMM 表格
+            uploadedFiles.forEach((file, index) => {
+                let wsData = [["Position (Bank Locator)", "Manufacturer", "Part Number", "Serial Number", "Speed"]];
+                if (file.data.dimms && file.data.dimms.length > 0) {
+                    file.data.dimms.forEach(dimm => { wsData.push([dimm.locator, dimm.mfg, dimm.part, dimm.sn, dimm.speed]); });
+                } else {
+                    wsData.push(["No DIMM info available", "-", "-", "-", "-"]);
+                }
+                let ws = XLSX.utils.aoa_to_sheet(wsData);
+                let safeName = file.name.substring(0, 20).replace(/[\\/?*\[\]:]/g, '');
+                let sheetName = `DIMM_${safeName}_${index + 1}`.substring(0, 31);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            
+            XLSX.writeFile(wb, `Comprehensive_Report_${new Date().getTime()}.xlsx`);
+        });
     </script>
 </body>
 </html>
