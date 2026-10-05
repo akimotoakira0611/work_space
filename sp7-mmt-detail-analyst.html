@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SP7-MMT-Detail-Analyst</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Font Awesome 圖標庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { 
+            font-family: 'Calibri', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+            background-color: #f3f4f6; 
+            font-size: 13px; 
+        }
+        
+        .sidebar-scroll::-webkit-scrollbar { width: 6px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        
+        .table-header { background-color: #e2e8f0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; border: 1px solid #cbd5e1; background-clip: padding-box; }
+        .table-cell { font-size: 13px; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.4rem; }
+        
+        .criteria-input { width: 42px; padding: 2px 0; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; text-align: center; outline: none; }
+        .criteria-input:focus { border-color: #3b82f6; }
+        .criteria-input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border-color: #e5e7eb; }
+        
+        .criteria-input::-webkit-outer-spin-button, .criteria-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .criteria-input[type=number] { -moz-appearance: textfield; }
+
+        .val-green { color: #15803d; font-weight: 600; } 
+        .val-orange { color: #d97706; font-weight: 600; } 
+        .val-red { color: #dc2626; font-weight: 600; } 
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
+        .modal.active { display: flex; } 
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+    
+    <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
+        <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Detail-Analyst</h1>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
+            <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-folder text-yellow-400 mr-2"></i>GROUP MODE</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="groupModeToggle" class="sr-only peer">
+                        <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="text-xs text-gray-600 mt-2 mb-1">Enable Group Mode</div>
+                <div id="groupManagerContainer" class="hidden flex flex-col gap-2">
+                    <div id="noGroupsMsg" class="text-center text-xs text-gray-400 py-1">No groups created</div>
+                    <div id="groupList" class="space-y-2"></div>
+                    <button id="addGroupBtn" class="w-full text-xs bg-white text-gray-700 hover:bg-gray-50 py-1.5 rounded border border-gray-300 transition-colors mt-1">
+                        + Add Group
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
+                <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-2"></i>
+                    <p class="text-xs text-gray-500">Drag & Drop MMT JSON files<br><span class="text-blue-500">or click to browse</span></p>
+                    <input type="file" id="fileInput" multiple accept=".json,.csv,.tsv" class="hidden">
+                </div>
+                <div id="fileList" class="mt-3 space-y-2"></div>
+            </div>
+
+            <div>
+                <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
+                <div class="grid grid-cols-2 gap-1.5 mb-2">
+                    <button class="bg-blue-600 text-white text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="custom">Custom</button>
+                    <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="6400">6400 RDIMM</button>
+                    <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="8000">8000 RDIMM</button>
+                    <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="12800">12800 MRDIMM</button>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+                    <div class="flex items-center pb-2 border-b border-gray-200">
+                        <span class="font-semibold text-gray-700 w-10">Item</span>
+                        <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
+                            <span class="w-[42px] text-center">V-Max</span>
+                            <span class="w-[42px] text-center">V-Min</span>
+                            <span class="w-[42px] text-center">D-Max</span>
+                            <span class="w-[42px] text-center">D-Min</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-blue-600 w-10">Read</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-read-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-read-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-read-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-read-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-green-600 w-10">Write</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-write-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-write-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-write-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-write-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-orange-500 w-10">CA</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-ca-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-purple-600 w-10">CS</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-cs-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-4 border-t border-gray-200 bg-white">
+            <button id="generateBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition-colors flex items-center justify-center">
+                <i class="fa-solid fa-file-invoice mr-2"></i> Generate Report
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
+        
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
+            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Margin Detail Report</h2>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
+                Analyzer: <strong>SP7-MMT-Detail-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
+            </div>
+            
+            <div class="overflow-x-auto relative p-0 bg-white">
+                <table class="w-full border-collapse" id="mainReportTable">
+                    <thead class="bg-gray-200 shadow-sm">
+                        <tr>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Type</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Size</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
+                            <!-- 💡 標題欄位調整 -->
+                            <th rowspan="2" class="table-header border border-gray-300 py-2 text-blue-800">UMC / Rank</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
+                            <th colspan="2" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
+                            <th colspan="2" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2 bg-yellow-50 text-yellow-800">Worst Margin %</th>
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">Status</th>
+                        </tr>
+                        <tr>
+                            <th class="table-header border border-gray-300 py-1">Min Vref</th>
+                            <th class="table-header border border-gray-300 py-1">Max Vref</th>
+                            <th class="table-header border border-gray-300 py-1">Min Delay</th>
+                            <th class="table-header border border-gray-300 py-1">Max Delay</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mainReportBody">
+                        <tr>
+                            <td colspan="17" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal 彈出視窗 -->
+    <div id="infoModal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl w-96 overflow-hidden">
+            <div class="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
+                <span><i class="fa-solid fa-circle-exclamation mr-2"></i>Missing Information</span>
+                <button onclick="closeModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-gray-600 mb-4">The following fields are not found in the JSON. Please provide them to complete the report.</p>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Agesa Code</label><input type="text" id="modal-agesa" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Type (e.g. RDIMM)</label><input type="text" id="modal-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Rank (e.g. 2R)</label><input type="text" id="modal-rank" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Size (e.g. 64GB)</label><input type="text" id="modal-size" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
+                <div id="modal-mb-container"><label class="block text-xs font-bold text-gray-700 mb-1">MB (Motherboard/System)</label><input type="text" id="modal-mb" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
+            </div>
+            <div class="bg-gray-50 p-4 border-t flex justify-end">
+                <button onclick="submitModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded text-sm">Continue to Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFiles = []; 
+        let groupMode = false;  
+        let definedGroups = []; 
+        let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "Test Data" };
+        let currentCriteria = {}; 
+
+        const presetData = {
+            "6400": { Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9}, Write: {vMax: 71, vMin: -60, dMax: 10, dMin: -10}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
+            "8000": { Read: {vMax: 70, vMin: -50, dMax: 10, dMin: -8}, Write: {vMax: 60, vMin: -49, dMax: 8, dMin: -8}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
+            "12800": { Read: {vMax: 45, vMin: -45, dMax: 6, dMin: -6}, Write: {vMax: 49, vMin: -49, dMax: 6, dMin: -6}, CA: {vMax: 60, vMin: -60, dMax: 7, dMin: -7}, CS: {vMax: 200, vMin: -200, dMax: 40, dMin: -40} }
+        };
+
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const allCriteriaInputs = document.querySelectorAll('.criteria-input');
+        let currentPresetLabel = "Custom"; 
+
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                presetBtns.forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white');
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                e.target.classList.remove('bg-gray-200', 'text-gray-700');
+                e.target.classList.add('bg-blue-600', 'text-white');
+
+                const mode = e.target.getAttribute('data-preset');
+                currentPresetLabel = e.target.innerText; 
+                
+                if (mode === 'custom') {
+                    allCriteriaInputs.forEach(input => { input.readOnly = false; input.value = ""; });
+                } else {
+                    const data = presetData[mode];
+                    ["Read", "Write", "CA", "CS"].forEach(t => {
+                        document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax;
+                        document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
+                        document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax;
+                        document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
+                    });
+                    allCriteriaInputs.forEach(input => input.readOnly = true);
+                }
+            });
+        });
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const groupModeToggle = document.getElementById('groupModeToggle');
+        const generateBtn = document.getElementById('generateBtn');
+        const mainReportBody = document.getElementById('mainReportBody');
+        const infoModal = document.getElementById('infoModal');
+        
+        function renderGroupManager() {
+            const gl = document.getElementById('groupList');
+            const msg = document.getElementById('noGroupsMsg');
+            gl.innerHTML = '';
+            if (definedGroups.length > 0) { msg.classList.add('hidden'); } else { msg.classList.remove('hidden'); }
+
+            definedGroups.forEach((grp, idx) => {
+                gl.innerHTML += `<div class="flex items-center gap-2"><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)"><button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button></div>`;
+            });
+        }
+
+        window.updateDefinedGroup = function(idx, val) {
+            let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList();
+        }
+        window.removeDefinedGroup = function(idx) {
+            let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList();
+        }
+
+        document.getElementById('addGroupBtn').addEventListener('click', () => {
+            definedGroups.push("Group " + String.fromCharCode(65 + definedGroups.length)); renderGroupManager(); renderFileList();
+        });
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('bg-blue-50', 'border-blue-400'); handleFiles(e.dataTransfer.files); });
+        dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        groupModeToggle.addEventListener('change', (e) => {
+            groupMode = e.target.checked;
+            if (groupMode) {
+                document.getElementById('groupManagerContainer').classList.remove('hidden'); renderGroupManager();
+                uploadedFiles.forEach(f => { if (!f.group && definedGroups.length > 0) f.group = definedGroups[0]; });
+            } else {
+                document.getElementById('groupManagerContainer').classList.add('hidden');
+            }
+            renderFileList();
+        });
+
+        generateBtn.addEventListener('click', () => {
+            if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
+            updateCriteria(); 
+            document.getElementById('modal-agesa').value = globalMissingInfo.agesa === "-" ? "" : globalMissingInfo.agesa;
+            document.getElementById('modal-type').value = globalMissingInfo.type === "-" ? "" : globalMissingInfo.type;
+            document.getElementById('modal-rank').value = globalMissingInfo.rank === "-" ? "" : globalMissingInfo.rank;
+            document.getElementById('modal-size').value = globalMissingInfo.size === "-" ? "" : globalMissingInfo.size;
+            
+            if(groupMode) { document.getElementById('modal-mb-container').style.display = 'none'; } 
+            else { document.getElementById('modal-mb-container').style.display = 'block'; document.getElementById('modal-mb').value = globalMissingInfo.mb === "Test Data" ? "" : globalMissingInfo.mb; }
+            infoModal.classList.add('active'); 
+        });
+
+        function closeModal() { infoModal.classList.remove('active'); }
+
+        function submitModal() {
+            globalMissingInfo.agesa = document.getElementById('modal-agesa').value || "-";
+            globalMissingInfo.type = document.getElementById('modal-type').value || "-";
+            globalMissingInfo.rank = document.getElementById('modal-rank').value || "-";
+            globalMissingInfo.size = document.getElementById('modal-size').value || "-";
+            if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "Test Data";
+            closeModal(); renderMainReport(); 
+        }
+
+        async function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (!file.name.endsWith('.json')) continue; 
+                const text = await file.text();
+                try {
+                    const json = JSON.parse(text); 
+                    const parsedData = extractMmtData(json); 
+                    uploadedFiles.push({ id: 'file_' + Date.now() + '_' + i, name: file.name, group: (groupMode && definedGroups.length > 0) ? definedGroups[0] : "", data: parsedData });
+                } catch (e) { alert(`Error parsing ${file.name}`); console.error(e); }
+            }
+            fileInput.value = ''; renderFileList();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'bg-white border border-gray-200 rounded p-2 text-xs flex flex-col gap-1 relative shadow-sm';
+                let groupSelector = '';
+                if (groupMode) {
+                    let options = definedGroups.map(g => `<option value="${g}" ${file.group === g ? 'selected' : ''}>${g}</option>`).join('');
+                    if (definedGroups.length === 0) options = `<option value="">-- Create a group first --</option>`;
+                    groupSelector = `<div class="mt-1 flex items-center"><span class="text-gray-500 mr-2">Group:</span><select class="border border-gray-300 rounded px-1 flex-1 py-0.5 outline-none" onchange="updateGroup(${index}, this.value)">${options}</select></div>`;
+                }
+                fileDiv.innerHTML = `<div class="flex justify-between items-start"><span class="font-semibold text-gray-700 truncate pr-4" title="${file.name}">${file.name}</span><button onclick="removeFile(${index})" class="text-red-400 hover:text-red-600 absolute top-2 right-2"><i class="fa-solid fa-times"></i></button></div>${groupSelector}`;
+                fileList.appendChild(fileDiv);
+            });
+        }
+
+        window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); }
+        window.updateGroup = function(idx, val) { uploadedFiles[idx].group = val; }
+
+        // 💡 提取資料，特別處理 UMC 和 Rank 的資訊
+        function extractMmtData(json) {
+            let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
+            
+            if(json["Memory Configuration Info"]) { speeds.add(json["Memory Configuration Info"].frequency || "-"); }
+            if(json.DMI_Details) {
+                if(json.DMI_Details["Processor Details"] && json.DMI_Details["Processor Details"].length > 0) { cpus.add(json.DMI_Details["Processor Details"][0].Package || "-"); }
+                if(json.DMI_Details["Memory Details"]) {
+                    json.DMI_Details["Memory Details"].forEach(mem => {
+                        if(mem["Manufacturer"]) vendors.add(mem["Manufacturer"]);
+                        if(mem["Part Number"]) parts.add(mem["Part Number"].trim());
+                    });
+                }
+            }
+            
+            let rawRecords = {}; 
+            
+            if(json["Margin Results"]) {
+                Object.values(json["Margin Results"]).forEach(res => {
+                    if(res.output && res.output.systemmargin) {
+                        const type = res.output["bus type"]; 
+                        
+                        let target = res.output.Target || res.output.target || res.output.UMC || res.output.Channel || "Unknown";
+                        let rank = res.output.Rank !== undefined ? `R${res.output.Rank}` : (res.output["Target Rank"] !== undefined ? `R${res.output["Target Rank"]}` : "");
+                        let umcRank = `${target} ${rank}`.trim(); 
+
+                        if (!rawRecords[umcRank]) rawRecords[umcRank] = { Read: null, Write: null, CA: null, CS: null };
+                        
+                        const sysMarg = res.output.systemmargin;
+                        if(sysMarg.length >= 3) {
+                            rawRecords[umcRank][type] = {
+                                minDelay: sysMarg[0]["Delay (UI)"] !== null && sysMarg[0]["Delay (UI)"] !== undefined ? parseFloat(sysMarg[0]["Delay (UI)"]) : null,
+                                maxDelay: sysMarg[2]["Delay (UI)"] !== null && sysMarg[2]["Delay (UI)"] !== undefined ? parseFloat(sysMarg[2]["Delay (UI)"]) : null,
+                                minVref: sysMarg[1]["Min Vref (mV)"] !== null && sysMarg[1]["Min Vref (mV)"] !== undefined ? parseFloat(sysMarg[1]["Min Vref (mV)"]) : null,
+                                maxVref: sysMarg[1]["Max Vref (mV)"] !== null && sysMarg[1]["Max Vref (mV)"] !== undefined ? parseFloat(sysMarg[1]["Max Vref (mV)"]) : null
+                            };
+                        }
+                    }
+                });
+            }
+            
+            return {
+                vendors: Array.from(vendors).join(", ") || "-",
+                parts: Array.from(parts).join("<br>") || "-",
+                cpu: Array.from(cpus).join(", ") || "-",
+                speed: Array.from(speeds).join(", ") || "-",
+                rawRecords 
+            };
+        }
+
+        function updateCriteria() {
+            currentCriteria = {
+                Read: { vMax: parseFloat(document.getElementById('crit-read-vmax').value), vMin: parseFloat(document.getElementById('crit-read-vmin').value), dMax: parseFloat(document.getElementById('crit-read-dmax').value), dMin: parseFloat(document.getElementById('crit-read-dmin').value) },
+                Write: { vMax: parseFloat(document.getElementById('crit-write-vmax').value), vMin: parseFloat(document.getElementById('crit-write-vmin').value), dMax: parseFloat(document.getElementById('crit-write-dmax').value), dMin: parseFloat(document.getElementById('crit-write-dmin').value) },
+                CA: { vMax: parseFloat(document.getElementById('crit-ca-vmax').value), vMin: parseFloat(document.getElementById('crit-ca-vmin').value), dMax: parseFloat(document.getElementById('crit-ca-dmax').value), dMin: parseFloat(document.getElementById('crit-ca-dmin').value) },
+                CS: { vMax: parseFloat(document.getElementById('crit-cs-vmax').value), vMin: parseFloat(document.getElementById('crit-cs-vmin').value), dMax: parseFloat(document.getElementById('crit-cs-dmax').value), dMin: parseFloat(document.getElementById('crit-cs-dmin').value) }
+            };
+        }
+
+        function getColorClass(val, limit, isMax) {
+            if (val === null || val === undefined || isNaN(val)) return "";
+            if (isNaN(limit)) return ""; 
+            let safeLimit = limit * 1.05;
+            if (isMax) {
+                if (val >= safeLimit) return "val-green"; 
+                if (val >= limit) return "val-orange";    
+                return "val-red";                         
+            } else {
+                if (val <= safeLimit) return "val-green";
+                if (val <= limit) return "val-orange";
+                return "val-red";
+            }
+        }
+
+        // 💡 【核心：繪製包含 UMC/Rank 展開與 Margin 的報表】
+        function renderMainReport() {
+            mainReportBody.innerHTML = '';
+            
+            let groups = {};
+            if (groupMode) {
+                uploadedFiles.forEach(f => {
+                    const g = f.group || "Ungrouped";
+                    if(!groups[g]) groups[g] = [];
+                    groups[g].push(f);
+                });
+            } else {
+                groups["Test Data"] = uploadedFiles;
+            }
+
+            document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
+
+            for (const [groupName, files] of Object.entries(groups)) {
+                if (files.length === 0) continue;
+                
+                let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
+                let combinedRecordsMap = {}; // 用於將同一個群組的檔案，依照 UMC 聚合
+                
+                files.forEach(f => {
+                    if(f.data.vendors && f.data.vendors !== "-") f.data.vendors.split(", ").forEach(v => vendors.add(v));
+                    if(f.data.parts && f.data.parts !== "-") f.data.parts.split("<br>").forEach(p => parts.add(p));
+                    if(f.data.cpu !== "-") cpus.add(f.data.cpu);
+                    if(f.data.speed !== "-") speeds.add(f.data.speed);
+                    
+                    for (const [umcRank, record] of Object.entries(f.data.rawRecords)) {
+                        if (!combinedRecordsMap[umcRank]) {
+                            combinedRecordsMap[umcRank] = { Read: null, Write: null, CA: null, CS: null };
+                        }
+                        
+                        ["Read", "Write", "CA", "CS"].forEach(bt => {
+                            if (record[bt]) {
+                                if (!combinedRecordsMap[umcRank][bt]) combinedRecordsMap[umcRank][bt] = { minDelay: Infinity, maxDelay: Infinity, minVref: -Infinity, maxVref: Infinity };
+                                let agg = combinedRecordsMap[umcRank][bt];
+                                let item = record[bt];
+                                // 最差邊界計算
+                                if (item.minDelay !== null && (agg.minDelay === Infinity || item.minDelay > agg.minDelay)) agg.minDelay = item.minDelay;
+                                if (item.maxDelay !== null && (agg.maxDelay === Infinity || item.maxDelay < agg.maxDelay)) agg.maxDelay = item.maxDelay;
+                                if (item.minVref !== null && (agg.minVref === -Infinity || item.minVref > agg.minVref)) agg.minVref = item.minVref;
+                                if (item.maxVref !== null && (agg.maxVref === Infinity || item.maxVref < agg.maxVref)) agg.maxVref = item.maxVref;
+                            }
+                        });
+                    }
+                });
+
+                let sortedUmcKeys = Object.keys(combinedRecordsMap).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+                if (sortedUmcKeys.length === 0) continue;
+
+                let totalRows = sortedUmcKeys.length * 4; 
+                let vStr = Array.from(vendors).join(", ") || "-";
+                let pStr = Array.from(parts).join("<br>") || "-";
+                let cpuStr = Array.from(cpus).join(", ") || "-";
+                let speedStr = Array.from(speeds).join(", ") || "-";
+                let groupMb = groupMode ? groupName : globalMissingInfo.mb;
+                
+                let isFirstOverallRow = true;
+
+                sortedUmcKeys.forEach((umcKey, idx) => {
+                    let umcData = combinedRecordsMap[umcKey];
+                    let isFirstRowOfUmcRank = true;
+
+                    ["Read", "Write", "CA", "CS"].forEach((bt, btIndex) => {
+                        let item = umcData[bt];
+                        const tr = document.createElement('tr');
+                        
+                        if (btIndex === 3) {
+                            tr.className = "border-b border-gray-300 hover:bg-gray-50/70";
+                        } else {
+                            tr.className = "border-b border-gray-100 hover:bg-gray-50/70";
+                        }
+                        
+                        if (isFirstOverallRow) tr.classList.add("border-t-[3px]", "border-gray-400");
+
+                        let html = "";
+                        
+                        if (isFirstOverallRow) {
+                            html += `
+                                <td rowspan="${totalRows}" class="table-cell font-medium align-middle bg-white">${vStr}</td>
+                                <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${globalMissingInfo.agesa}</td>
+                                <td rowspan="${totalRows}" class="table-cell text-[10px] leading-tight text-left pl-2 align-middle bg-white">${pStr}</td>
+                                <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${globalMissingInfo.type}</td>
+                                <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${globalMissingInfo.rank}</td>
+                                <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${speedStr}</td>
+                                <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${globalMissingInfo.size}</td>
+                                <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${cpuStr}</td>
+                                <td rowspan="${totalRows}" class="table-cell font-bold text-blue-800 align-middle bg-white">${groupMb}</td>
+                            `;
+                            isFirstOverallRow = false;
+                        }
+                        
+                        if (isFirstRowOfUmcRank) {
+                            html += `<td rowspan="4" class="table-cell font-bold text-blue-700 bg-blue-50/30 align-middle border-l border-r border-gray-300">${umcKey}</td>`;
+                            isFirstRowOfUmcRank = false;
+                        }
+
+                        html += `<td class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-r border-gray-300">${bt}</td>`;
+                        
+                        let minV = item && item.minVref !== Infinity && item.minVref !== -Infinity && !isNaN(item.minVref) ? item.minVref : null;
+                        let maxV = item && item.maxVref !== Infinity && item.maxVref !== -Infinity && !isNaN(item.maxVref) ? item.maxVref : null;
+                        let minD = item && item.minDelay !== Infinity && item.minDelay !== -Infinity && !isNaN(item.minDelay) ? item.minDelay : null;
+                        let maxD = item && item.maxDelay !== Infinity && item.maxDelay !== -Infinity && !isNaN(item.maxDelay) ? item.maxDelay : null;
+                        
+                        let crit = currentCriteria[bt];
+                        
+                        let fails = [];
+                        let margins = [];
+
+                        const calcMaxMargin = (val, limit, nameStr) => {
+                            if (val === null || isNaN(limit)) return;
+                            margins.push((val / limit) * 100);
+                            if (val < limit) fails.push(`${nameStr} ${val} (Limit: ${limit})`);
+                        };
+                        const calcMinMargin = (val, limit, nameStr) => {
+                            if (val === null || isNaN(limit)) return;
+                            margins.push((val / limit) * 100);
+                            if (val > limit) fails.push(`${nameStr} ${val} (Limit: ${limit})`);
+                        };
+
+                        calcMaxMargin(minV, crit.vMin, "Min Vref");
+                        calcMaxMargin(maxV, crit.vMax, "Max Vref");
+                        calcMinMargin(minD, crit.dMin, "Min Delay");
+                        calcMaxMargin(maxD, crit.dMax, "Max Delay");
+
+                        let worstMarginStr = "-";
+                        let marginColorClass = "text-gray-500";
+                        if (margins.length > 0) {
+                            let worstMargin = Math.min(...margins);
+                            worstMarginStr = worstMargin.toFixed(1) + "%";
+                            if (worstMargin < 100) marginColorClass = "text-red-600 font-bold";
+                            else if (worstMargin <= 105) marginColorClass = "text-orange-500 font-bold";
+                            else marginColorClass = "text-green-600 font-bold";
+                        }
+                        
+                        let statusHtml = '<span class="text-gray-400">-</span>';
+                        if (margins.length > 0) {
+                            if (fails.length > 0) {
+                                statusHtml = `<span class="text-red-600 font-bold">FAIL</span><br><span class="text-[10px] text-gray-500">${fails.join('<br>')}</span>`;
+                            } else {
+                                statusHtml = `<span class="text-green-600 font-bold">PASS</span>`;
+                            }
+                        }
+
+                        let minV_html = minV !== null ? `<span class="${getColorClass(minV, crit.vMin, false)}">${minV.toFixed(1)}</span>` : "-";
+                        let maxV_html = maxV !== null ? `<span class="${getColorClass(maxV, crit.vMax, true)}">${maxV.toFixed(1)}</span>` : "-";
+                        let minD_html = minD !== null ? `<span class="${getColorClass(minD, crit.dMin, false)}">${minD.toFixed(1)}</span>` : "-";
+                        let maxD_html = maxD !== null ? `<span class="${getColorClass(maxD, crit.dMax, true)}">${maxD.toFixed(1)}</span>` : "-";
+                        
+                        html += `
+                            <td class="table-cell">${minV_html}</td>
+                            <td class="table-cell">${maxV_html}</td>
+                            <td class="table-cell">${minD_html}</td>
+                            <td class="table-cell">${maxD_html}</td>
+                            <td class="table-cell bg-yellow-50/50 font-semibold ${marginColorClass}">${worstMarginStr}</td>
+                            <td class="table-cell align-middle">${statusHtml}</td>
+                        `;
+                        
+                        tr.innerHTML = html;
+                        mainReportBody.appendChild(tr); 
+                    });
+                });
+            }
+        }
+    </script>
+</body>
+</html>
