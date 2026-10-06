@@ -11,31 +11,25 @@
     
     <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
-        /* 💡 修正：更換為國際通用字體 (Calibri 首選)，並將基準字體大小設定為適中的 13px */
         body { 
             font-family: 'Calibri', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
             background-color: #f3f4f6; 
             font-size: 13px; 
         }
         
-        /* 側邊欄細長卷軸的客製化樣式 */
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         
-        /* 報表表格的標題與儲存格樣式 (表頭微調為 12px 突顯層次，內容維持 13px) */
         .table-header { background-color: #e2e8f0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #475569; border: 1px solid #cbd5e1; background-clip: padding-box; }
         .table-cell { font-size: 13px; color: #1e293b; text-align: center; border: 1px solid #cbd5e1; padding: 0.4rem; }
         
-        /* 門檻值輸入框的專屬樣式 */
         .criteria-input { width: 42px; padding: 2px 0; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; text-align: center; outline: none; }
         .criteria-input:focus { border-color: #3b82f6; }
         .criteria-input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; border-color: #e5e7eb; }
         
-        /* 隱藏數字輸入框右側預設的上下微調小箭頭 */
         .criteria-input::-webkit-outer-spin-button, .criteria-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .criteria-input[type=number] { -moz-appearance: textfield; }
 
-        /* 數值判定的顏色標示 */
         .val-green { color: #15803d; font-weight: 600; } 
         .val-orange { color: #d97706; font-weight: 600; } 
         .val-red { color: #dc2626; font-weight: 600; } 
@@ -49,14 +43,12 @@
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
         
-        <!-- 系統標題 -->
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
         </div>
         
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
             
-            <!-- 1. 群組模式切換 (Group Mode) -->
             <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
                     <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-folder text-yellow-400 mr-2"></i>GROUP MODE</span>
@@ -77,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- 2. 檔案上傳區塊 (Drag & Drop) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
                 <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
@@ -88,7 +79,6 @@
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
 
-            <!-- 3. 門檻值設定區塊 (Criteria Preset) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
                 
@@ -162,7 +152,6 @@
     </aside>
 
     <!-- ================= 右側主要報表顯示區 ================= -->
-    <!-- 💡 右側主區塊本身就是一個可滾動的容器 (overflow-y-auto)，內部不再限制高度 -->
     <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
         
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
@@ -173,15 +162,14 @@
             </div>
         </div>
 
+        <!-- 總表 (Worst Margin) -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
                 Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
             </div>
             
-            <!-- 💡 修正：移除 max-h 高度限制，只保留 overflow-x-auto 用來防止螢幕太小導致左右破圖。垂直長度讓它自然往下撐開 -->
             <div class="overflow-x-auto relative p-0 bg-white">
                 <table class="w-full border-collapse" id="mainReportTable">
-                    <!-- 因為交給外層 main 滾動，這個 sticky top-0 視覺上會在捲動整個網頁時跟著往上推，符合完整報表閱讀習慣 -->
                     <thead class="bg-gray-200 shadow-sm">
                         <tr>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
@@ -216,6 +204,7 @@
             </div>
         </div>
 
+        <!-- DIMM 資訊 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
@@ -227,7 +216,6 @@
                 </div>
             </div>
             
-            <!-- 💡 修正：DIMM 表格也移除內部高度限制 -->
             <div class="overflow-x-auto relative p-0 bg-white">
                 <table class="w-full border-collapse text-sm text-center">
                     <thead class="shadow-sm">
@@ -247,6 +235,53 @@
                 </table>
             </div>
         </div>
+
+        <!-- ================= 新增區塊: Per-Rank Detail Report ================= -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i>Per-UMC / Per-Rank Detail</div>
+                <div class="flex items-center text-sm gap-4">
+                    <div>
+                        <span class="mr-2 text-gray-600 text-xs font-semibold">Test Item:</span>
+                        <select id="rankItemSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 bg-white">
+                            <option value="Read">Read</option>
+                            <option value="Write">Write</option>
+                            <option value="CA">CA</option>
+                            <option value="CS">CS</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span class="mr-2 text-gray-600 text-xs font-semibold">Table - File:</span>
+                        <select id="rankFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 bg-white min-w-[200px]">
+                            <option value="">-- Select a file --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto relative p-0 bg-white max-h-[600px] overflow-y-auto">
+                <table class="w-full border-collapse text-sm text-center">
+                    <thead class="shadow-sm sticky top-0 bg-gray-100 z-10 border-b-2 border-gray-300">
+                        <tr class="text-gray-700 text-xs">
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">UMC / Rank</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">Max Delay<br><span id="th-dmax-crit" class="text-[10px] font-normal text-gray-400"></span></th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">Min Delay<br><span id="th-dmin-crit" class="text-[10px] font-normal text-gray-400"></span></th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">Max Vref<br><span id="th-vmax-crit" class="text-[10px] font-normal text-gray-400"></span></th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">Min Vref<br><span id="th-vmin-crit" class="text-[10px] font-normal text-gray-400"></span></th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">Worst Margin %</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold text-left whitespace-nowrap">Fail Reason</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankInfoBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-gray-400 py-10 text-xs">Click Generate to view per-rank details.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </main>
 
     <!-- ================= Modal 彈出視窗 (補齊資訊) ================= -->
@@ -272,40 +307,22 @@
 
     <!-- ================= JavaScript 邏輯核心 ================= -->
     <script>
-        // 【1. 系統全域變數】
         let uploadedFiles = []; 
         let groupMode = false;  
-        let definedGroups = []; // 空白群組陣列，等待使用者新增
+        let definedGroups = []; 
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
 
-        // 【2. 門檻值資料庫 (Preset Data)】
         const presetData = {
-            "6400": {
-                Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9},
-                Write: {vMax: 71, vMin: -60, dMax: 10, dMin: -10},
-                CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12},
-                CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45}
-            },
-            "8000": {
-                Read: {vMax: 70, vMin: -50, dMax: 10, dMin: -8}, 
-                Write: {vMax: 60, vMin: -49, dMax: 8, dMin: -8}, 
-                CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, 
-                CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45}  
-            },
-            "12800": {
-                Read: {vMax: 45, vMin: -45, dMax: 6, dMin: -6}, 
-                Write: {vMax: 49, vMin: -49, dMax: 6, dMin: -6}, 
-                CA: {vMax: 60, vMin: -60, dMax: 7, dMin: -7}, 
-                CS: {vMax: 200, vMin: -200, dMax: 40, dMin: -40} 
-            }
+            "6400": { Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9}, Write: {vMax: 71, vMin: -60, dMax: 10, dMin: -10}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
+            "8000": { Read: {vMax: 70, vMin: -50, dMax: 10, dMin: -8}, Write: {vMax: 60, vMin: -49, dMax: 8, dMin: -8}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
+            "12800": { Read: {vMax: 45, vMin: -45, dMax: 6, dMin: -6}, Write: {vMax: 49, vMin: -49, dMax: 6, dMin: -6}, CA: {vMax: 60, vMin: -60, dMax: 7, dMin: -7}, CS: {vMax: 200, vMin: -200, dMax: 40, dMin: -40} }
         };
 
         const presetBtns = document.querySelectorAll('.preset-btn');
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
         let currentPresetLabel = "Custom"; 
 
-        // 【3. 門檻值按鈕切換邏輯】
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 presetBtns.forEach(b => {
@@ -319,10 +336,7 @@
                 currentPresetLabel = e.target.innerText; 
                 
                 if (mode === 'custom') {
-                    allCriteriaInputs.forEach(input => {
-                        input.readOnly = false;
-                        input.value = "";
-                    });
+                    allCriteriaInputs.forEach(input => { input.readOnly = false; input.value = ""; });
                 } else {
                     const data = presetData[mode];
                     const types = ["Read", "Write", "CA", "CS"];
@@ -332,10 +346,7 @@
                         document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax;
                         document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
                     });
-                    
-                    allCriteriaInputs.forEach(input => {
-                        input.readOnly = true;
-                    });
+                    allCriteriaInputs.forEach(input => { input.readOnly = true; });
                 }
             });
         });
@@ -346,21 +357,20 @@
         const groupModeToggle = document.getElementById('groupModeToggle');
         const generateBtn = document.getElementById('generateBtn');
         const dimmFileSelect = document.getElementById('dimmFileSelect');
+        const rankFileSelect = document.getElementById('rankFileSelect');
+        const rankItemSelect = document.getElementById('rankItemSelect');
         const dimmInfoBody = document.getElementById('dimmInfoBody');
         const mainReportBody = document.getElementById('mainReportBody');
+        const rankInfoBody = document.getElementById('rankInfoBody');
         const infoModal = document.getElementById('infoModal');
         
-        // 【4. 群組管理功能 (Group Manager)】
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
             const msg = document.getElementById('noGroupsMsg');
             gl.innerHTML = '';
             
-            if (definedGroups.length > 0) {
-                msg.classList.add('hidden');
-            } else {
-                msg.classList.remove('hidden');
-            }
+            if (definedGroups.length > 0) msg.classList.add('hidden');
+            else msg.classList.remove('hidden');
 
             definedGroups.forEach((grp, idx) => {
                 gl.innerHTML += `
@@ -394,7 +404,6 @@
             renderFileList();
         });
 
-        // 【5. 檔案拖曳與點擊上傳】
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
         dropZone.addEventListener('drop', (e) => {
@@ -402,9 +411,7 @@
             dropZone.classList.remove('bg-blue-50', 'border-blue-400');
             handleFiles(e.dataTransfer.files);
         });
-        dropZone.addEventListener('click', (e) => {
-            if (e.target !== fileInput) fileInput.click();
-        });
+        dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
         groupModeToggle.addEventListener('change', (e) => {
@@ -412,9 +419,7 @@
             if (groupMode) {
                 document.getElementById('groupManagerContainer').classList.remove('hidden');
                 renderGroupManager();
-                uploadedFiles.forEach(f => {
-                    if (!f.group && definedGroups.length > 0) f.group = definedGroups[0];
-                });
+                uploadedFiles.forEach(f => { if (!f.group && definedGroups.length > 0) f.group = definedGroups[0]; });
             } else {
                 document.getElementById('groupManagerContainer').classList.add('hidden');
             }
@@ -422,8 +427,11 @@
         });
 
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
+        
+        // 綁定 Rank Report 下拉選單更新
+        rankFileSelect.addEventListener('change', renderRankDetails);
+        rankItemSelect.addEventListener('change', renderRankDetails);
 
-        // 【6. 產生報表與補齊資訊視窗 (Modal)】
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
             updateCriteria(); 
@@ -453,6 +461,7 @@
             
             closeModal();
             renderMainReport(); 
+            renderRankDetails(); // Modal 關閉後更新 Rank 表格
         }
 
         async function handleFiles(files) {
@@ -478,7 +487,7 @@
             }
             fileInput.value = ''; 
             renderFileList();
-            updateDimmSelect();
+            updateFileSelects();
         }
 
         function renderFileList() {
@@ -516,22 +525,35 @@
         window.removeFile = function(idx) {
             uploadedFiles.splice(idx, 1);
             renderFileList();
-            updateDimmSelect();
+            updateFileSelects();
         }
 
         window.updateGroup = function(idx, val) {
             uploadedFiles[idx].group = val;
         }
 
-        function updateDimmSelect() {
-            dimmFileSelect.innerHTML = '<option value="">-- Select a file --</option>';
+        function updateFileSelects() {
+            const dimmSel = document.getElementById('dimmFileSelect');
+            const rankSel = document.getElementById('rankFileSelect');
+            
+            // 儲存當前選擇的值
+            let curDimm = dimmSel.value;
+            let curRank = rankSel.value;
+            
+            let optionsHtml = '<option value="">-- Select a file --</option>';
             uploadedFiles.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.id;
-                opt.textContent = f.name;
-                dimmFileSelect.appendChild(opt);
+                optionsHtml += `<option value="${f.id}">${f.name}</option>`;
             });
-            dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
+            
+            dimmSel.innerHTML = optionsHtml;
+            rankSel.innerHTML = optionsHtml;
+            
+            // 恢復選擇，如果檔案還在的話
+            if (uploadedFiles.find(f => f.id === curDimm)) dimmSel.value = curDimm;
+            if (uploadedFiles.find(f => f.id === curRank)) rankSel.value = curRank;
+            
+            if(!dimmSel.value) dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
+            if(!rankSel.value) rankInfoBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Select a file and click generate to view per-rank details.</td></tr>';
         }
 
         window.renderDimmInfo = function(fileId) {
@@ -556,7 +578,7 @@
             });
         }
 
-        // 【7. JSON 資料提取核心】
+        // 【7. JSON 資料提取核心 (更新加入 rankmargins 擷取)】
         function extractMmtData(json) {
             let dimms = [];
             let vendors = new Set();
@@ -590,6 +612,9 @@
             let records = []; 
             let currentRecord = { Read: null, Write: null, CA: null, CS: null }; 
             
+            // 新增：存放所有 rank 的原始資料
+            let rankDetails = { Read: [], Write: [], CA: [], CS: [] };
+            
             if(json["Margin Results"]) {
                 Object.values(json["Margin Results"]).forEach(res => {
                     if(res.output && res.output.systemmargin) {
@@ -600,6 +625,7 @@
                             currentRecord = { Read: null, Write: null, CA: null, CS: null };
                         }
                         
+                        // 1. 解析 Worst Case (systemmargin)
                         const sysMarg = res.output.systemmargin;
                         if(sysMarg.length >= 3) {
                             currentRecord[type] = {
@@ -609,6 +635,42 @@
                                 maxVref: sysMarg[1]["Max Vref (mV)"]
                             };
                         }
+                        
+                        // 2. 解析所有 Rank Detail (rankmargins)
+                        if (res.output.rankmargins) {
+                            res.output.rankmargins.forEach(rm => {
+                                if (rm.Socket) {
+                                    Object.entries(rm.Socket).forEach(([sockId, sockObj]) => {
+                                        if (sockObj.Channel) {
+                                            Object.entries(sockObj.Channel).forEach(([chId, chObj]) => {
+                                                if (chObj.UMC) {
+                                                    Object.entries(chObj.UMC).forEach(([umcId, umcObj]) => {
+                                                        if (umcObj.rank) {
+                                                            umcObj.rank.forEach(rankObj => {
+                                                                Object.entries(rankObj).forEach(([rankId, rankData]) => {
+                                                                    if (rankData.length >= 3) {
+                                                                        rankDetails[type].push({
+                                                                            socket: sockId,
+                                                                            channel: chId,
+                                                                            umc: umcId,
+                                                                            rank: rankId,
+                                                                            minDelay: rankData[0]["Delay (UI)"],
+                                                                            maxDelay: rankData[2]["Delay (UI)"],
+                                                                            minVref: rankData[1]["Min Vref (mV)"],
+                                                                            maxVref: rankData[1]["Max Vref (mV)"]
+                                                                        });
+                                                                    }
+                                                                });
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
                     }
                 });
                 
@@ -616,13 +678,15 @@
                     records.push(currentRecord);
                 }
             }
+            
             return {
                 dimms,
                 vendors: Array.from(vendors).join(", "),
                 parts: Array.from(parts).join("<br>"),
                 cpu,
                 speed,
-                records 
+                records,
+                rankDetails // 回傳新增的 per-rank 數據
             };
         }
 
@@ -798,6 +862,104 @@
                     });
                 });
             }
+        }
+
+        // 💡 【9. 新增：繪製 Per-Rank 詳細報表】
+        function renderRankDetails() {
+            const fileId = document.getElementById('rankFileSelect').value;
+            const testItem = document.getElementById('rankItemSelect').value;
+            const tbody = document.getElementById('rankInfoBody');
+            
+            if (!fileId || !uploadedFiles.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td></tr>';
+                return;
+            }
+            
+            const file = uploadedFiles.find(f => f.id === fileId);
+            if (!file || !file.data.rankDetails || !file.data.rankDetails[testItem]) return;
+            
+            const data = file.data.rankDetails[testItem];
+            const crit = currentCriteria[testItem];
+            
+            // 更新表頭顯示目前的門檻值
+            document.getElementById('th-dmax-crit').innerText = crit.dMax ? `≥ ${crit.dMax}UI` : '';
+            document.getElementById('th-dmin-crit').innerText = crit.dMin ? `≤ ${crit.dMin}UI` : '';
+            document.getElementById('th-vmax-crit').innerText = crit.vMax ? `≥ ${crit.vMax}mV` : '';
+            document.getElementById('th-vmin-crit').innerText = crit.vMin ? `≤ ${crit.vMin}mV` : '';
+            
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">No data for this test item.</td></tr>';
+                 return;
+            }
+
+            data.forEach(row => {
+                // 計算各數值相對門檻值的百分比 (Actual / Criteria * 100)
+                let pctDmax = (crit.dMax && crit.dMax !== 0) ? (row.maxDelay / crit.dMax) * 100 : null;
+                let pctDmin = (crit.dMin && crit.dMin !== 0) ? (row.minDelay / crit.dMin) * 100 : null;
+                let pctVmax = (crit.vMax && crit.vMax !== 0) ? (row.maxVref / crit.vMax) * 100 : null;
+                let pctVmin = (crit.vMin && crit.vMin !== 0) ? (row.minVref / crit.vMin) * 100 : null;
+                
+                // 為了比較 Worst Margin，全轉成絕對值
+                let absPctDmax = pctDmax !== null ? Math.abs(pctDmax) : Infinity;
+                let absPctDmin = pctDmin !== null ? Math.abs(pctDmin) : Infinity;
+                let absPctVmax = pctVmax !== null ? Math.abs(pctVmax) : Infinity;
+                let absPctVmin = pctVmin !== null ? Math.abs(pctVmin) : Infinity;
+                
+                // 找出最小的百分比（最差的裕度）
+                let worstPct = Math.min(absPctDmax, absPctDmin, absPctVmax, absPctVmin);
+                if (worstPct === Infinity) worstPct = null;
+                
+                let isPass = worstPct === null || worstPct >= 100;
+                let statusHtml = isPass ? '<span class="text-green-600 font-bold">PASS</span>' : '<span class="text-red-600 font-bold">FAIL</span>';
+                
+                let worstPctText = worstPct !== null ? `${worstPct.toFixed(1)}%` : '-';
+                let worstPctHtml = `<span class="${isPass ? 'text-green-600' : 'text-red-600'} font-bold">${worstPctText}</span>`;
+                
+                // 產生 Fail Reason (例如: Max Delay 14.0 / 10UI (+4.0))
+                let failReason = "-";
+                if (!isPass) {
+                    if (worstPct === absPctDmax) {
+                        let diff = row.maxDelay - crit.dMax;
+                        failReason = `Max Delay ${row.maxDelay} / ${crit.dMax}UI (${diff > 0 ? '+' : ''}${diff.toFixed(1)})`;
+                    } else if (worstPct === absPctDmin) {
+                        let diff = row.minDelay - crit.dMin;
+                        failReason = `Min Delay ${row.minDelay} / ${crit.dMin}UI (${diff > 0 ? '+' : ''}${diff.toFixed(1)})`;
+                    } else if (worstPct === absPctVmax) {
+                        let diff = row.maxVref - crit.vMax;
+                        failReason = `Max Vref ${row.maxVref} / ${crit.vMax}mV (${diff > 0 ? '+' : ''}${diff.toFixed(1)})`;
+                    } else if (worstPct === absPctVmin) {
+                        let diff = row.minVref - crit.vMin;
+                        failReason = `Min Vref ${row.minVref} / ${crit.vMin}mV (${diff > 0 ? '+' : ''}${diff.toFixed(1)})`;
+                    }
+                }
+                
+                // 將通道名稱格式化成如 "P0 H B R0" 的樣式
+                let chLetter = row.channel.length > 1 ? row.channel.charAt(1) : row.channel;
+                let umcLetter = row.umc.slice(-1);
+                let name = `P${row.socket} ${chLetter} ${umcLetter} R${row.rank}`;
+                
+                let tr = document.createElement('tr');
+                tr.className = "border-b border-gray-200 hover:bg-gray-50";
+                
+                let dMaxHtml = `<span class="font-bold ${getColorClass(row.maxDelay, crit.dMax, true)}">${row.maxDelay}</span>`;
+                let dMinHtml = `<span class="font-bold ${getColorClass(row.minDelay, crit.dMin, false)}">${row.minDelay}</span>`;
+                let vMaxHtml = `<span class="font-bold ${getColorClass(row.maxVref, crit.vMax, true)}">${row.maxVref}</span>`;
+                let vMinHtml = `<span class="font-bold ${getColorClass(row.minVref, crit.vMin, false)}">${row.minVref}</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-2 whitespace-nowrap text-gray-700">${name}</td>
+                    <td class="p-2">${dMaxHtml}</td>
+                    <td class="p-2">${dMinHtml}</td>
+                    <td class="p-2">${vMaxHtml}</td>
+                    <td class="p-2">${vMinHtml}</td>
+                    <td class="p-2">${worstPctHtml}</td>
+                    <td class="p-2 text-left text-gray-600 text-xs">${failReason}</td>
+                    <td class="p-2">${statusHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
     </script>
 </body>
