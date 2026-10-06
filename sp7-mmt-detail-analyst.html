@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SP7-MMT-Analyst</title>
-    <!-- 引入 Tailwind CSS (快速排版工具) -->
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Chart.js 折線圖套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
@@ -36,19 +38,22 @@
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
         .modal.active { display: flex; } 
+        
+        /* 圖表按鈕樣式 */
+        .chart-ctrl-btn { padding: 4px 12px; font-size: 12px; border: 1px solid #d1d5db; border-radius: 4px; background-color: white; color: #4b5563; transition: all 0.2s; cursor: pointer; }
+        .chart-ctrl-btn:hover { background-color: #f9fafb; border-color: #9ca3af; }
+        .chart-ctrl-btn.active { background-color: #0ea5e9; border-color: #0ea5e9; color: white; font-weight: bold; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
     
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
-        
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
         </div>
         
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
-            
             <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
                     <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-folder text-yellow-400 mr-2"></i>GROUP MODE</span>
@@ -57,15 +62,11 @@
                         <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                 </div>
-                
                 <div class="text-xs text-gray-600 mt-2 mb-1">Enable Group Mode</div>
-                
                 <div id="groupManagerContainer" class="hidden flex flex-col gap-2">
                     <div id="noGroupsMsg" class="text-center text-xs text-gray-400 py-1">No groups created</div>
                     <div id="groupList" class="space-y-2"></div>
-                    <button id="addGroupBtn" class="w-full text-xs bg-white text-gray-700 hover:bg-gray-50 py-1.5 rounded border border-gray-300 transition-colors mt-1">
-                        + Add Group
-                    </button>
+                    <button id="addGroupBtn" class="w-full text-xs bg-white text-gray-700 hover:bg-gray-50 py-1.5 rounded border border-gray-300 transition-colors mt-1">+ Add Group</button>
                 </div>
             </div>
 
@@ -81,7 +82,6 @@
 
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
-                
                 <div class="grid grid-cols-2 gap-1.5 mb-2">
                     <button class="bg-blue-600 text-white text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="custom">Custom</button>
                     <button class="bg-gray-200 text-gray-700 hover:bg-gray-300 text-[10px] py-1.5 rounded preset-btn font-bold shadow-sm transition-colors" data-preset="6400">6400 RDIMM</button>
@@ -90,7 +90,6 @@
                 </div>
 
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
-                    
                     <div class="flex items-center pb-2 border-b border-gray-200">
                         <span class="font-semibold text-gray-700 w-10">Item</span>
                         <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
@@ -100,44 +99,40 @@
                             <span class="w-[42px] text-center">D-Min</span>
                         </div>
                     </div>
-                    
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-blue-600 w-10">Read</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-read-vmax" value="" class="criteria-input">
-                            <input type="number" id="crit-read-vmin" value="" class="criteria-input">
-                            <input type="number" id="crit-read-dmax" value="" class="criteria-input">
-                            <input type="number" id="crit-read-dmin" value="" class="criteria-input">
+                            <input type="number" id="crit-read-vmax" class="criteria-input">
+                            <input type="number" id="crit-read-vmin" class="criteria-input">
+                            <input type="number" id="crit-read-dmax" class="criteria-input">
+                            <input type="number" id="crit-read-dmin" class="criteria-input">
                         </div>
                     </div>
-                    
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-green-600 w-10">Write</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-write-vmax" value="" class="criteria-input">
-                            <input type="number" id="crit-write-vmin" value="" class="criteria-input">
-                            <input type="number" id="crit-write-dmax" value="" class="criteria-input">
-                            <input type="number" id="crit-write-dmin" value="" class="criteria-input">
+                            <input type="number" id="crit-write-vmax" class="criteria-input">
+                            <input type="number" id="crit-write-vmin" class="criteria-input">
+                            <input type="number" id="crit-write-dmax" class="criteria-input">
+                            <input type="number" id="crit-write-dmin" class="criteria-input">
                         </div>
                     </div>
-                    
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-orange-500 w-10">CA</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-ca-vmax" value="" class="criteria-input">
-                            <input type="number" id="crit-ca-vmin" value="" class="criteria-input">
-                            <input type="number" id="crit-ca-dmax" value="" class="criteria-input">
-                            <input type="number" id="crit-ca-dmin" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-vmax" class="criteria-input">
+                            <input type="number" id="crit-ca-vmin" class="criteria-input">
+                            <input type="number" id="crit-ca-dmax" class="criteria-input">
+                            <input type="number" id="crit-ca-dmin" class="criteria-input">
                         </div>
                     </div>
-                    
                     <div class="flex items-center mt-2">
                         <span class="font-semibold text-purple-600 w-10">CS</span>
                         <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-cs-vmax" value="" class="criteria-input">
-                            <input type="number" id="crit-cs-vmin" value="" class="criteria-input">
-                            <input type="number" id="crit-cs-dmax" value="" class="criteria-input">
-                            <input type="number" id="crit-cs-dmin" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-vmax" class="criteria-input">
+                            <input type="number" id="crit-cs-vmin" class="criteria-input">
+                            <input type="number" id="crit-cs-dmax" class="criteria-input">
+                            <input type="number" id="crit-cs-dmin" class="criteria-input">
                         </div>
                     </div>
                 </div>
@@ -182,7 +177,6 @@
                             <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
-                            <!-- 新增 FILE NAME 欄位確保各筆檔案獨立展開 -->
                             <th rowspan="2" class="table-header border border-gray-300 py-2">File Name</th>
                             <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
                             <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
@@ -198,28 +192,74 @@
                         </tr>
                     </thead>
                     <tbody id="mainReportBody">
-                        <tr>
-                            <td colspan="18" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td>
-                        </tr>
+                        <tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <!-- ================= 新增區塊: Per-UMC / Rank Detail Analysis ================= -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
-                <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i>Per-UMC / Rank Detail Analysis</div>
-                <div class="flex items-center text-sm gap-4">
-                    <div>
-                        <span class="mr-2 text-gray-600 text-xs font-semibold">File:</span>
-                        <select id="rankFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 bg-white min-w-[250px]">
-                            <option value="">-- Select a file --</option>
-                        </select>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" id="detail-analysis-section">
+            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-chart-line text-blue-600 mr-2"></i>Per-UMC / Per-Rank Detail</div>
+            </div>
+            
+            <!-- 圖表控制面板 -->
+            <div class="p-4 border-b border-gray-200 bg-white flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-gray-500 w-24">Quadrant:</span>
+                    <div class="flex gap-2" id="chart-quadrant-group">
+                        <button class="chart-ctrl-btn active" data-val="CS">CS</button>
+                        <button class="chart-ctrl-btn" data-val="CA">CA</button>
+                        <button class="chart-ctrl-btn" data-val="Read">Read</button>
+                        <button class="chart-ctrl-btn" data-val="Write">Write</button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-gray-500 w-24">Metric:</span>
+                    <div class="flex gap-2" id="chart-metric-group">
+                        <button class="chart-ctrl-btn active" data-val="maxDelay">Max Delay</button>
+                        <button class="chart-ctrl-btn" data-val="minDelay">Min Delay</button>
+                        <button class="chart-ctrl-btn" data-val="maxVref">Max Vref</button>
+                        <button class="chart-ctrl-btn" data-val="minVref">Min Vref</button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-gray-500 w-24">Granularity:</span>
+                    <div class="flex gap-2" id="chart-granularity-group">
+                        <button class="chart-ctrl-btn active" data-val="perUmc">Per UMC (min across ranks)</button>
+                        <button class="chart-ctrl-btn" data-val="perChannel">Per Channel (A+B merged)</button>
+                        <button class="chart-ctrl-btn" data-val="perRank">Per Rank</button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-gray-500 w-24">Chart Type:</span>
+                    <div class="flex gap-2">
+                        <button class="chart-ctrl-btn active bg-blue-500 text-white border-blue-500" style="pointer-events: none;"><i class="fa-solid fa-chart-line mr-1"></i> Line</button>
+                        <button class="chart-ctrl-btn opacity-50 cursor-not-allowed"><i class="fa-solid fa-box w-3"></i> Box Plot</button>
+                        <button class="chart-ctrl-btn opacity-50 cursor-not-allowed"><i class="fa-solid fa-square w-3"></i> Case Comparison</button>
                     </div>
                 </div>
             </div>
+
+            <!-- 圖表畫布 -->
+            <div class="p-4 bg-white border-b border-gray-200">
+                <div class="relative w-full h-[400px]">
+                    <canvas id="marginChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Table 檔案選擇器 -->
+            <div class="p-3 bg-gray-50 border-b border-gray-200 flex justify-end items-center gap-4">
+                <div class="flex items-center text-sm">
+                    <span class="mr-2 text-gray-600 text-xs font-semibold">Table - File:</span>
+                    <select id="rankFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 bg-white min-w-[250px]">
+                        <option value="">-- Select a file --</option>
+                    </select>
+                </div>
+            </div>
             
+            <!-- Table 內容 -->
             <div class="overflow-x-auto relative p-0 bg-white max-h-[600px] overflow-y-auto">
                 <table class="w-full border-collapse text-sm text-center">
                     <thead class="shadow-sm sticky top-0 bg-gray-100 z-10 border-b-2 border-gray-300">
@@ -235,9 +275,7 @@
                         </tr>
                     </thead>
                     <tbody id="rankInfoBody">
-                        <tr>
-                            <td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td>
-                        </tr>
+                        <tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -248,13 +286,12 @@
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
                 <div class="flex items-center text-sm">
-                    <span class="mr-2 text-gray-600 text-xs">File:</span>
+                    <span class="mr-2 text-gray-600 text-xs font-semibold">File:</span>
                     <select id="dimmFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]">
                         <option value="">-- Select a file --</option>
                     </select>
                 </div>
             </div>
-            
             <div class="overflow-x-auto relative p-0 bg-white">
                 <table class="w-full border-collapse text-sm text-center">
                     <thead class="shadow-sm">
@@ -267,9 +304,7 @@
                         </tr>
                     </thead>
                     <tbody id="dimmInfoBody">
-                        <tr>
-                            <td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td>
-                        </tr>
+                        <tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -305,6 +340,14 @@
         let definedGroups = []; 
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
+
+        // 圖表狀態管理
+        let chartInstance = null;
+        let chartState = {
+            quadrant: 'CS',
+            metric: 'maxDelay',
+            granularity: 'perUmc'
+        };
 
         const presetData = {
             "6400": { Read: {vMax: 70, vMin: -52, dMax: 9, dMin: -9}, Write: {vMax: 71, vMin: -60, dMax: 10, dMin: -10}, CA: {vMax: 100, vMin: -100, dMax: 12, dMin: -12}, CS: {vMax: 100, vMin: -100, dMax: 45, dMin: -45} },
@@ -356,6 +399,25 @@
         const rankInfoBody = document.getElementById('rankInfoBody');
         const infoModal = document.getElementById('infoModal');
         
+        // 圖表按鈕點擊事件綁定
+        function setupChartControls() {
+            const bindGroup = (groupId, stateKey) => {
+                const btns = document.querySelectorAll(`#${groupId} .chart-ctrl-btn`);
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        btns.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        chartState[stateKey] = e.target.getAttribute('data-val');
+                        renderChart(); // 更新圖表
+                    });
+                });
+            };
+            bindGroup('chart-quadrant-group', 'quadrant');
+            bindGroup('chart-metric-group', 'metric');
+            bindGroup('chart-granularity-group', 'granularity');
+        }
+        setupChartControls();
+
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
             const msg = document.getElementById('noGroupsMsg');
@@ -419,8 +481,6 @@
         });
 
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
-        
-        // 綁定 Rank Report 下拉選單更新
         rankFileSelect.addEventListener('change', renderRankDetails);
 
         generateBtn.addEventListener('click', () => {
@@ -452,7 +512,8 @@
             
             closeModal();
             renderMainReport(); 
-            renderRankDetails(); // Modal 關閉後更新 Rank 表格
+            renderRankDetails();
+            renderChart(); // 產生圖表
         }
 
         async function handleFiles(files) {
@@ -612,7 +673,6 @@
                             currentRecord = { Read: null, Write: null, CA: null, CS: null };
                         }
                         
-                        // 1. 解析 Worst Case (systemmargin)
                         const sysMarg = res.output.systemmargin;
                         if(sysMarg.length >= 3) {
                             currentRecord[type] = {
@@ -623,7 +683,6 @@
                             };
                         }
                         
-                        // 2. 解析所有 Rank Detail (rankmargins)
                         if (res.output.rankmargins) {
                             res.output.rankmargins.forEach(rm => {
                                 if (rm.Socket) {
@@ -667,13 +726,8 @@
             }
             
             return {
-                dimms,
-                vendors: Array.from(vendors).join(", "),
-                parts: Array.from(parts).join("<br>"),
-                cpu,
-                speed,
-                records,
-                rankDetails 
+                dimms, vendors: Array.from(vendors).join(", "), parts: Array.from(parts).join("<br>"),
+                cpu, speed, records, rankDetails 
             };
         }
 
@@ -706,23 +760,16 @@
             };
         }
 
-        // 基本數值與 Criteria 比對（高於=綠色，低於=紅色）
         function getBasicColorClass(val, limit, isMax) {
             if (val === null || val === undefined || isNaN(val)) return "text-gray-700 font-bold";
             if (isNaN(limit) || limit === 0) return "text-gray-700 font-bold"; 
-            
-            // 使用嚴格的 >= 或 <= 來判斷
-            if (isMax) {
-                return val >= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
-            } else {
-                return val <= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
-            }
+            if (isMax) return val >= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
+            else return val <= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
         }
 
-        // 💡 【8. 繪製最終總報表 - 加入 File Name 欄位確保依檔案展開】
+        // 💡 【8. 繪製最終總報表】
         function renderMainReport() {
             mainReportBody.innerHTML = '';
-            
             let groups = {};
             if (groupMode) {
                 uploadedFiles.forEach(f => {
@@ -749,7 +796,6 @@
                     if(f.data.speed !== "-") speeds.add(f.data.speed);
                     
                     f.data.records.forEach(rec => {
-                        // 夾帶來源檔案名稱，以便在畫面中分開顯示
                         if (rec.Read) allItems.Read.push({ ...rec.Read, fileName: f.name });
                         if (rec.Write) allItems.Write.push({ ...rec.Write, fileName: f.name });
                         if (rec.CA) allItems.CA.push({ ...rec.CA, fileName: f.name });
@@ -762,7 +808,6 @@
                 });
 
                 let totalRows = allItems.Read.length + allItems.Write.length + allItems.CA.length + allItems.CS.length;
-                
                 let vStr = Array.from(vendors).join(", ") || "-";
                 let pStr = Array.from(parts).join("<br>") || "-";
                 let cpuStr = Array.from(cpus).join(", ") || "-";
@@ -777,19 +822,11 @@
                     
                     items.forEach((item, itemIndex) => {
                         const tr = document.createElement('tr');
-                        
-                        if (itemIndex === items.length - 1) {
-                            tr.className = "border-b border-gray-300 hover:bg-gray-50/70";
-                        } else {
-                            tr.className = "border-b border-gray-100 hover:bg-gray-50/70";
-                        }
-                        
-                        if (isFirstOverallRow) {
-                            tr.classList.add("border-t-[3px]", "border-gray-400");
-                        }
+                        if (itemIndex === items.length - 1) tr.className = "border-b border-gray-300 hover:bg-gray-50/70";
+                        else tr.className = "border-b border-gray-100 hover:bg-gray-50/70";
+                        if (isFirstOverallRow) tr.classList.add("border-t-[3px]", "border-gray-400");
 
                         let html = "";
-                        
                         if (isFirstOverallRow) {
                             html += `
                                 <td rowspan="${totalRows}" class="table-cell font-medium align-middle bg-white">${vStr}</td>
@@ -804,11 +841,8 @@
                             `;
                         }
                         
-                        if (isFirstRowOfItem) {
-                            html += `<td rowspan="${items.length}" class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
-                        }
+                        if (isFirstRowOfItem) html += `<td rowspan="${items.length}" class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
                         
-                        // 每一筆資料都有獨立的 File Name 欄位，確保不被合併隱藏
                         let displayFileName = item && item.fileName ? item.fileName : "-";
                         html += `<td class="table-cell text-[11px] text-gray-600 truncate max-w-[150px]" title="${displayFileName}">${displayFileName}</td>`;
                         
@@ -842,7 +876,6 @@
                             html += `<td rowspan="${totalRows}" class="table-cell align-middle bg-white text-gray-400 text-xs"></td>`;
                             isFirstOverallRow = false; 
                         }
-                        
                         if (isFirstRowOfItem) isFirstRowOfItem = false; 
                         
                         tr.innerHTML = html;
@@ -852,7 +885,7 @@
             }
         }
 
-        // 💡 【9. 繪製 Per-UMC / Rank 詳細報表】
+        // 💡 【9. 繪製 Per-UMC / Rank 詳細報表表格】
         function renderRankDetails() {
             const fileId = document.getElementById('rankFileSelect').value;
             const tbody = document.getElementById('rankInfoBody');
@@ -867,7 +900,6 @@
             
             tbody.innerHTML = '';
             
-            // 將檔案中所有的 rankmargins 依據 Rank Name 進行群組化
             let ranksMap = {}; 
             ["Read", "Write", "CA", "CS"].forEach(bt => {
                 if(file.data.rankDetails[bt]) {
@@ -887,7 +919,6 @@
                  return;
             }
 
-            // 針對每個 Rank 展開四種 Test Item 的數據
             rankNames.forEach(name => {
                 let rankData = ranksMap[name];
                 let isFirstTestItemInRank = true;
@@ -907,13 +938,9 @@
 
                     if (row) {
                         const crit = currentCriteria[bt];
-                        
-                        let minV = row.minVref;
-                        let maxV = row.maxVref;
-                        let minD = row.minDelay;
-                        let maxD = row.maxDelay;
+                        let minV = row.minVref; let maxV = row.maxVref;
+                        let minD = row.minDelay; let maxD = row.maxDelay;
 
-                        // 單獨欄位直接與 Criteria 比較 (大於=綠色, 小於=紅色)
                         let cMinV = getBasicColorClass(minV, crit.vMin, false);
                         let cMaxV = getBasicColorClass(maxV, crit.vMax, true);
                         let cMinD = getBasicColorClass(minD, crit.dMin, false);
@@ -924,7 +951,6 @@
                         html += `<td class="p-2 ${cMinD}">${minD.toFixed(1)}</td>`;
                         html += `<td class="p-2 ${cMaxD}">${maxD.toFixed(1)}</td>`;
 
-                        // 計算 EYE MARGIN % (綜合面積比)
                         let actualTotV = maxV - minV;
                         let actualTotD = maxD - minD;
                         let actualEyeArea = actualTotV * actualTotD;
@@ -941,7 +967,6 @@
                             let eyePct = (actualEyeArea / critEyeArea) * 100;
                             eyePctText = eyePct.toFixed(1) + "%";
                             
-                            // 面積比大於等於 100% 才算 PASS
                             if (eyePct >= 100) {
                                 eyeClass = "text-green-600";
                                 statusHtml = '<span class="text-green-600 font-bold">PASS</span>';
@@ -960,6 +985,139 @@
                     tr.innerHTML = html;
                     tbody.appendChild(tr);
                 });
+            });
+        }
+
+        // 💡 【10. 新增：繪製折線圖 (Chart.js)】
+        function renderChart() {
+            if (uploadedFiles.length === 0) return;
+            
+            const q = chartState.quadrant;       // e.g. "CS"
+            const m = chartState.metric;         // e.g. "maxDelay"
+            const g = chartState.granularity;    // "perUmc", "perChannel", "perRank"
+            
+            let allLabelsSet = new Set();
+            let fileDatasets = [];
+            
+            // 決定 Metric 取極值的邏輯 (Max Margin 抓最小，Min Margin 抓最大)
+            const isMaxMetric = (m === 'maxDelay' || m === 'maxVref');
+
+            // 1. 處理並聚合每個檔案的數據
+            uploadedFiles.forEach(file => {
+                let dataMap = {}; // { "P0-A-A": [val1, val2], ... }
+                
+                if (file.data.rankDetails && file.data.rankDetails[q]) {
+                    file.data.rankDetails[q].forEach(row => {
+                        let chLetter = row.channel.length > 1 ? row.channel.charAt(1) : row.channel;
+                        let umcLetter = row.umc.slice(-1);
+                        
+                        let key = "";
+                        if (g === 'perRank') {
+                            key = `P${row.socket}-${chLetter}-${umcLetter}-R${row.rank}`;
+                        } else if (g === 'perUmc') {
+                            key = `P${row.socket}-${chLetter}-${umcLetter}`;
+                        } else if (g === 'perChannel') {
+                            key = `P${row.socket}-${chLetter}`;
+                        }
+
+                        if (!dataMap[key]) dataMap[key] = [];
+                        dataMap[key].push(row[m]);
+                        allLabelsSet.add(key);
+                    });
+                }
+                
+                // 將同一個 Key 的陣列聚合成單一瓶頸值
+                let aggData = {};
+                Object.keys(dataMap).forEach(key => {
+                    let vals = dataMap[key];
+                    if (isMaxMetric) {
+                        aggData[key] = Math.min(...vals);
+                    } else {
+                        aggData[key] = Math.max(...vals);
+                    }
+                });
+                
+                fileDatasets.push({
+                    label: file.name,
+                    rawData: aggData
+                });
+            });
+
+            // 2. 排序 X 軸標籤
+            let labels = Array.from(allLabelsSet).sort();
+
+            // 3. 準備 Chart.js Dataset
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+            let datasets = [];
+
+            fileDatasets.forEach((fd, i) => {
+                let dataPoints = labels.map(lbl => fd.rawData[lbl] !== undefined ? fd.rawData[lbl] : null);
+                datasets.push({
+                    label: fd.label,
+                    data: dataPoints,
+                    borderColor: colors[i % colors.length],
+                    backgroundColor: colors[i % colors.length],
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.1
+                });
+            });
+
+            // 4. 新增 Pass Criteria 虛線
+            let critVal = null;
+            let metricName = "";
+            if (m === 'maxDelay') { critVal = currentCriteria[q].dMax; metricName = "Max Delay (UI)"; }
+            if (m === 'minDelay') { critVal = currentCriteria[q].dMin; metricName = "Min Delay (UI)"; }
+            if (m === 'maxVref')  { critVal = currentCriteria[q].vMax; metricName = "Max Vref (mV)"; }
+            if (m === 'minVref')  { critVal = currentCriteria[q].vMin; metricName = "Min Vref (mV)"; }
+
+            if (critVal !== undefined && critVal !== null && !isNaN(critVal)) {
+                let critData = labels.map(() => critVal);
+                datasets.push({
+                    label: `Pass Criteria (${isMaxMetric ? '≥' : '≤'} ${critVal})`,
+                    data: critData,
+                    borderColor: '#ef4444',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    fill: false
+                });
+            }
+
+            // 5. 繪製圖表
+            const ctx = document.getElementById('marginChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            title: { display: true, text: metricName, font: { size: 12 } },
+                            // 若是 Min Delay/Vref，通常為負值，反轉 Y 軸會比較直觀，但保持原樣亦可
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
             });
         }
     </script>
