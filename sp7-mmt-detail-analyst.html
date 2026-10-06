@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SP7-MMT-Detail-Analyst</title>
+    <title>SP7-MMT-Analyst</title>
     <!-- 引入 Tailwind CSS (快速排版工具) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 html2canvas 與 SheetJS (匯出功能) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
+    
     <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
         body { 
@@ -44,10 +41,10 @@
 <body class="h-screen flex overflow-hidden">
     
     <!-- ================= 左側控制面板 (Sidebar) ================= -->
-    <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm shrink-0">
+    <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm">
         
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-            <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-Detail-Analyst</h1>
+            <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
         </div>
         
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
@@ -93,6 +90,7 @@
                 </div>
 
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+                    
                     <div class="flex items-center pb-2 border-b border-gray-200">
                         <span class="font-semibold text-gray-700 w-10">Item</span>
                         <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
@@ -102,10 +100,46 @@
                             <span class="w-[42px] text-center">D-Min</span>
                         </div>
                     </div>
-                    <div class="flex items-center mt-2"><span class="font-semibold text-blue-600 w-10">Read</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-read-vmax" value="" class="criteria-input"><input type="number" id="crit-read-vmin" value="" class="criteria-input"><input type="number" id="crit-read-dmax" value="" class="criteria-input"><input type="number" id="crit-read-dmin" value="" class="criteria-input"></div></div>
-                    <div class="flex items-center mt-2"><span class="font-semibold text-green-600 w-10">Write</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-write-vmax" value="" class="criteria-input"><input type="number" id="crit-write-vmin" value="" class="criteria-input"><input type="number" id="crit-write-dmax" value="" class="criteria-input"><input type="number" id="crit-write-dmin" value="" class="criteria-input"></div></div>
-                    <div class="flex items-center mt-2"><span class="font-semibold text-orange-500 w-10">CA</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-ca-vmax" value="" class="criteria-input"><input type="number" id="crit-ca-vmin" value="" class="criteria-input"><input type="number" id="crit-ca-dmax" value="" class="criteria-input"><input type="number" id="crit-ca-dmin" value="" class="criteria-input"></div></div>
-                    <div class="flex items-center mt-2"><span class="font-semibold text-purple-600 w-10">CS</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-cs-vmax" value="" class="criteria-input"><input type="number" id="crit-cs-vmin" value="" class="criteria-input"><input type="number" id="crit-cs-dmax" value="" class="criteria-input"><input type="number" id="crit-cs-dmin" value="" class="criteria-input"></div></div>
+                    
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-blue-600 w-10">Read</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-read-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-read-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-read-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-read-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-green-600 w-10">Write</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-write-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-write-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-write-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-write-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-orange-500 w-10">CA</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-ca-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-ca-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mt-2">
+                        <span class="font-semibold text-purple-600 w-10">CS</span>
+                        <div class="flex gap-1.5 flex-1 justify-end">
+                            <input type="number" id="crit-cs-vmax" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-vmin" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-dmax" value="" class="criteria-input">
+                            <input type="number" id="crit-cs-dmin" value="" class="criteria-input">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -118,24 +152,24 @@
     </aside>
 
     <!-- ================= 右側主要報表顯示區 ================= -->
-    <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block" id="exportContainer">
+    <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
         
-        <!-- 全局按鈕區 -->
-        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
-            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-layer-group text-blue-500 mr-2"></i>Comprehensive Margin Analysis</h2>
+        <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
+            <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Margin Report</h2>
             <div class="space-x-2">
-                <button id="exportPngBtn" class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700 transition-colors"><i class="fa-regular fa-image mr-1 text-purple-600"></i>Export PNG</button>
-                <button id="exportExcelBtn" class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700 transition-colors"><i class="fa-solid fa-file-excel mr-1 text-green-600"></i>Export Excel</button>
+                <button class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700"><i class="fa-regular fa-image mr-1 text-purple-600"></i>Export PNG</button>
+                <button class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700"><i class="fa-solid fa-file-excel mr-1 text-green-600"></i>Export Excel</button>
             </div>
         </div>
 
-        <!-- 💡 區塊一：原本的 Summary Margin Report (原汁原味保留) -->
+        <!-- 總表 (Worst Margin) -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600 font-bold">
-                <i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Summary Margin Report <span class="font-normal text-gray-400 ml-2">/ Criteria Preset: <span id="reportCriteriaLabel">Custom</span></span>
+            <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
+                Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
             </div>
+            
             <div class="overflow-x-auto relative p-0 bg-white">
-                <table class="w-full border-collapse" id="summaryReportTable">
+                <table class="w-full border-collapse" id="mainReportTable">
                     <thead class="bg-gray-200 shadow-sm">
                         <tr>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
@@ -148,6 +182,8 @@
                             <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
+                            <!-- 新增 FILE NAME 欄位確保各筆檔案獨立展開 -->
+                            <th rowspan="2" class="table-header border border-gray-300 py-2">File Name</th>
                             <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
                             <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
                             <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
@@ -161,31 +197,53 @@
                             <th class="table-header border border-gray-300 py-1">Total Delay</th>
                         </tr>
                     </thead>
-                    <tbody id="summaryReportBody">
-                        <tr><td colspan="17" class="text-center text-gray-400 py-10 text-sm">No data generated yet.</td></tr>
+                    <tbody id="mainReportBody">
+                        <tr>
+                            <td colspan="18" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 💡 區塊二：新增的 Per-UMC / Per-Rank Detail Report -->
+        <!-- ================= 新增區塊: Per-UMC / Rank Detail Analysis ================= -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-3 bg-blue-50 border-b border-gray-200 text-sm text-gray-700 font-bold">
-                <i class="fa-solid fa-list-check text-blue-600 mr-2"></i>Per-UMC / Rank Detail Analysis
+            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
+                <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-list-check text-blue-600 mr-2"></i>Per-UMC / Rank Detail Analysis</div>
+                <div class="flex items-center text-sm gap-4">
+                    <div>
+                        <span class="mr-2 text-gray-600 text-xs font-semibold">File:</span>
+                        <select id="rankFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 bg-white min-w-[250px]">
+                            <option value="">-- Select a file --</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="overflow-x-auto relative p-0 bg-white">
-                <table class="w-full border-collapse" id="detailReportTable">
-                    <thead class="bg-gray-100 shadow-sm" id="detailReportHead">
-                        <!-- 表頭由 JS 繪製 -->
+            
+            <div class="overflow-x-auto relative p-0 bg-white max-h-[600px] overflow-y-auto">
+                <table class="w-full border-collapse text-sm text-center">
+                    <thead class="shadow-sm sticky top-0 bg-gray-100 z-10 border-b-2 border-gray-300">
+                        <tr class="text-gray-700 text-xs uppercase">
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">UMC / RANK</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">TEST ITEM</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">MIN VREF</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">MAX VREF</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">MIN DELAY</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">MAX DELAY</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">EYE MARGIN %</th>
+                            <th class="p-2 border-b border-gray-300 bg-gray-100 font-bold whitespace-nowrap">STATUS</th>
+                        </tr>
                     </thead>
-                    <tbody id="detailReportBody">
-                        <tr><td colspan="17" class="text-center text-gray-400 py-10 text-sm">Please generate report to view details.</td></tr>
+                    <tbody id="rankInfoBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 💡 區塊三：原本的 DIMM Information (原汁原味保留) -->
+        <!-- DIMM 資訊 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
@@ -196,6 +254,7 @@
                     </select>
                 </div>
             </div>
+            
             <div class="overflow-x-auto relative p-0 bg-white">
                 <table class="w-full border-collapse text-sm text-center">
                     <thead class="shadow-sm">
@@ -215,9 +274,10 @@
                 </table>
             </div>
         </div>
+
     </main>
 
-    <!-- Modal 彈出視窗 (補齊資訊) -->
+    <!-- ================= Modal 彈出視窗 (補齊資訊) ================= -->
     <div id="infoModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl w-96 overflow-hidden">
             <div class="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
@@ -243,7 +303,7 @@
         let uploadedFiles = []; 
         let groupMode = false;  
         let definedGroups = []; 
-        let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "Test Data" };
+        let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
 
         const presetData = {
@@ -258,21 +318,28 @@
 
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                presetBtns.forEach(b => { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('bg-gray-200', 'text-gray-700'); });
-                e.target.classList.remove('bg-gray-200', 'text-gray-700'); e.target.classList.add('bg-blue-600', 'text-white');
+                presetBtns.forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white');
+                    b.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                e.target.classList.remove('bg-gray-200', 'text-gray-700');
+                e.target.classList.add('bg-blue-600', 'text-white');
+
                 const mode = e.target.getAttribute('data-preset');
                 currentPresetLabel = e.target.innerText; 
+                
                 if (mode === 'custom') {
                     allCriteriaInputs.forEach(input => { input.readOnly = false; input.value = ""; });
                 } else {
                     const data = presetData[mode];
-                    ["Read", "Write", "CA", "CS"].forEach(t => {
+                    const types = ["Read", "Write", "CA", "CS"];
+                    types.forEach(t => {
                         document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax;
                         document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
                         document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax;
                         document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
                     });
-                    allCriteriaInputs.forEach(input => input.readOnly = true);
+                    allCriteriaInputs.forEach(input => { input.readOnly = true; });
                 }
             });
         });
@@ -283,77 +350,135 @@
         const groupModeToggle = document.getElementById('groupModeToggle');
         const generateBtn = document.getElementById('generateBtn');
         const dimmFileSelect = document.getElementById('dimmFileSelect');
+        const rankFileSelect = document.getElementById('rankFileSelect');
+        const dimmInfoBody = document.getElementById('dimmInfoBody');
+        const mainReportBody = document.getElementById('mainReportBody');
+        const rankInfoBody = document.getElementById('rankInfoBody');
         const infoModal = document.getElementById('infoModal');
         
         function renderGroupManager() {
             const gl = document.getElementById('groupList');
             const msg = document.getElementById('noGroupsMsg');
             gl.innerHTML = '';
-            if (definedGroups.length > 0) { msg.classList.add('hidden'); } else { msg.classList.remove('hidden'); }
+            
+            if (definedGroups.length > 0) msg.classList.add('hidden');
+            else msg.classList.remove('hidden');
+
             definedGroups.forEach((grp, idx) => {
-                gl.innerHTML += `<div class="flex items-center gap-2"><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)"><button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button></div>`;
+                gl.innerHTML += `
+                    <div class="flex items-center gap-2">
+                        <input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)">
+                        <button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                `;
             });
         }
 
-        window.updateDefinedGroup = function(idx, val) { let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList(); }
-        window.removeDefinedGroup = function(idx) { let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList(); }
-        document.getElementById('addGroupBtn').addEventListener('click', () => { definedGroups.push("Group " + String.fromCharCode(65 + definedGroups.length)); renderGroupManager(); renderFileList(); });
+        window.updateDefinedGroup = function(idx, val) {
+            let oldVal = definedGroups[idx];
+            definedGroups[idx] = val;
+            uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; });
+            renderFileList();
+        }
+
+        window.removeDefinedGroup = function(idx) {
+            let oldVal = definedGroups[idx];
+            definedGroups.splice(idx, 1);
+            uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; });
+            renderGroupManager();
+            renderFileList();
+        }
+
+        document.getElementById('addGroupBtn').addEventListener('click', () => {
+            let nextChar = String.fromCharCode(65 + definedGroups.length); 
+            definedGroups.push("Group " + nextChar);
+            renderGroupManager();
+            renderFileList();
+        });
 
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
-        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('bg-blue-50', 'border-blue-400'); handleFiles(e.dataTransfer.files); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-blue-50', 'border-blue-400');
+            handleFiles(e.dataTransfer.files);
+        });
         dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
         groupModeToggle.addEventListener('change', (e) => {
             groupMode = e.target.checked;
             if (groupMode) {
-                document.getElementById('groupManagerContainer').classList.remove('hidden'); renderGroupManager();
+                document.getElementById('groupManagerContainer').classList.remove('hidden');
+                renderGroupManager();
                 uploadedFiles.forEach(f => { if (!f.group && definedGroups.length > 0) f.group = definedGroups[0]; });
-            } else { document.getElementById('groupManagerContainer').classList.add('hidden'); }
+            } else {
+                document.getElementById('groupManagerContainer').classList.add('hidden');
+            }
             renderFileList();
         });
 
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
+        
+        // 綁定 Rank Report 下拉選單更新
+        rankFileSelect.addEventListener('change', renderRankDetails);
 
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload MMT JSON files first.");
             updateCriteria(); 
+            
             document.getElementById('modal-agesa').value = globalMissingInfo.agesa === "-" ? "" : globalMissingInfo.agesa;
             document.getElementById('modal-type').value = globalMissingInfo.type === "-" ? "" : globalMissingInfo.type;
             document.getElementById('modal-rank').value = globalMissingInfo.rank === "-" ? "" : globalMissingInfo.rank;
             document.getElementById('modal-size').value = globalMissingInfo.size === "-" ? "" : globalMissingInfo.size;
             
-            if(groupMode) { document.getElementById('modal-mb-container').style.display = 'none'; } 
-            else { document.getElementById('modal-mb-container').style.display = 'block'; document.getElementById('modal-mb').value = globalMissingInfo.mb === "Test Data" ? "" : globalMissingInfo.mb; }
+            if(groupMode) {
+                document.getElementById('modal-mb-container').style.display = 'none';
+            } else {
+                document.getElementById('modal-mb-container').style.display = 'block';
+                document.getElementById('modal-mb').value = globalMissingInfo.mb === "All Files" ? "" : globalMissingInfo.mb;
+            }
             infoModal.classList.add('active'); 
         });
 
         function closeModal() { infoModal.classList.remove('active'); }
+
         function submitModal() {
             globalMissingInfo.agesa = document.getElementById('modal-agesa').value || "-";
             globalMissingInfo.type = document.getElementById('modal-type').value || "-";
             globalMissingInfo.rank = document.getElementById('modal-rank').value || "-";
             globalMissingInfo.size = document.getElementById('modal-size').value || "-";
-            if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "Test Data";
-            closeModal(); 
-            // 💡 點擊後，同時繪製「總表」與「明細表」
-            renderSummaryReport(); 
-            renderDetailReport();
+            if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "All Files";
+            
+            closeModal();
+            renderMainReport(); 
+            renderRankDetails(); // Modal 關閉後更新 Rank 表格
         }
 
         async function handleFiles(files) {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 if (!file.name.endsWith('.json')) continue; 
+                
                 const text = await file.text();
                 try {
                     const json = JSON.parse(text); 
                     const parsedData = extractMmtData(json); 
-                    uploadedFiles.push({ id: 'file_' + Date.now() + '_' + i, name: file.name, group: (groupMode && definedGroups.length > 0) ? definedGroups[0] : "", data: parsedData });
-                } catch (e) { alert(`Error parsing ${file.name}`); console.error(e); }
+                    
+                    uploadedFiles.push({
+                        id: 'file_' + Date.now() + '_' + i,
+                        name: file.name,
+                        group: (groupMode && definedGroups.length > 0) ? definedGroups[0] : "",
+                        data: parsedData
+                    });
+                } catch (e) {
+                    alert(`Error parsing ${file.name}`);
+                    console.error(e);
+                }
             }
-            fileInput.value = ''; renderFileList(); updateDimmSelect();
+            fileInput.value = ''; 
+            renderFileList();
+            updateFileSelects();
         }
 
         function renderFileList() {
@@ -361,291 +486,310 @@
             uploadedFiles.forEach((file, index) => {
                 const fileDiv = document.createElement('div');
                 fileDiv.className = 'bg-white border border-gray-200 rounded p-2 text-xs flex flex-col gap-1 relative shadow-sm';
+                
                 let groupSelector = '';
                 if (groupMode) {
                     let options = definedGroups.map(g => `<option value="${g}" ${file.group === g ? 'selected' : ''}>${g}</option>`).join('');
                     if (definedGroups.length === 0) options = `<option value="">-- Create a group first --</option>`;
-                    groupSelector = `<div class="mt-1 flex items-center"><span class="text-gray-500 mr-2">Group:</span><select class="border border-gray-300 rounded px-1 flex-1 py-0.5 outline-none" onchange="updateGroup(${index}, this.value)">${options}</select></div>`;
+
+                    groupSelector = `
+                        <div class="mt-1 flex items-center">
+                            <span class="text-gray-500 mr-2">Group:</span>
+                            <select class="border border-gray-300 rounded px-1 flex-1 py-0.5 outline-none" onchange="updateGroup(${index}, this.value)">
+                                ${options}
+                            </select>
+                        </div>
+                    `;
                 }
-                fileDiv.innerHTML = `<div class="flex justify-between items-start"><span class="font-semibold text-gray-700 truncate pr-4" title="${file.name}">${file.name}</span><button onclick="removeFile(${index})" class="text-red-400 hover:text-red-600 absolute top-2 right-2"><i class="fa-solid fa-times"></i></button></div>${groupSelector}`;
+
+                fileDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="font-semibold text-gray-700 truncate pr-4" title="${file.name}">${file.name}</span>
+                        <button onclick="removeFile(${index})" class="text-red-400 hover:text-red-600 absolute top-2 right-2"><i class="fa-solid fa-times"></i></button>
+                    </div>
+                    ${groupSelector}
+                `;
                 fileList.appendChild(fileDiv);
             });
         }
 
-        window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); updateDimmSelect(); }
-        window.updateGroup = function(idx, val) { uploadedFiles[idx].group = val; }
+        window.removeFile = function(idx) {
+            uploadedFiles.splice(idx, 1);
+            renderFileList();
+            updateFileSelects();
+        }
 
-        function updateDimmSelect() {
-            dimmFileSelect.innerHTML = '<option value="">-- Select a file --</option>';
-            uploadedFiles.forEach(f => { const opt = document.createElement('option'); opt.value = f.id; opt.textContent = f.name; dimmFileSelect.appendChild(opt); });
-            dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
+        window.updateGroup = function(idx, val) {
+            uploadedFiles[idx].group = val;
+        }
+
+        function updateFileSelects() {
+            const dimmSel = document.getElementById('dimmFileSelect');
+            const rankSel = document.getElementById('rankFileSelect');
+            
+            let curDimm = dimmSel.value;
+            let curRank = rankSel.value;
+            
+            let optionsHtml = '<option value="">-- Select a file --</option>';
+            uploadedFiles.forEach(f => {
+                optionsHtml += `<option value="${f.id}">${f.name}</option>`;
+            });
+            
+            dimmSel.innerHTML = optionsHtml;
+            rankSel.innerHTML = optionsHtml;
+            
+            if (uploadedFiles.find(f => f.id === curDimm)) dimmSel.value = curDimm;
+            if (uploadedFiles.find(f => f.id === curRank)) rankSel.value = curRank;
+            
+            if(!dimmSel.value) dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
+            if(!rankSel.value) rankInfoBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Select a file and click generate to view per-rank details.</td></tr>';
         }
 
         window.renderDimmInfo = function(fileId) {
-            if(!fileId) { dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>'; return; }
+            if(!fileId) {
+                dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
+                return;
+            }
             const file = uploadedFiles.find(f => f.id === fileId);
             if(!file || !file.data.dimms) return;
             dimmInfoBody.innerHTML = '';
             file.data.dimms.forEach(dimm => {
-                dimmInfoBody.innerHTML += `<tr class="border-b border-gray-100 hover:bg-gray-50"><td class="p-2">${dimm.locator}</td><td class="p-2">${dimm.mfg}</td><td class="p-2">${dimm.part}</td><td class="p-2">${dimm.sn}</td><td class="p-2 text-right">${dimm.speed}</td></tr>`;
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100 hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-2">${dimm.locator}</td>
+                    <td class="p-2">${dimm.mfg}</td>
+                    <td class="p-2">${dimm.part}</td>
+                    <td class="p-2">${dimm.sn}</td>
+                    <td class="p-2 text-right">${dimm.speed}</td>
+                `;
+                dimmInfoBody.appendChild(tr);
             });
         }
 
-        // =========================================================================
-        // 💡 【核心 1：雙軌資料提取引擎】同時儲存 Summary (原功能) 與 Detail (新功能)
-        // =========================================================================
+        // 【7. JSON 資料提取核心】
         function extractMmtData(json) {
             let dimms = [];
-            let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
+            let vendors = new Set();
+            let parts = new Set();
+            let cpu = "-";
+            let speed = "-";
             
-            if(json["Memory Configuration Info"]) speeds.add(json["Memory Configuration Info"].frequency || "-");
+            if(json["Memory Configuration Info"]) {
+                speed = json["Memory Configuration Info"].frequency || "-";
+            }
+            
             if(json.DMI_Details) {
-                if(json.DMI_Details["Processor Details"] && json.DMI_Details["Processor Details"].length > 0) cpus.add(json.DMI_Details["Processor Details"][0].Package || "-");
+                if(json.DMI_Details["Processor Details"] && json.DMI_Details["Processor Details"].length > 0) {
+                    cpu = json.DMI_Details["Processor Details"][0].Package || "-";
+                }
                 if(json.DMI_Details["Memory Details"]) {
                     json.DMI_Details["Memory Details"].forEach(mem => {
-                        dimms.push({ locator: mem["Bank Locator"] || "-", mfg: mem["Manufacturer"] || "-", part: mem["Part Number"] ? mem["Part Number"].trim() : "-", sn: mem["Serial Number"] || "-", speed: mem["Configured Memory Speed"] || "-" });
+                        dimms.push({
+                            locator: mem["Bank Locator"] || "-",
+                            mfg: mem["Manufacturer"] || "-",
+                            part: mem["Part Number"] ? mem["Part Number"].trim() : "-",
+                            sn: mem["Serial Number"] || "-",
+                            speed: mem["Configured Memory Speed"] || "-"
+                        });
                         if(mem["Manufacturer"]) vendors.add(mem["Manufacturer"]);
                         if(mem["Part Number"]) parts.add(mem["Part Number"].trim());
                     });
                 }
             }
             
-            // 這是給上方總表用的 (單一極端值)
-            let summaryRecords = { Read: null, Write: null, CA: null, CS: null }; 
-            // 這是給下方明細表用的 (保留每一個 UMC/Rank)
-            let detailRecordsMap = {}; 
+            let records = []; 
+            let currentRecord = { Read: null, Write: null, CA: null, CS: null }; 
+            let rankDetails = { Read: [], Write: [], CA: [], CS: [] };
             
             if(json["Margin Results"]) {
                 Object.values(json["Margin Results"]).forEach(res => {
                     if(res.output && res.output.systemmargin) {
                         const type = res.output["bus type"]; 
                         
-                        // 💡 修復 UMC 標籤抓取邏輯，確保不會出現 Unknown
-                        let target = res.output.target || res.output.Target || res.output.Instance || res.output.UMC || res.output.Channel || res.output.channel || "Unknown-UMC";
-                        let rank = res.output.Rank !== undefined ? `R${res.output.Rank}` : (res.output["Target Rank"] !== undefined ? `R${res.output["Target Rank"]}` : "");
-                        let umcRank = `${target} ${rank}`.trim(); 
-
-                        if (!detailRecordsMap[umcRank]) detailRecordsMap[umcRank] = { Read: null, Write: null, CA: null, CS: null };
+                        if (currentRecord[type] !== null) {
+                            records.push({...currentRecord});
+                            currentRecord = { Read: null, Write: null, CA: null, CS: null };
+                        }
                         
+                        // 1. 解析 Worst Case (systemmargin)
                         const sysMarg = res.output.systemmargin;
                         if(sysMarg.length >= 3) {
-                            let minD = sysMarg[0]["Delay (UI)"] !== null ? parseFloat(sysMarg[0]["Delay (UI)"]) : null;
-                            let maxD = sysMarg[2]["Delay (UI)"] !== null ? parseFloat(sysMarg[2]["Delay (UI)"]) : null;
-                            let minV = sysMarg[1]["Min Vref (mV)"] !== null ? parseFloat(sysMarg[1]["Min Vref (mV)"]) : null;
-                            let maxV = sysMarg[1]["Max Vref (mV)"] !== null ? parseFloat(sysMarg[1]["Max Vref (mV)"]) : null;
-
-                            // 1. 寫入 Detail Map
-                            detailRecordsMap[umcRank][type] = { minDelay: minD, maxDelay: maxD, minVref: minV, maxVref: maxV };
-
-                            // 2. 寫入 Summary (取極端值)
-                            if (!summaryRecords[type]) {
-                                summaryRecords[type] = { minDelay: minD, maxDelay: maxD, minVref: minV, maxVref: maxV };
-                            } else {
-                                let s = summaryRecords[type];
-                                if (minD !== null && (s.minDelay === null || minD > s.minDelay)) s.minDelay = minD;
-                                if (maxD !== null && (s.maxDelay === null || maxD < s.maxDelay)) s.maxDelay = maxD;
-                                if (minV !== null && (s.minVref === null || minV > s.minVref)) s.minVref = minV;
-                                if (maxV !== null && (s.maxVref === null || maxV < s.maxVref)) s.maxVref = maxV;
-                            }
+                            currentRecord[type] = {
+                                minDelay: sysMarg[0]["Delay (UI)"],
+                                maxDelay: sysMarg[2]["Delay (UI)"],
+                                minVref: sysMarg[1]["Min Vref (mV)"],
+                                maxVref: sysMarg[1]["Max Vref (mV)"]
+                            };
+                        }
+                        
+                        // 2. 解析所有 Rank Detail (rankmargins)
+                        if (res.output.rankmargins) {
+                            res.output.rankmargins.forEach(rm => {
+                                if (rm.Socket) {
+                                    Object.entries(rm.Socket).forEach(([sockId, sockObj]) => {
+                                        if (sockObj.Channel) {
+                                            Object.entries(sockObj.Channel).forEach(([chId, chObj]) => {
+                                                if (chObj.UMC) {
+                                                    Object.entries(chObj.UMC).forEach(([umcId, umcObj]) => {
+                                                        if (umcObj.rank) {
+                                                            umcObj.rank.forEach(rankObj => {
+                                                                Object.entries(rankObj).forEach(([rankId, rankData]) => {
+                                                                    if (rankData.length >= 3) {
+                                                                        rankDetails[type].push({
+                                                                            socket: sockId,
+                                                                            channel: chId,
+                                                                            umc: umcId,
+                                                                            rank: rankId,
+                                                                            minDelay: rankData[0]["Delay (UI)"],
+                                                                            maxDelay: rankData[2]["Delay (UI)"],
+                                                                            minVref: rankData[1]["Min Vref (mV)"],
+                                                                            maxVref: rankData[1]["Max Vref (mV)"]
+                                                                        });
+                                                                    }
+                                                                });
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
                         }
                     }
                 });
+                
+                if (currentRecord.Read !== null || currentRecord.Write !== null || currentRecord.CA !== null || currentRecord.CS !== null) {
+                    records.push(currentRecord);
+                }
             }
-            return { dimms, vendors: Array.from(vendors).join(", ") || "-", parts: Array.from(parts).join("<br>") || "-", cpu: Array.from(cpus).join(", ") || "-", speed: Array.from(speeds).join(", ") || "-", summaryRecords, detailRecordsMap };
-        }
-
-        function updateCriteria() {
-            const p = (id) => parseFloat(document.getElementById(id).value);
-            currentCriteria = {
-                Read: { vMax: p('crit-read-vmax'), vMin: p('crit-read-vmin'), dMax: p('crit-read-dmax'), dMin: p('crit-read-dmin') },
-                Write: { vMax: p('crit-write-vmax'), vMin: p('crit-write-vmin'), dMax: p('crit-write-dmax'), dMin: p('crit-write-dmin') },
-                CA: { vMax: p('crit-ca-vmax'), vMin: p('crit-ca-vmin'), dMax: p('crit-ca-dmax'), dMin: p('crit-ca-dmin') },
-                CS: { vMax: p('crit-cs-vmax'), vMin: p('crit-cs-vmin'), dMax: p('crit-cs-dmax'), dMin: p('crit-cs-dmin') }
+            
+            return {
+                dimms,
+                vendors: Array.from(vendors).join(", "),
+                parts: Array.from(parts).join("<br>"),
+                cpu,
+                speed,
+                records,
+                rankDetails 
             };
         }
 
-        function getColorClass(val, limit, isMax) {
-            if (val === null || val === undefined || isNaN(val)) return "";
-            if (isNaN(limit)) return ""; 
-            let safeLimit = limit * 1.05;
+        function updateCriteria() {
+            currentCriteria = {
+                Read: {
+                    vMax: parseFloat(document.getElementById('crit-read-vmax').value),
+                    vMin: parseFloat(document.getElementById('crit-read-vmin').value),
+                    dMax: parseFloat(document.getElementById('crit-read-dmax').value),
+                    dMin: parseFloat(document.getElementById('crit-read-dmin').value),
+                },
+                Write: {
+                    vMax: parseFloat(document.getElementById('crit-write-vmax').value),
+                    vMin: parseFloat(document.getElementById('crit-write-vmin').value),
+                    dMax: parseFloat(document.getElementById('crit-write-dmax').value),
+                    dMin: parseFloat(document.getElementById('crit-write-dmin').value),
+                },
+                CA: {
+                    vMax: parseFloat(document.getElementById('crit-ca-vmax').value),
+                    vMin: parseFloat(document.getElementById('crit-ca-vmin').value),
+                    dMax: parseFloat(document.getElementById('crit-ca-dmax').value),
+                    dMin: parseFloat(document.getElementById('crit-ca-dmin').value),
+                },
+                CS: {
+                    vMax: parseFloat(document.getElementById('crit-cs-vmax').value),
+                    vMin: parseFloat(document.getElementById('crit-cs-vmin').value),
+                    dMax: parseFloat(document.getElementById('crit-cs-dmax').value),
+                    dMin: parseFloat(document.getElementById('crit-cs-dmin').value),
+                }
+            };
+        }
+
+        // 基本數值與 Criteria 比對（高於=綠色，低於=紅色）
+        function getBasicColorClass(val, limit, isMax) {
+            if (val === null || val === undefined || isNaN(val)) return "text-gray-700 font-bold";
+            if (isNaN(limit) || limit === 0) return "text-gray-700 font-bold"; 
+            
+            // 使用嚴格的 >= 或 <= 來判斷
             if (isMax) {
-                if (val >= safeLimit) return "val-green"; 
-                if (val >= limit) return "val-orange";    
-                return "val-red";                         
+                return val >= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
             } else {
-                if (val <= safeLimit) return "val-green";
-                if (val <= limit) return "val-orange";
-                return "val-red";
+                return val <= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
             }
         }
 
-        // =========================================================================
-        // 💡 【區塊一：渲染原本的 Summary Margin Report 總表】
-        // =========================================================================
-        function renderSummaryReport() {
-            const tbody = document.getElementById('summaryReportBody');
-            tbody.innerHTML = '';
-            document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
-
+        // 💡 【8. 繪製最終總報表 - 加入 File Name 欄位確保依檔案展開】
+        function renderMainReport() {
+            mainReportBody.innerHTML = '';
+            
             let groups = {};
             if (groupMode) {
-                uploadedFiles.forEach(f => { const g = f.group || "Ungrouped"; if(!groups[g]) groups[g] = []; groups[g].push(f); });
+                uploadedFiles.forEach(f => {
+                    const g = f.group || "Ungrouped";
+                    if(!groups[g]) groups[g] = [];
+                    groups[g].push(f);
+                });
             } else {
-                uploadedFiles.forEach(f => { groups[f.name] = [f]; });
+                groups["All Files"] = uploadedFiles;
             }
+
+            document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
 
             for (const [groupName, files] of Object.entries(groups)) {
                 if (files.length === 0) continue;
                 
-                let vStr = files[0].data.vendors; let pStr = files[0].data.parts; let cpuStr = files[0].data.cpu; let speedStr = files[0].data.speed;
-                let groupMb = groupMode ? groupName : globalMissingInfo.mb;
+                let allItems = { Read: [], Write: [], CA: [], CS: [] };
+                let vendors = new Set(), parts = new Set(), cpus = new Set(), speeds = new Set();
                 
-                // 聚合 Summary 的極端值
-                let agg = { Read: null, Write: null, CA: null, CS: null };
                 files.forEach(f => {
-                    ["Read", "Write", "CA", "CS"].forEach(bt => {
-                        let sum = f.data.summaryRecords[bt];
-                        if (sum) {
-                            if (!agg[bt]) agg[bt] = { minDelay: sum.minDelay, maxDelay: sum.maxDelay, minVref: sum.minVref, maxVref: sum.maxVref };
-                            else {
-                                if (sum.minDelay !== null && sum.minDelay > agg[bt].minDelay) agg[bt].minDelay = sum.minDelay;
-                                if (sum.maxDelay !== null && sum.maxDelay < agg[bt].maxDelay) agg[bt].maxDelay = sum.maxDelay;
-                                if (sum.minVref !== null && sum.minVref > agg[bt].minVref) agg[bt].minVref = sum.minVref;
-                                if (sum.maxVref !== null && sum.maxVref < agg[bt].maxVref) agg[bt].maxVref = sum.maxVref;
-                            }
-                        }
+                    if(f.data.vendors && f.data.vendors !== "-") f.data.vendors.split(", ").forEach(v => vendors.add(v));
+                    if(f.data.parts && f.data.parts !== "-") f.data.parts.split("<br>").forEach(p => parts.add(p));
+                    if(f.data.cpu !== "-") cpus.add(f.data.cpu);
+                    if(f.data.speed !== "-") speeds.add(f.data.speed);
+                    
+                    f.data.records.forEach(rec => {
+                        // 夾帶來源檔案名稱，以便在畫面中分開顯示
+                        if (rec.Read) allItems.Read.push({ ...rec.Read, fileName: f.name });
+                        if (rec.Write) allItems.Write.push({ ...rec.Write, fileName: f.name });
+                        if (rec.CA) allItems.CA.push({ ...rec.CA, fileName: f.name });
+                        if (rec.CS) allItems.CS.push({ ...rec.CS, fileName: f.name });
                     });
                 });
 
-                let isFirstOverallRow = true;
-                ["Read", "Write", "CA", "CS"].forEach((bt, idx) => {
-                    if(!agg[bt]) return;
-                    const tr = document.createElement('tr');
-                    tr.className = (idx === 3) ? "border-b border-gray-300 hover:bg-gray-50/70" : "border-b border-gray-100 hover:bg-gray-50/70";
-                    if (isFirstOverallRow) tr.classList.add("border-t-[3px]", "border-gray-400");
-
-                    let html = "";
-                    if (isFirstOverallRow) {
-                        html += `
-                            <td rowspan="4" class="table-cell font-medium align-middle bg-white">${vStr}</td>
-                            <td rowspan="4" class="table-cell align-middle bg-white">${globalMissingInfo.agesa}</td>
-                            <td rowspan="4" class="table-cell text-[10px] leading-tight text-left pl-2 align-middle bg-white">${pStr}</td>
-                            <td rowspan="4" class="table-cell align-middle bg-white">${globalMissingInfo.type}</td>
-                            <td rowspan="4" class="table-cell align-middle bg-white">${globalMissingInfo.rank}</td>
-                            <td rowspan="4" class="table-cell align-middle bg-white">${speedStr}</td>
-                            <td rowspan="4" class="table-cell align-middle bg-white">${globalMissingInfo.size}</td>
-                            <td rowspan="4" class="table-cell align-middle bg-white">${cpuStr}</td>
-                            <td rowspan="4" class="table-cell font-bold text-blue-800 align-middle bg-white">${groupMb}</td>
-                        `;
-                    }
-                    html += `<td class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
-                    
-                    let minV = agg[bt].minVref, maxV = agg[bt].maxVref, minD = agg[bt].minDelay, maxD = agg[bt].maxDelay;
-                    let crit = currentCriteria[bt];
-                    
-                    let totV = (maxV !== null && minV !== null) ? (maxV - minV).toFixed(2) : "-";
-                    let totD = (maxD !== null && minD !== null) ? (maxD - minD).toFixed(2) : "-";
-                    
-                    html += `
-                        <td class="table-cell">${minV !== null ? `<span class="${getColorClass(minV, crit.vMin, false)}">${minV.toFixed(2)}</span>` : "-"}</td>
-                        <td class="table-cell">${maxV !== null ? `<span class="${getColorClass(maxV, crit.vMax, true)}">${maxV.toFixed(2)}</span>` : "-"}</td>
-                        <td class="table-cell bg-green-50/20 font-bold text-green-700">${totV}</td>
-                        <td class="table-cell">${minD !== null ? `<span class="${getColorClass(minD, crit.dMin, false)}">${minD.toFixed(2)}</span>` : "-"}</td>
-                        <td class="table-cell">${maxD !== null ? `<span class="${getColorClass(maxD, crit.dMax, true)}">${maxD.toFixed(2)}</span>` : "-"}</td>
-                        <td class="table-cell bg-green-50/20 font-bold text-green-700">${totD}</td>
-                    `;
-                    
-                    if (isFirstOverallRow) { html += `<td rowspan="4" class="table-cell align-middle bg-white text-gray-400 text-xs"></td>`; isFirstOverallRow = false; }
-                    tr.innerHTML = html; tbody.appendChild(tr); 
+                ["Read", "Write", "CA", "CS"].forEach(bt => {
+                    if (allItems[bt].length === 0) allItems[bt].push(null);
                 });
-            }
-        }
 
-        // =========================================================================
-        // 💡 【區塊二：渲染新增的 Per-UMC / Per-Rank Detail Report 明細表】
-        // =========================================================================
-        function renderDetailReport() {
-            const head = document.getElementById('detailReportHead');
-            const tbody = document.getElementById('detailReportBody');
-            
-            // 動態建立表頭
-            head.innerHTML = `
-                <tr>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Type</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Size</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2 text-blue-800">UMC / RANK</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
-                    <th colspan="2" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
-                    <th colspan="2" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2 bg-yellow-50 text-yellow-800">Worst Margin %</th>
-                    <th rowspan="2" class="table-header border border-gray-300 py-2">Status</th>
-                </tr>
-                <tr>
-                    <th class="table-header border border-gray-300 py-1">Min Vref</th>
-                    <th class="table-header border border-gray-300 py-1">Max Vref</th>
-                    <th class="table-header border border-gray-300 py-1">Min Delay</th>
-                    <th class="table-header border border-gray-300 py-1">Max Delay</th>
-                </tr>
-            `;
-
-            let groups = {};
-            if (groupMode) {
-                uploadedFiles.forEach(f => { const g = f.group || "Ungrouped"; if(!groups[g]) groups[g] = []; groups[g].push(f); });
-            } else {
-                uploadedFiles.forEach(f => { groups[f.name] = [f]; });
-            }
-
-            tbody.innerHTML = '';
-
-            for (const [groupName, files] of Object.entries(groups)) {
-                if (files.length === 0) continue;
+                let totalRows = allItems.Read.length + allItems.Write.length + allItems.CA.length + allItems.CS.length;
                 
-                let vStr = files[0].data.vendors; let pStr = files[0].data.parts; let cpuStr = files[0].data.cpu; let speedStr = files[0].data.speed;
+                let vStr = Array.from(vendors).join(", ") || "-";
+                let pStr = Array.from(parts).join("<br>") || "-";
+                let cpuStr = Array.from(cpus).join(", ") || "-";
+                let speedStr = Array.from(speeds).join(", ") || "-";
                 let groupMb = groupMode ? groupName : globalMissingInfo.mb;
                 
-                // 將該群組的 UMC 收集並自然排序
-                let umcMap = {};
-                files.forEach(f => {
-                    for(const [umcKey, rec] of Object.entries(f.data.detailRecordsMap)) {
-                        if (!umcMap[umcKey]) umcMap[umcKey] = { Read: null, Write: null, CA: null, CS: null };
-                        ["Read", "Write", "CA", "CS"].forEach(bt => {
-                            if (rec[bt]) {
-                                if(!umcMap[umcKey][bt]) umcMap[umcKey][bt] = { minDelay: rec[bt].minDelay, maxDelay: rec[bt].maxDelay, minVref: rec[bt].minVref, maxVref: rec[bt].maxVref };
-                                else {
-                                    if (rec[bt].minDelay !== null && rec[bt].minDelay > umcMap[umcKey][bt].minDelay) umcMap[umcKey][bt].minDelay = rec[bt].minDelay;
-                                    if (rec[bt].maxDelay !== null && rec[bt].maxDelay < umcMap[umcKey][bt].maxDelay) umcMap[umcKey][bt].maxDelay = rec[bt].maxDelay;
-                                    if (rec[bt].minVref !== null && rec[bt].minVref > umcMap[umcKey][bt].minVref) umcMap[umcKey][bt].minVref = rec[bt].minVref;
-                                    if (rec[bt].maxVref !== null && rec[bt].maxVref < umcMap[umcKey][bt].maxVref) umcMap[umcKey][bt].maxVref = rec[bt].maxVref;
-                                }
-                            }
-                        });
-                    }
-                });
-
-                let sortedUmcKeys = Object.keys(umcMap).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
-                if (sortedUmcKeys.length === 0) continue;
-
-                let totalRows = sortedUmcKeys.length * 4; 
                 let isFirstOverallRow = true;
 
-                sortedUmcKeys.forEach((umcKey, umcIdx) => {
-                    let umcData = umcMap[umcKey];
-                    let isFirstRowOfUmcRank = true;
-
-                    ["Read", "Write", "CA", "CS"].forEach((bt, btIndex) => {
-                        let item = umcData[bt];
+                ["Read", "Write", "CA", "CS"].forEach(bt => {
+                    let items = allItems[bt];
+                    let isFirstRowOfItem = true;
+                    
+                    items.forEach((item, itemIndex) => {
                         const tr = document.createElement('tr');
-                        tr.className = (btIndex === 3) ? "border-b border-gray-300 hover:bg-gray-50/70" : "border-b border-gray-100 hover:bg-gray-50/70";
-                        if (isFirstOverallRow) tr.classList.add("border-t-[3px]", "border-gray-400");
+                        
+                        if (itemIndex === items.length - 1) {
+                            tr.className = "border-b border-gray-300 hover:bg-gray-50/70";
+                        } else {
+                            tr.className = "border-b border-gray-100 hover:bg-gray-50/70";
+                        }
+                        
+                        if (isFirstOverallRow) {
+                            tr.classList.add("border-t-[3px]", "border-gray-400");
+                        }
 
                         let html = "";
+                        
                         if (isFirstOverallRow) {
                             html += `
                                 <td rowspan="${totalRows}" class="table-cell font-medium align-middle bg-white">${vStr}</td>
@@ -658,119 +802,166 @@
                                 <td rowspan="${totalRows}" class="table-cell align-middle bg-white">${cpuStr}</td>
                                 <td rowspan="${totalRows}" class="table-cell font-bold text-blue-800 align-middle bg-white">${groupMb}</td>
                             `;
-                            isFirstOverallRow = false;
                         }
                         
-                        if (isFirstRowOfUmcRank) {
-                            html += `<td rowspan="4" class="table-cell font-bold text-blue-700 bg-blue-50/30 align-middle border-l border-r border-gray-300">${umcKey}</td>`;
-                            isFirstRowOfUmcRank = false;
+                        if (isFirstRowOfItem) {
+                            html += `<td rowspan="${items.length}" class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-l border-r border-gray-300">${bt}</td>`;
                         }
-
-                        html += `<td class="table-cell font-semibold bg-gray-50 text-gray-700 align-middle border-r border-gray-300">${bt}</td>`;
                         
-                        let minV = item ? item.minVref : null; let maxV = item ? item.maxVref : null;
-                        let minD = item ? item.minDelay : null; let maxD = item ? item.maxDelay : null;
+                        // 每一筆資料都有獨立的 File Name 欄位，確保不被合併隱藏
+                        let displayFileName = item && item.fileName ? item.fileName : "-";
+                        html += `<td class="table-cell text-[11px] text-gray-600 truncate max-w-[150px]" title="${displayFileName}">${displayFileName}</td>`;
+                        
+                        let minV = item && item.minVref !== null && !isNaN(item.minVref) ? parseFloat(item.minVref) : null;
+                        let maxV = item && item.maxVref !== null && !isNaN(item.maxVref) ? parseFloat(item.maxVref) : null;
+                        let minD = item && item.minDelay !== null && !isNaN(item.minDelay) ? parseFloat(item.minDelay) : null;
+                        let maxD = item && item.maxDelay !== null && !isNaN(item.maxDelay) ? parseFloat(item.maxDelay) : null;
+                        
+                        let totV = (maxV !== null && minV !== null) ? (maxV - minV).toFixed(2) : "-";
+                        let totD = (maxD !== null && minD !== null) ? (maxD - minD).toFixed(2) : "-";
                         let crit = currentCriteria[bt];
                         
-                        // 💡 修正：Margin % 與 小數點顯示的 Bug
-                        let fails = []; let margins = [];
-
-                        const calcMaxMargin = (val, limit, nameStr) => {
-                            if (val === null || isNaN(limit)) return;
-                            margins.push((val / limit) * 100);
-                            if (val < limit) fails.push(`${nameStr} ${val.toFixed(1)} (Limit: ${limit})`);
-                        };
-                        const calcMinMargin = (val, limit, nameStr) => {
-                            if (val === null || isNaN(limit)) return;
-                            margins.push((val / limit) * 100);
-                            if (val > limit) fails.push(`${nameStr} ${val.toFixed(1)} (Limit: ${limit})`);
-                        };
-
-                        calcMaxMargin(minV, crit.vMin, "Min Vref");
-                        calcMaxMargin(maxV, crit.vMax, "Max Vref");
-                        calcMinMargin(minD, crit.dMin, "Min Delay");
-                        calcMaxMargin(maxD, crit.dMax, "Max Delay");
-
-                        let worstMarginStr = "-"; let marginColorClass = "text-gray-500";
-                        if (margins.length > 0) {
-                            let worstMargin = Math.min(...margins);
-                            worstMarginStr = worstMargin.toFixed(1) + "%";
-                            if (worstMargin < 100) marginColorClass = "text-red-600 font-bold";
-                            else if (worstMargin <= 105) marginColorClass = "text-orange-500 font-bold";
-                            else marginColorClass = "text-green-600 font-bold";
-                        }
+                        let minV_html = minV !== null ? `<span class="${getBasicColorClass(minV, crit.vMin, false)}">${minV.toFixed(2)}</span>` : "-";
+                        let maxV_html = maxV !== null ? `<span class="${getBasicColorClass(maxV, crit.vMax, true)}">${maxV.toFixed(2)}</span>` : "-";
+                        let totV_html = totV !== "-" ? `<span class="font-bold text-green-700">${totV}</span>` : "-";
                         
-                        let statusHtml = '<span class="text-gray-400">-</span>';
-                        if (margins.length > 0) {
-                            if (fails.length > 0) {
-                                statusHtml = `<span class="text-red-600 font-bold">FAIL</span><br><span class="text-[10px] text-gray-500">${fails.join('<br>')}</span>`;
-                            } else {
-                                statusHtml = `<span class="text-green-600 font-bold">PASS</span>`;
-                            }
-                        }
-
+                        let minD_html = minD !== null ? `<span class="${getBasicColorClass(minD, crit.dMin, false)}">${minD.toFixed(2)}</span>` : "-";
+                        let maxD_html = maxD !== null ? `<span class="${getBasicColorClass(maxD, crit.dMax, true)}">${maxD.toFixed(2)}</span>` : "-";
+                        let totD_html = totD !== "-" ? `<span class="font-bold text-green-700">${totD}</span>` : "-";
+                        
                         html += `
-                            <td class="table-cell">${minV !== null ? `<span class="${getColorClass(minV, crit.vMin, false)}">${minV.toFixed(1)}</span>` : "-"}</td>
-                            <td class="table-cell">${maxV !== null ? `<span class="${getColorClass(maxV, crit.vMax, true)}">${maxV.toFixed(1)}</span>` : "-"}</td>
-                            <td class="table-cell">${minD !== null ? `<span class="${getColorClass(minD, crit.dMin, false)}">${minD.toFixed(1)}</span>` : "-"}</td>
-                            <td class="table-cell">${maxD !== null ? `<span class="${getColorClass(maxD, crit.dMax, true)}">${maxD.toFixed(1)}</span>` : "-"}</td>
-                            <td class="table-cell bg-yellow-50/50 font-semibold ${marginColorClass}">${worstMarginStr}</td>
-                            <td class="table-cell align-middle leading-tight">${statusHtml}</td>
+                            <td class="table-cell">${minV_html}</td>
+                            <td class="table-cell">${maxV_html}</td>
+                            <td class="table-cell bg-green-50/20">${totV_html}</td>
+                            <td class="table-cell">${minD_html}</td>
+                            <td class="table-cell">${maxD_html}</td>
+                            <td class="table-cell bg-green-50/20">${totD_html}</td>
                         `;
                         
+                        if (isFirstOverallRow) {
+                            html += `<td rowspan="${totalRows}" class="table-cell align-middle bg-white text-gray-400 text-xs"></td>`;
+                            isFirstOverallRow = false; 
+                        }
+                        
+                        if (isFirstRowOfItem) isFirstRowOfItem = false; 
+                        
                         tr.innerHTML = html;
-                        tbody.appendChild(tr); 
+                        mainReportBody.appendChild(tr); 
                     });
                 });
             }
         }
 
-        // =========================================================================
-        // 【10. 匯出功能】一次匯出三個區塊的資料
-        // =========================================================================
-        document.getElementById('exportPngBtn').addEventListener('click', () => {
-            const container = document.getElementById('exportContainer');
-            if (uploadedFiles.length === 0) return alert("No data to export!");
+        // 💡 【9. 繪製 Per-UMC / Rank 詳細報表】
+        function renderRankDetails() {
+            const fileId = document.getElementById('rankFileSelect').value;
+            const tbody = document.getElementById('rankInfoBody');
             
-            html2canvas(container, { scale: 2, backgroundColor: "#f3f4f6" }).then(canvas => {
-                const link = document.createElement('a'); 
-                link.download = `Comprehensive_Report_${new Date().getTime()}.png`; 
-                link.href = canvas.toDataURL('image/png'); 
-                link.click(); 
-            });
-        });
-
-        document.getElementById('exportExcelBtn').addEventListener('click', () => {
-            if (uploadedFiles.length === 0) return alert("No data to export!");
-
-            const wb = XLSX.utils.book_new(); 
+            if (!fileId || !uploadedFiles.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td></tr>';
+                return;
+            }
             
-            // 匯出原本的 Summary 表格
-            const summaryTable = document.getElementById('summaryReportTable');
-            const ws1 = XLSX.utils.table_to_book(summaryTable, { sheet: "Summary Report" }).Sheets["Summary Report"];
-            XLSX.utils.book_append_sheet(wb, ws1, "Summary Report");
-
-            // 匯出明細表
-            const detailTable = document.getElementById('detailReportTable');
-            const ws2 = XLSX.utils.table_to_book(detailTable, { sheet: "Detail Report" }).Sheets["Detail Report"];
-            XLSX.utils.book_append_sheet(wb, ws2, "Detail Report");
-
-            // 匯出 DIMM 表格
-            uploadedFiles.forEach((file, index) => {
-                let wsData = [["Position (Bank Locator)", "Manufacturer", "Part Number", "Serial Number", "Speed"]];
-                if (file.data.dimms && file.data.dimms.length > 0) {
-                    file.data.dimms.forEach(dimm => { wsData.push([dimm.locator, dimm.mfg, dimm.part, dimm.sn, dimm.speed]); });
-                } else {
-                    wsData.push(["No DIMM info available", "-", "-", "-", "-"]);
+            const file = uploadedFiles.find(f => f.id === fileId);
+            if (!file || !file.data.rankDetails) return;
+            
+            tbody.innerHTML = '';
+            
+            // 將檔案中所有的 rankmargins 依據 Rank Name 進行群組化
+            let ranksMap = {}; 
+            ["Read", "Write", "CA", "CS"].forEach(bt => {
+                if(file.data.rankDetails[bt]) {
+                    file.data.rankDetails[bt].forEach(row => {
+                        let chLetter = row.channel.length > 1 ? row.channel.charAt(1) : row.channel;
+                        let umcLetter = row.umc.slice(-1);
+                        let name = `P${row.socket} ${chLetter} ${umcLetter} R${row.rank}`;
+                        if(!ranksMap[name]) ranksMap[name] = { Read: null, Write: null, CA: null, CS: null };
+                        ranksMap[name][bt] = row;
+                    });
                 }
-                let ws = XLSX.utils.aoa_to_sheet(wsData);
-                let safeName = file.name.substring(0, 20).replace(/[\\/?*\[\]:]/g, '');
-                let sheetName = `DIMM_${safeName}_${index + 1}`.substring(0, 31);
-                XLSX.utils.book_append_sheet(wb, ws, sheetName);
             });
-            
-            XLSX.writeFile(wb, `Comprehensive_Report_${new Date().getTime()}.xlsx`);
-        });
+
+            const rankNames = Object.keys(ranksMap).sort();
+            if(rankNames.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">No rank data found in this file.</td></tr>';
+                 return;
+            }
+
+            // 針對每個 Rank 展開四種 Test Item 的數據
+            rankNames.forEach(name => {
+                let rankData = ranksMap[name];
+                let isFirstTestItemInRank = true;
+
+                ["Read", "Write", "CA", "CS"].forEach(bt => {
+                    let row = rankData[bt];
+                    let tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-200 hover:bg-gray-50";
+
+                    let html = "";
+                    if (isFirstTestItemInRank) {
+                        html += `<td rowspan="4" class="p-2 whitespace-nowrap text-gray-700 font-bold border-r border-gray-200 align-middle">${name}</td>`;
+                        isFirstTestItemInRank = false;
+                    }
+
+                    html += `<td class="p-2 font-semibold text-gray-600">${bt}</td>`;
+
+                    if (row) {
+                        const crit = currentCriteria[bt];
+                        
+                        let minV = row.minVref;
+                        let maxV = row.maxVref;
+                        let minD = row.minDelay;
+                        let maxD = row.maxDelay;
+
+                        // 單獨欄位直接與 Criteria 比較 (大於=綠色, 小於=紅色)
+                        let cMinV = getBasicColorClass(minV, crit.vMin, false);
+                        let cMaxV = getBasicColorClass(maxV, crit.vMax, true);
+                        let cMinD = getBasicColorClass(minD, crit.dMin, false);
+                        let cMaxD = getBasicColorClass(maxD, crit.dMax, true);
+
+                        html += `<td class="p-2 ${cMinV}">${minV.toFixed(1)}</td>`;
+                        html += `<td class="p-2 ${cMaxV}">${maxV.toFixed(1)}</td>`;
+                        html += `<td class="p-2 ${cMinD}">${minD.toFixed(1)}</td>`;
+                        html += `<td class="p-2 ${cMaxD}">${maxD.toFixed(1)}</td>`;
+
+                        // 計算 EYE MARGIN % (綜合面積比)
+                        let actualTotV = maxV - minV;
+                        let actualTotD = maxD - minD;
+                        let actualEyeArea = actualTotV * actualTotD;
+
+                        let critTotV = (crit.vMax && crit.vMin) ? (crit.vMax - crit.vMin) : 0;
+                        let critTotD = (crit.dMax && crit.dMin) ? (crit.dMax - crit.dMin) : 0;
+                        let critEyeArea = critTotV * critTotD;
+
+                        let eyePctText = "-";
+                        let statusHtml = "-";
+                        let eyeClass = "text-gray-700";
+
+                        if (critEyeArea > 0) {
+                            let eyePct = (actualEyeArea / critEyeArea) * 100;
+                            eyePctText = eyePct.toFixed(1) + "%";
+                            
+                            // 面積比大於等於 100% 才算 PASS
+                            if (eyePct >= 100) {
+                                eyeClass = "text-green-600";
+                                statusHtml = '<span class="text-green-600 font-bold">PASS</span>';
+                            } else {
+                                eyeClass = "text-red-600";
+                                statusHtml = '<span class="text-red-600 font-bold">FAIL</span>';
+                            }
+                        }
+
+                        html += `<td class="p-2 font-bold ${eyeClass}">${eyePctText}</td>`;
+                        html += `<td class="p-2">${statusHtml}</td>`;
+                    } else {
+                        html += `<td colspan="6" class="p-2 text-gray-400 text-xs">No Data</td>`;
+                    }
+
+                    tr.innerHTML = html;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
     </script>
 </body>
 </html>
