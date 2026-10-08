@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Chart.js 折線圖套件 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入 html2canvas (匯出 PNG 用) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 引入 SheetJS (匯出 Excel 用) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
@@ -39,7 +43,6 @@
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 50; }
         .modal.active { display: flex; } 
         
-        /* 圖表按鈕樣式 */
         .chart-ctrl-btn { padding: 4px 12px; font-size: 12px; border: 1px solid #d1d5db; border-radius: 4px; background-color: white; color: #4b5563; transition: all 0.2s; cursor: pointer; }
         .chart-ctrl-btn:hover { background-color: #f9fafb; border-color: #9ca3af; }
         .chart-ctrl-btn.active { background-color: #0ea5e9; border-color: #0ea5e9; color: white; font-weight: bold; }
@@ -149,56 +152,93 @@
     <!-- ================= 右側主要報表顯示區 ================= -->
     <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
         
+        <!-- Header & Export Buttons -->
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
             <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Margin Report</h2>
             <div class="space-x-2">
-                <button class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700"><i class="fa-regular fa-image mr-1 text-purple-600"></i>Export PNG</button>
-                <button class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700"><i class="fa-solid fa-file-excel mr-1 text-green-600"></i>Export Excel</button>
+                <button id="exportPngBtn" class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700 transition-colors"><i class="fa-regular fa-image mr-1 text-purple-600"></i>Export PNG</button>
+                <button id="exportExcelBtn" class="text-xs border border-gray-300 bg-white hover:bg-gray-50 px-3 py-1.5 rounded text-gray-700 transition-colors"><i class="fa-solid fa-file-excel mr-1 text-green-600"></i>Export Excel</button>
             </div>
         </div>
 
-        <!-- 總表 (Worst Margin) -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
-                Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
+        <!-- ⚠️ 設定一個容器將 Summary Report 與 DIMM Information 包起來，作為 PNG 匯出的目標 -->
+        <div id="exportContainer" class="space-y-6">
+            <!-- 總表 (Worst Margin) -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
+                    Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
+                </div>
+                
+                <div class="overflow-x-auto relative p-0 bg-white">
+                    <table class="w-full border-collapse" id="mainReportTable">
+                        <thead class="bg-gray-200 shadow-sm">
+                            <tr>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Type</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Size</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">File Name</th>
+                                <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
+                                <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
+                            </tr>
+                            <tr>
+                                <th class="table-header border border-gray-300 py-1">Min Vref</th>
+                                <th class="table-header border border-gray-300 py-1">Max Vref</th>
+                                <th class="table-header border border-gray-300 py-1">Total Vref</th>
+                                <th class="table-header border border-gray-300 py-1">Min Delay</th>
+                                <th class="table-header border border-gray-300 py-1">Max Delay</th>
+                                <th class="table-header border border-gray-300 py-1">Total Delay</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mainReportBody">
+                            <tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            
-            <div class="overflow-x-auto relative p-0 bg-white">
-                <table class="w-full border-collapse" id="mainReportTable">
-                    <thead class="bg-gray-200 shadow-sm">
-                        <tr>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Type</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Size</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">File Name</th>
-                            <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
-                            <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
-                            <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
-                        </tr>
-                        <tr>
-                            <th class="table-header border border-gray-300 py-1">Min Vref</th>
-                            <th class="table-header border border-gray-300 py-1">Max Vref</th>
-                            <th class="table-header border border-gray-300 py-1">Total Vref</th>
-                            <th class="table-header border border-gray-300 py-1">Min Delay</th>
-                            <th class="table-header border border-gray-300 py-1">Max Delay</th>
-                            <th class="table-header border border-gray-300 py-1">Total Delay</th>
-                        </tr>
-                    </thead>
-                    <tbody id="mainReportBody">
-                        <tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td></tr>
-                    </tbody>
-                </table>
+
+            <!-- DIMM 資訊 -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between" data-html2canvas-ignore="true">
+                    <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
+                    <div class="flex items-center text-sm">
+                        <span class="mr-2 text-gray-600 text-xs font-semibold">File:</span>
+                        <select id="dimmFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]">
+                            <option value="">-- Select a file --</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- 給 PNG 擷取顯示的隱藏標題 -->
+                <div class="p-3 bg-gray-50 border-b border-gray-200 hidden html2canvas-visible-header font-bold text-gray-700 text-sm">
+                    <i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information
+                </div>
+                <div class="overflow-x-auto relative p-0 bg-white">
+                    <table class="w-full border-collapse text-sm text-center">
+                        <thead class="shadow-sm">
+                            <tr class="bg-gray-100 text-gray-600 text-xs uppercase">
+                                <th class="p-2 border-b border-gray-300 bg-gray-100">Position (Bank Locator)</th>
+                                <th class="p-2 border-b border-gray-300 bg-gray-100">Manufacturer</th>
+                                <th class="p-2 border-b border-gray-300 bg-gray-100">Part Number</th>
+                                <th class="p-2 border-b border-gray-300 bg-gray-100">Serial Number</th>
+                                <th class="p-2 border-b border-gray-300 bg-gray-100 text-right">Speed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dimmInfoBody">
+                            <tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- ================= 新增區塊: Per-UMC / Rank Detail Analysis ================= -->
+        <!-- ================= Per-UMC / Rank Detail Analysis ================= -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" id="detail-analysis-section">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-chart-line text-blue-600 mr-2"></i>Per-UMC / Per-Rank Detail</div>
@@ -276,35 +316,6 @@
                     </thead>
                     <tbody id="rankInfoBody">
                         <tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- DIMM 資訊 -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
-                <div class="flex items-center text-sm">
-                    <span class="mr-2 text-gray-600 text-xs font-semibold">File:</span>
-                    <select id="dimmFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]">
-                        <option value="">-- Select a file --</option>
-                    </select>
-                </div>
-            </div>
-            <div class="overflow-x-auto relative p-0 bg-white">
-                <table class="w-full border-collapse text-sm text-center">
-                    <thead class="shadow-sm">
-                        <tr class="bg-gray-100 text-gray-600 text-xs uppercase">
-                            <th class="p-2 border-b border-gray-300 bg-gray-100">Position (Bank Locator)</th>
-                            <th class="p-2 border-b border-gray-300 bg-gray-100">Manufacturer</th>
-                            <th class="p-2 border-b border-gray-300 bg-gray-100">Part Number</th>
-                            <th class="p-2 border-b border-gray-300 bg-gray-100">Serial Number</th>
-                            <th class="p-2 border-b border-gray-300 bg-gray-100 text-right">Speed</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dimmInfoBody">
-                        <tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -399,6 +410,10 @@
         const rankInfoBody = document.getElementById('rankInfoBody');
         const infoModal = document.getElementById('infoModal');
         
+        // 匯出功能按鈕綁定
+        const exportPngBtn = document.getElementById('exportPngBtn');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
+
         // 圖表按鈕點擊事件綁定
         function setupChartControls() {
             const bindGroup = (groupId, stateKey) => {
@@ -499,6 +514,67 @@
                 document.getElementById('modal-mb').value = globalMissingInfo.mb === "All Files" ? "" : globalMissingInfo.mb;
             }
             infoModal.classList.add('active'); 
+        });
+
+        // ================= 【實作】Export 匯出功能 =================
+        exportPngBtn.addEventListener('click', () => {
+            if (uploadedFiles.length === 0) {
+                alert("No data to export. Please generate the report first.");
+                return;
+            }
+            const exportTarget = document.getElementById('exportContainer');
+            
+            // 處理擷取前：隱藏下拉選單列，並顯示靜態標題供截圖
+            const ignores = exportTarget.querySelectorAll('[data-html2canvas-ignore="true"]');
+            const hiddenHeaders = exportTarget.querySelectorAll('.html2canvas-visible-header');
+            ignores.forEach(el => el.style.display = 'none');
+            hiddenHeaders.forEach(el => el.style.display = 'block');
+
+            html2canvas(exportTarget, { scale: 2, backgroundColor: "#f3f4f6" }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'SP7_Margin_Report.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                
+                // 還原擷取前的顯示狀態
+                ignores.forEach(el => el.style.display = '');
+                hiddenHeaders.forEach(el => el.style.display = 'none');
+            });
+        });
+
+        exportExcelBtn.addEventListener('click', () => {
+            if (uploadedFiles.length === 0) {
+                alert("No data to export. Please generate the report first.");
+                return;
+            }
+            
+            let wb = XLSX.utils.book_new();
+            
+            // 1. 產生 Summary Margin Report 工作表
+            let wsMargin = XLSX.utils.table_to_sheet(document.getElementById('mainReportTable'));
+            XLSX.utils.book_append_sheet(wb, wsMargin, "Summary Margin Report");
+            
+            // 2. 彙整 "所有" 上傳檔案的 DIMM Information 並輸出至獨立工作表
+            let dimmData = [];
+            uploadedFiles.forEach(f => {
+                if(f.data.dimms) {
+                    f.data.dimms.forEach(dimm => {
+                        dimmData.push({
+                            "File Name": f.name,
+                            "Position (Bank Locator)": dimm.locator,
+                            "Manufacturer": dimm.mfg,
+                            "Part Number": dimm.part,
+                            "Serial Number": dimm.sn,
+                            "Speed": dimm.speed
+                        });
+                    });
+                }
+            });
+            let wsDimm = XLSX.utils.json_to_sheet(dimmData);
+            XLSX.utils.book_append_sheet(wb, wsDimm, "All Files DIMM Info");
+            
+            // 儲存 Excel 檔案
+            XLSX.writeFile(wb, "SP7_Margin_Report.xlsx");
         });
 
         function closeModal() { infoModal.classList.remove('active'); }
@@ -767,7 +843,6 @@
             else return val <= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
         }
 
-        // 💡 【8. 繪製最終總報表】
         function renderMainReport() {
             mainReportBody.innerHTML = '';
             let groups = {};
@@ -885,7 +960,6 @@
             }
         }
 
-        // 💡 【9. 繪製 Per-UMC / Rank 詳細報表表格】
         function renderRankDetails() {
             const fileId = document.getElementById('rankFileSelect').value;
             const tbody = document.getElementById('rankInfoBody');
@@ -988,23 +1062,20 @@
             });
         }
 
-        // 💡 【10. 新增：繪製折線圖 (Chart.js)】
         function renderChart() {
             if (uploadedFiles.length === 0) return;
             
-            const q = chartState.quadrant;       // e.g. "CS"
-            const m = chartState.metric;         // e.g. "maxDelay"
-            const g = chartState.granularity;    // "perUmc", "perChannel", "perRank"
+            const q = chartState.quadrant;       
+            const m = chartState.metric;         
+            const g = chartState.granularity;    
             
             let allLabelsSet = new Set();
             let fileDatasets = [];
             
-            // 決定 Metric 取極值的邏輯 (Max Margin 抓最小，Min Margin 抓最大)
             const isMaxMetric = (m === 'maxDelay' || m === 'maxVref');
 
-            // 1. 處理並聚合每個檔案的數據
             uploadedFiles.forEach(file => {
-                let dataMap = {}; // { "P0-A-A": [val1, val2], ... }
+                let dataMap = {}; 
                 
                 if (file.data.rankDetails && file.data.rankDetails[q]) {
                     file.data.rankDetails[q].forEach(row => {
@@ -1012,13 +1083,9 @@
                         let umcLetter = row.umc.slice(-1);
                         
                         let key = "";
-                        if (g === 'perRank') {
-                            key = `P${row.socket}-${chLetter}-${umcLetter}-R${row.rank}`;
-                        } else if (g === 'perUmc') {
-                            key = `P${row.socket}-${chLetter}-${umcLetter}`;
-                        } else if (g === 'perChannel') {
-                            key = `P${row.socket}-${chLetter}`;
-                        }
+                        if (g === 'perRank') key = `P${row.socket}-${chLetter}-${umcLetter}-R${row.rank}`;
+                        else if (g === 'perUmc') key = `P${row.socket}-${chLetter}-${umcLetter}`;
+                        else if (g === 'perChannel') key = `P${row.socket}-${chLetter}`;
 
                         if (!dataMap[key]) dataMap[key] = [];
                         dataMap[key].push(row[m]);
@@ -1026,27 +1093,17 @@
                     });
                 }
                 
-                // 將同一個 Key 的陣列聚合成單一瓶頸值
                 let aggData = {};
                 Object.keys(dataMap).forEach(key => {
                     let vals = dataMap[key];
-                    if (isMaxMetric) {
-                        aggData[key] = Math.min(...vals);
-                    } else {
-                        aggData[key] = Math.max(...vals);
-                    }
+                    if (isMaxMetric) aggData[key] = Math.min(...vals);
+                    else aggData[key] = Math.max(...vals);
                 });
                 
-                fileDatasets.push({
-                    label: file.name,
-                    rawData: aggData
-                });
+                fileDatasets.push({ label: file.name, rawData: aggData });
             });
 
-            // 2. 排序 X 軸標籤
             let labels = Array.from(allLabelsSet).sort();
-
-            // 3. 準備 Chart.js Dataset
             const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
             let datasets = [];
 
@@ -1063,7 +1120,6 @@
                 });
             });
 
-            // 4. 新增 Pass Criteria 虛線
             let critVal = null;
             let metricName = "";
             if (m === 'maxDelay') { critVal = currentCriteria[q].dMax; metricName = "Max Delay (UI)"; }
@@ -1084,39 +1140,24 @@
                 });
             }
 
-            // 5. 繪製圖表
             const ctx = document.getElementById('marginChart').getContext('2d');
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
+            if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
+                data: { labels: labels, datasets: datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: {
-                            title: { display: true, text: metricName, font: { size: 12 } },
-                            // 若是 Min Delay/Vref，通常為負值，反轉 Y 軸會比較直觀，但保持原樣亦可
-                        },
-                        x: {
-                            ticks: { font: { size: 10 } }
-                        }
+                        y: { title: { display: true, text: metricName, font: { size: 12 } } },
+                        x: { ticks: { font: { size: 10 } } }
                     },
                     plugins: {
                         legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
                         tooltip: { mode: 'index', intersect: false }
                     },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
                 }
             });
         }
