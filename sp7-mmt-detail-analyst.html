@@ -368,6 +368,16 @@
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
         let currentPresetLabel = "Custom"; 
 
+        // 綁定輸入框事件，當使用者手動修改 Criteria 時，立即更新圖表與表格
+        allCriteriaInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                if(uploadedFiles.length > 0) {
+                    renderRankDetails();
+                    renderChart();
+                }
+            });
+        });
+
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 presetBtns.forEach(b => {
@@ -392,6 +402,11 @@
                         document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
                     });
                     allCriteriaInputs.forEach(input => { input.readOnly = true; });
+                }
+                
+                if(uploadedFiles.length > 0) {
+                    renderRankDetails();
+                    renderChart();
                 }
             });
         });
@@ -837,7 +852,7 @@
             else return val <= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
         }
         
-        // 新增：處理 Rank Details 的絕對值比較輔助函數
+        // 絕對值比較專用 Helper (用於下方 Detail Table)
         function getAbsColorClass(absVal, absLimit) {
             if (absVal === null || absVal === undefined || isNaN(absVal)) return "text-gray-700 font-bold";
             if (isNaN(absLimit) || absLimit === 0) return "text-gray-700 font-bold"; 
@@ -961,7 +976,7 @@
             }
         }
 
-        // 💡 【9. 繪製 Per-Rank 詳細報表表格 - 依 Quadrant 動態篩選 & Criteria Header】
+        // 💡 【9. 繪製 Per-Rank 詳細報表表格 - 依 Quadrant 動態篩選 & Criteria Header & 計算 Worst Margin %】
         function renderRankDetails() {
             const fileId = document.getElementById('rankFileSelect').value;
             const tbody = document.getElementById('rankInfoBody');
@@ -975,13 +990,13 @@
             if (!file || !file.data.rankDetails) return;
             
             const q = chartState.quadrant;
-            const crit = currentCriteria[q];
+            const qLower = q.toLowerCase();
             
-            // 更新表頭的 Criteria 顯示 (絕對值轉換)
-            let critMaxD = Math.abs(crit.dMax || 0);
-            let critMinD = Math.abs(crit.dMin || 0);
-            let critMaxV = Math.abs(crit.vMax || 0);
-            let critMinV = Math.abs(crit.vMin || 0);
+            // 直接從輸入框抓取即時的 Criteria (避免未按下 Generate 導致不同步)
+            let critMaxD = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmax`).value) || 0);
+            let critMinD = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmin`).value) || 0);
+            let critMaxV = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmax`).value) || 0);
+            let critMinV = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmin`).value) || 0);
             
             document.getElementById('th-dmax-crit').innerText = critMaxD ? `≥${critMaxD}UI` : '';
             document.getElementById('th-dmin-crit').innerText = critMinD ? `≥${critMinD}UI` : '';
@@ -991,12 +1006,12 @@
             tbody.innerHTML = '';
             
             let ranksMap = {}; 
-            // 只需要抓當前選定的 Quadrant (Test Item) 的資料
+            // 只需要抓當前選定的 Quadrant 的資料
             if(file.data.rankDetails[q]) {
                 file.data.rankDetails[q].forEach(row => {
                     let chLetter = row.channel.length > 1 ? row.channel.charAt(1) : row.channel;
                     let umcLetter = row.umc.slice(-1);
-                    // 依照要求格式：P0-H-B R0
+                    // 格式：P0-H-B R0
                     let name = `P${row.socket}-${chLetter}-${umcLetter} R${row.rank}`; 
                     ranksMap[name] = row;
                 });
@@ -1023,15 +1038,17 @@
                 let cMaxV = getAbsColorClass(absMaxV, critMaxV);
                 let cMinV = getAbsColorClass(absMinV, critMinV);
 
-                // 計算 Worst Margin % (越小代表越接近或低於門檻，也就是裕度越差)
-                let pctDmax = (critMaxD && critMaxD !== 0) ? (absMaxD / critMaxD) * 100 : Infinity;
-                let pctDmin = (critMinD && critMinD !== 0) ? (absMinD / critMinD) * 100 : Infinity;
-                let pctVmax = (critMaxV && critMaxV !== 0) ? (absMaxV / critMaxV) * 100 : Infinity;
-                let pctVmin = (critMinV && critMinV !== 0) ? (absMinV / critMinV) * 100 : Infinity;
+                // 計算百分比
+                let pctDmax = (critMaxD > 0) ? (absMaxD / critMaxD) * 100 : Infinity;
+                let pctDmin = (critMinD > 0) ? (absMinD / critMinD) * 100 : Infinity;
+                let pctVmax = (critMaxV > 0) ? (absMaxV / critMaxV) * 100 : Infinity;
+                let pctVmin = (critMinV > 0) ? (absMinV / critMinV) * 100 : Infinity;
                 
+                // 取最低的百分比作為 Worst Margin
                 let worstPct = Math.min(pctDmax, pctDmin, pctVmax, pctVmin);
                 if (worstPct === Infinity) worstPct = null;
                 
+                // 判斷是否 PASS
                 let isPass = worstPct === null || worstPct >= 100;
                 let worstPctText = worstPct !== null ? `${worstPct.toFixed(1)}%` : '-';
                 let worstPctHtml = `<span class="${isPass ? 'text-green-600' : 'text-red-600'} font-bold">${worstPctText}</span>`;
@@ -1041,16 +1058,16 @@
                 if (worstPct !== null) {
                     if (worstPct === pctDmax) {
                         let diff = absMaxD - critMaxD;
-                        failReason = `Max Delay ${absMaxD.toFixed(1)} / ${critMaxD.toFixed(1)}UI (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
+                        failReason = `Max Delay ${absMaxD.toFixed(1)} / ${critMaxD}UI (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
                     } else if (worstPct === pctDmin) {
                         let diff = absMinD - critMinD;
-                        failReason = `Min Delay ${absMinD.toFixed(1)} / ${critMinD.toFixed(1)}UI (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
+                        failReason = `Min Delay ${absMinD.toFixed(1)} / ${critMinD}UI (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
                     } else if (worstPct === pctVmax) {
                         let diff = absMaxV - critMaxV;
-                        failReason = `Max Vref ${absMaxV.toFixed(1)} / ${critMaxV.toFixed(1)}mV (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
+                        failReason = `Max Vref ${absMaxV.toFixed(1)} / ${critMaxV}mV (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
                     } else if (worstPct === pctVmin) {
                         let diff = absMinV - critMinV;
-                        failReason = `Min Vref ${absMinV.toFixed(1)} / ${critMinV.toFixed(1)}mV (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
+                        failReason = `Min Vref ${absMinV.toFixed(1)} / ${critMinV}mV (${diff >= 0 ? '+' : ''}${diff.toFixed(1)})`;
                     }
                 }
 
@@ -1132,12 +1149,14 @@
                 });
             });
 
+            // 圖表也即時抓取 Criteria 的值
+            let qLower = q.toLowerCase();
             let critVal = null;
             let metricName = "";
-            if (m === 'maxDelay') { critVal = Math.abs(currentCriteria[q].dMax || 0); metricName = "Max Delay (UI)"; }
-            if (m === 'minDelay') { critVal = Math.abs(currentCriteria[q].dMin || 0); metricName = "Min Delay (UI)"; }
-            if (m === 'maxVref')  { critVal = Math.abs(currentCriteria[q].vMax || 0); metricName = "Max Vref (mV)"; }
-            if (m === 'minVref')  { critVal = Math.abs(currentCriteria[q].vMin || 0); metricName = "Min Vref (mV)"; }
+            if (m === 'maxDelay') { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmax`).value) || 0); metricName = "Max Delay (UI)"; }
+            if (m === 'minDelay') { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmin`).value) || 0); metricName = "Min Delay (UI)"; }
+            if (m === 'maxVref')  { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmax`).value) || 0); metricName = "Max Vref (mV)"; }
+            if (m === 'minVref')  { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmin`).value) || 0); metricName = "Min Vref (mV)"; }
 
             if (critVal !== undefined && critVal !== null && critVal !== 0 && !isNaN(critVal)) {
                 let critData = labels.map(() => critVal);
