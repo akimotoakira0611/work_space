@@ -2,59 +2,79 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>PCIe Margin Analysis - Auto Compare Tool</title>
+<title>PCIe Data Compare</title>
 <style>
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-  h2 { text-align: center; color: #333; }
+  /* 基礎容器樣式 */
+  .main-container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 20px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+  h2 { text-align: center; color: #333; margin-bottom: 20px; }
+
+  /* 拖曳上傳區塊樣式 */
+  .upload-area { border: 2px dashed #4CAF50; border-radius: 8px; padding: 40px 20px; text-align: center; background-color: #f9fbf9; transition: all 0.3s ease; margin-bottom: 20px; }
+  .upload-area.dragover { background-color: #e8f5e9; border-color: #2e7d32; }
+  .upload-area p { color: #555; font-size: 16px; margin-bottom: 15px; }
   
-  /* 上傳區塊樣式 */
-  .upload-section { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; padding: 20px; background-color: #eef2f5; border-radius: 8px; border: 2px dashed #b0bec5; }
-  .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
-  .upload-btn-wrapper button { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; cursor: pointer; transition: 0.3s; }
-  .upload-btn-wrapper button:hover { background-color: #45a049; }
-  .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-  
+  /* 按鈕樣式 */
+  .btn-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+  .btn { background-color: #f1f1f1; color: #333; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+  .btn:hover { background-color: #e0e0e0; }
+  .btn-analyze { background-color: #4CAF50; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; transition: background-color 0.3s; margin-top: 15px; }
+  .btn-analyze:hover { background-color: #45a049; }
+  .btn-analyze:disabled { background-color: #cccccc; cursor: not-allowed; }
+  input[type="file"] { display: none; }
+
+  /* 檔案清單區塊樣式 */
+  .file-list-container { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+  .file-item { display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; padding: 10px 15px; border-radius: 6px; border: 1px solid #e0e0e0; transition: background 0.2s; }
+  .file-item:hover { background: #eeeeee; }
+  .file-name { font-size: 13px; color: #333; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; }
+  .remove-btn { color: #d32f2f; font-weight: bold; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: background 0.2s; }
+  .remove-btn:hover { background: #ffcdd2; }
+
+  /* 狀態提示 */
+  #fileStatus { text-align: center; font-weight: bold; color: #2e7d32; margin-top: 15px; }
+
   /* 表格樣式 */
-  .compare-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  .compare-table th, .compare-table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-  .compare-table th { background-color: #37474f; color: white; }
-  .compare-table tr:nth-child(even){background-color: #f9f9f9;}
-  .compare-table tr:hover {background-color: #f1f1f1;}
-  
-  /* 最差數值的高亮標示 (紅字紅框) */
-  .worst-in-lane { background-color: #ffebee; color: #d32f2f; font-weight: bold; border: 2px solid #d32f2f !important; }
-  
-  /* 排名標籤樣式 */
-  .rank-1 { background-color: #d32f2f; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
-  .rank-2 { background-color: #f57c00; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
-  .rank-3 { background-color: #fbc02d; color: black; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
-  .rank-other { background-color: #cfd8dc; color: #455a64; padding: 5px 10px; border-radius: 4px; }
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: 25px; background-color: #fff; display: none; }
+  .compare-table th, .compare-table td { border: 1px solid #e0e0e0; padding: 12px; text-align: center; font-size: 14px; }
+  .compare-table th { background-color: #4CAF50; color: white; font-weight: bold; }
+  .compare-table td.device-name { text-align: left; max-width: 300px; word-wrap: break-word; font-size: 13px; }
+  .worst-in-lane { background-color: #fff4f4 !important; color: #d32f2f !important; border: 2px solid #d32f2f !important; }
+  .rank-badge { padding: 4px 12px; border-radius: 4px; font-weight: bold; display: inline-block; white-space: nowrap; }
+  .rank-1 { background-color: #d32f2f; color: white; }
+  .rank-2 { background-color: #f57c00; color: white; }
+  .rank-3 { background-color: #fbc02d; color: black; }
+  .rank-other { background-color: #e0e0e0; color: #555; }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>PCIe Margin Data Compare & Ranking Tool</h2>
+<div class="main-container">
+  <h2>Device Data Compare & Ranking</h2>
   
-  <!-- 檔案上傳區塊 -->
-  <div class="upload-section">
-    <div class="upload-btn-wrapper">
-      <button>📂 選取多個 HTML 檔案</button>
-      <input type="file" id="fileUpload" multiple accept=".html" onchange="handleFiles(this.files)">
-    </div>
-    <div class="upload-btn-wrapper">
-      <button>📁 選取整個資料夾</button>
-      <input type="file" id="folderUpload" webkitdirectory directory multiple onchange="handleFiles(this.files)">
+  <div class="upload-area" id="dropZone">
+    <p>📁 請將 HTML 報表檔案或資料夾「拖曳」至此區域</p>
+    <p>或者點擊下方按鈕選取</p>
+    <div class="btn-group">
+      <label class="btn">
+        選取多個檔案
+        <input type="file" id="fileInput" multiple accept=".html">
+      </label>
+      <label class="btn">
+        選取資料夾
+        <input type="file" id="folderInput" webkitdirectory directory multiple>
+      </label>
     </div>
   </div>
+  
+  <div id="fileListContainer" class="file-list-container"></div>
+  <div id="fileStatus">尚未選擇任何檔案</div>
+  <button class="btn-analyze" id="analyzeBtn" disabled>開始分析</button>
 
-  <!-- Data Compare 結果表格 -->
-  <table class="compare-table" id="compareTable" style="display: none;">
+  <table class="compare-table" id="compareTable">
     <thead>
       <tr>
         <th>最差排名</th>
-        <th>Device / Report Name</th>
+        <th>資料夾 / 裝置名稱</th>
         <th>Lane 0</th>
         <th>Lane 1</th>
         <th>Lane 2</th>
@@ -62,43 +82,101 @@
         <th>Device 最低值</th>
       </tr>
     </thead>
-    <tbody id="compareBody">
-      <!-- JavaScript 將會渲染結果於此 -->
-    </tbody>
+    <tbody id="compareBody"></tbody>
   </table>
 </div>
 
 <script>
-  // 處理使用者上傳的檔案
-  async function handleFiles(files) {
-    if (files.length === 0) return;
+  let filesQueue = [];
+
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  const folderInput = document.getElementById('folderInput');
+  const fileListContainer = document.getElementById('fileListContainer');
+  const fileStatus = document.getElementById('fileStatus');
+  const analyzeBtn = document.getElementById('analyzeBtn');
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) addFilesToQueue(e.dataTransfer.files);
+  });
+
+  fileInput.addEventListener('change', (e) => { addFilesToQueue(e.target.files); fileInput.value = ''; });
+  folderInput.addEventListener('change', (e) => { addFilesToQueue(e.target.files); folderInput.value = ''; });
+
+  function addFilesToQueue(files) {
+    const incomingFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.html'));
+    
+    incomingFiles.forEach(newFile => {
+      // 修正重複判斷邏輯：使用 webkitRelativePath (包含資料夾結構的完整路徑) 取代單純檔名
+      const newFileId = newFile.webkitRelativePath || newFile.name;
+      
+      const isDuplicate = filesQueue.some(existingFile => {
+        const existingId = existingFile.webkitRelativePath || existingFile.name;
+        return existingId === newFileId;
+      });
+
+      if (!isDuplicate) {
+        filesQueue.push(newFile);
+      }
+    });
+    
+    updateUI();
+  }
+
+  function removeFile(index) {
+    filesQueue.splice(index, 1);
+    updateUI();
+  }
+
+  function updateUI() {
+    fileListContainer.innerHTML = '';
+    
+    filesQueue.forEach((file, index) => {
+      const fileItem = document.createElement('div');
+      fileItem.className = 'file-item';
+      
+      // 在清單中顯示資料夾路徑，方便識別
+      const displayPath = file.webkitRelativePath || file.name; 
+      
+      fileItem.innerHTML = `
+        <span class="file-name" title="${displayPath}">📄 ${displayPath}</span>
+        <span class="remove-btn" title="移除此檔案" onclick="removeFile(${index})">✖</span>
+      `;
+      fileListContainer.appendChild(fileItem);
+    });
+
+    if (filesQueue.length > 0) {
+      fileStatus.textContent = `已準備 ${filesQueue.length} 個 HTML 檔案，等待分析...`;
+      fileStatus.style.color = "#2e7d32";
+      analyzeBtn.disabled = false;
+    } else {
+      fileStatus.textContent = `尚未選擇任何檔案`;
+      fileStatus.style.color = "#777";
+      analyzeBtn.disabled = true;
+      document.getElementById("compareTable").style.display = "none";
+    }
+  }
+
+  analyzeBtn.addEventListener('click', async () => {
+    analyzeBtn.textContent = '分析中...';
+    analyzeBtn.disabled = true;
     
     let deviceData = [];
 
-    for (let i = 0; i < files.length; i++) {
-      let file = files[i];
-      // 只處理 html 檔
-      if (!file.name.toLowerCase().endsWith('.html')) continue;
-
-      // 讀取檔案內容
+    for (let file of filesQueue) {
       let text = await file.text();
-      
-      // 使用 DOMParser 在背景將字串解析成 HTML 結構
       let parser = new DOMParser();
       let doc = parser.parseFromString(text, "text/html");
 
-      // ====== 【核心解析邏輯：請依據您實際 HTML 的結構調整】 ======
-      // 這裡提供一個抓取範例。假設您的原始報表中，會有文字包含 Lane 0 ~ Lane 3 及其對應數值。
-      // 實務上 AMD MMT 報表通常是用 Table 呈現，您可以透過 querySelector 抓取。
-      
       let lanes = [Infinity, Infinity, Infinity, Infinity];
       
-      // 假設：讀取報表內所有的 <tr>，尋找含有數值的欄位 (這裡以簡單正則或固定表格位置為例)
-      // 注意：以下抓取邏輯為通用範例，若未能準確抓到值，請根據原始 HTML 的表格結構修改這裡！
       let rows = doc.querySelectorAll("tr");
       rows.forEach(row => {
-        let cells = row.querySelectorAll("td");
-        // 假設有某一行包含 'Lane 0'，而下一欄是數值 (Eye Area)
+        let cells = row.querySelectorAll("td, th");
         for (let j = 0; j < cells.length; j++) {
           let cellText = cells[j].innerText.trim();
           let nextCellText = cells[j+1] ? cells[j+1].innerText.trim() : null;
@@ -110,56 +188,58 @@
         }
       });
 
-      // 如果上述通用寫法抓不到，也可以設計成抓特定 ID 或 Class，例如:
-      // lanes[0] = parseFloat(doc.getElementById("lane0_eye_area").innerText);
-
-      // 把 Infinity 替換回 null (代表沒抓到或 Normal)
       lanes = lanes.map(v => v === Infinity ? null : v);
-
-      // 使用檔名作為 Device Name
+      
+      // 優化：優先使用您圖中的「資料夾名稱」來做為 Device 名稱
       let deviceName = file.name.replace('.html', '');
+      if (file.webkitRelativePath) {
+         // 例如 VN_BBFV_PCIe3+4_SC17C...slot0/report.html -> 取出上一層的資料夾名稱
+         const pathParts = file.webkitRelativePath.split('/');
+         if (pathParts.length > 1) {
+            deviceName = pathParts[pathParts.length - 2];
+         }
+      } else {
+         // 如果不是透過資料夾上傳，才用以前的正則去抓檔名裡的 0:0:3.4
+         const match = deviceName.match(/\d+:\d+:\d+\.\d+/);
+         if (match) deviceName = match[0];
+      }
 
-      // 只有當至少抓到一個數值時，才加入比較清單
       if (lanes.some(val => val !== null)) {
         deviceData.push({ name: deviceName, lanes: lanes });
       }
     }
 
     if (deviceData.length > 0) {
-      renderCompareTable(deviceData);
+      renderTable(deviceData);
+      fileStatus.textContent = `分析完成！共解析 ${deviceData.length} 筆資料。`;
     } else {
-      alert("無法從上傳的檔案中解析出 Lane 數值，請確認 HTML 結構。");
+      alert("無法從檔案中抓取到 Lane 數值，請確認 HTML 內容格式。");
+      fileStatus.textContent = `解析失敗。`;
     }
-  }
 
-  // 渲染比較結果表格
-  function renderCompareTable(deviceData) {
-    const numLanes = 4;
-    const minLanes = Array(numLanes).fill(Infinity);
+    analyzeBtn.textContent = '開始分析';
+    analyzeBtn.disabled = false;
+  });
+
+  function renderTable(deviceData) {
+    const minLanes = [Infinity, Infinity, Infinity, Infinity];
     
-    // 1. 找出每個 Lane 的最差值 (最小值)
     deviceData.forEach(device => {
-      device.lanes.forEach((val, index) => {
-        if (val !== null && val < minLanes[index]) {
-          minLanes[index] = val;
-        }
+      device.lanes.forEach((val, i) => {
+        if (val !== null && val < minLanes[i]) minLanes[i] = val;
       });
     });
 
-    // 2. 計算每個 Device 的整體最差值
     deviceData.forEach(device => {
-      const validLanes = device.lanes.filter(val => val !== null);
-      device.overallWorst = validLanes.length > 0 ? Math.min(...validLanes) : Infinity;
+      const valid = device.lanes.filter(v => v !== null);
+      device.overallWorst = valid.length > 0 ? Math.min(...valid) : Infinity;
     });
-
-    // 3. 排序 (最低分最差，排第一)
     deviceData.sort((a, b) => a.overallWorst - b.overallWorst);
 
-    // 4. 生成 HTML
     const tbody = document.getElementById("compareBody");
-    tbody.innerHTML = ""; // 清空舊資料
-    document.getElementById("compareTable").style.display = "table"; // 顯示表格
-    
+    tbody.innerHTML = "";
+    document.getElementById("compareTable").style.display = "table";
+
     deviceData.forEach((device, index) => {
       const tr = document.createElement("tr");
       
@@ -168,23 +248,23 @@
       else if (index === 1) rankClass = "rank-2";
       else if (index === 2) rankClass = "rank-3";
       
-      const rankHtml = `<td><span class="${rankClass}">Rank ${index + 1}</span></td>`;
-      const nameHtml = `<td><strong>${device.name}</strong></td>`;
+      const rankHtml = `<td><span class="rank-badge ${rankClass}">Rank ${index + 1}</span></td>`;
+      const nameHtml = `<td class="device-name"><strong>${device.name}</strong></td>`;
       
       let lanesHtml = "";
-      device.lanes.forEach((val, laneIndex) => {
+      device.lanes.forEach((val, i) => {
         if (val === null) {
-          lanesHtml += `<td style="color: #999;">-</td>`;
+          lanesHtml += `<td>-</td>`;
         } else {
-          const isWorstInLane = val === minLanes[laneIndex];
-          const tdClass = isWorstInLane ? "worst-in-lane" : "";
+          const isWorst = val === minLanes[i];
+          const tdClass = isWorst ? "worst-in-lane" : "";
           lanesHtml += `<td class="${tdClass}">${val.toFixed(2)}</td>`;
         }
       });
 
-      const worstValueHtml = `<td><strong>${device.overallWorst === Infinity ? '-' : device.overallWorst.toFixed(2)}</strong></td>`;
+      const worstValHtml = `<td><strong>${device.overallWorst === Infinity ? '-' : device.overallWorst.toFixed(2)}</strong></td>`;
       
-      tr.innerHTML = rankHtml + nameHtml + lanesHtml + worstValueHtml;
+      tr.innerHTML = rankHtml + nameHtml + lanesHtml + worstValHtml;
       tbody.appendChild(tr);
     });
   }
