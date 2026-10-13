@@ -2,56 +2,59 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>Data Compare - PCIe Margin Analysis</title>
+<title>PCIe Margin Analysis - Auto Compare Tool</title>
 <style>
-  /* Data Compare 區塊樣式 */
-  .compare-container {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
-  .compare-container h2 { text-align: center; color: #333; }
-  .compare-table { width: 100%; border-collapse: collapse; margin-top: 15px; background-color: #fff; }
-  .compare-table th, .compare-table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-  .compare-table th { background-color: #4CAF50; color: white; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+  .container { max-width: 900px; margin: auto; background: #fff; padding: 20px 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+  h2 { text-align: center; color: #333; }
   
-  /* 最差數值的高亮標示 */
-  .worst-in-lane { background-color: #ffe6e6; color: #d32f2f; font-weight: bold; border: 2px solid #d32f2f !important; }
+  /* 上傳區塊樣式 */
+  .upload-section { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; padding: 20px; background-color: #eef2f5; border-radius: 8px; border: 2px dashed #b0bec5; }
+  .upload-btn-wrapper { position: relative; overflow: hidden; display: inline-block; }
+  .upload-btn-wrapper button { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+  .upload-btn-wrapper button:hover { background-color: #45a049; }
+  .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+  
+  /* 表格樣式 */
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+  .compare-table th, .compare-table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+  .compare-table th { background-color: #37474f; color: white; }
+  .compare-table tr:nth-child(even){background-color: #f9f9f9;}
+  .compare-table tr:hover {background-color: #f1f1f1;}
+  
+  /* 最差數值的高亮標示 (紅字紅框) */
+  .worst-in-lane { background-color: #ffebee; color: #d32f2f; font-weight: bold; border: 2px solid #d32f2f !important; }
   
   /* 排名標籤樣式 */
-  .rank-1 { background-color: #d32f2f; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-  .rank-2 { background-color: #f57c00; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-  .rank-3 { background-color: #fbc02d; color: black; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-  .rank-other { background-color: #e0e0e0; color: #333; padding: 4px 8px; border-radius: 4px; }
+  .rank-1 { background-color: #d32f2f; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+  .rank-2 { background-color: #f57c00; color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+  .rank-3 { background-color: #fbc02d; color: black; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+  .rank-other { background-color: #cfd8dc; color: #455a64; padding: 5px 10px; border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<!-- 假設這是您原始 HTML 報表中呈現數據的表格 (請將 id="sourceData" 加到您的原始資料表) -->
-<div style="display:none;" id="originalDataArea">
-  <table id="sourceData">
-    <tbody>
-      <!-- 格式範例：第一欄是 Device，後面四欄是 Lane 0 ~ Lane 3 的數值 -->
-      <tr><td>0:0:3.4</td><td>52.50</td><td>52.50</td><td>56.00</td><td>54.00</td></tr>
-      <tr><td>0:0:3.3</td><td>52.50</td><td>55.00</td><td>58.00</td><td>49.00</td></tr>
-      <tr><td>0:0:3.2</td><td>59.50</td><td>60.00</td><td>49.00</td><td>42.00</td></tr>
-      <tr><td>0:0:3.1</td><td>62.00</td><td>52.50</td><td>45.50</td><td>55.00</td></tr>
-    </tbody>
-  </table>
-</div>
+<div class="container">
+  <h2>PCIe Margin Data Compare & Ranking Tool</h2>
+  
+  <!-- 檔案上傳區塊 -->
+  <div class="upload-section">
+    <div class="upload-btn-wrapper">
+      <button>📂 選取多個 HTML 檔案</button>
+      <input type="file" id="fileUpload" multiple accept=".html" onchange="handleFiles(this.files)">
+    </div>
+    <div class="upload-btn-wrapper">
+      <button>📁 選取整個資料夾</button>
+      <input type="file" id="folderUpload" webkitdirectory directory multiple onchange="handleFiles(this.files)">
+    </div>
+  </div>
 
-<!-- 新增的 Data Compare 區塊 -->
-<div class="compare-container">
-  <h2>Device Data Compare & Ranking</h2>
-  <table class="compare-table" id="compareTable">
+  <!-- Data Compare 結果表格 -->
+  <table class="compare-table" id="compareTable" style="display: none;">
     <thead>
       <tr>
         <th>最差排名</th>
-        <th>Device</th>
+        <th>Device / Report Name</th>
         <th>Lane 0</th>
         <th>Lane 1</th>
         <th>Lane 2</th>
@@ -60,85 +63,131 @@
       </tr>
     </thead>
     <tbody id="compareBody">
-      <!-- JavaScript 會自動解析上方 sourceData，並將比較結果填入此處 -->
+      <!-- JavaScript 將會渲染結果於此 -->
     </tbody>
   </table>
 </div>
 
 <script>
-  // 1. 動態從原始 HTML 表格抓取資料
-  function extractDataFromHTML() {
-    const dataRows = document.querySelectorAll("#sourceData tbody tr");
-    const extractedData = [];
+  // 處理使用者上傳的檔案
+  async function handleFiles(files) {
+    if (files.length === 0) return;
+    
+    let deviceData = [];
 
-    dataRows.forEach(row => {
-      const cells = row.querySelectorAll("td");
-      if (cells.length >= 5) {
-        const deviceName = cells[0].innerText.trim();
-        const laneValues = [
-          parseFloat(cells[1].innerText),
-          parseFloat(cells[2].innerText),
-          parseFloat(cells[3].innerText),
-          parseFloat(cells[4].innerText)
-        ];
-        extractedData.push({ name: deviceName, lanes: laneValues });
+    for (let i = 0; i < files.length; i++) {
+      let file = files[i];
+      // 只處理 html 檔
+      if (!file.name.toLowerCase().endsWith('.html')) continue;
+
+      // 讀取檔案內容
+      let text = await file.text();
+      
+      // 使用 DOMParser 在背景將字串解析成 HTML 結構
+      let parser = new DOMParser();
+      let doc = parser.parseFromString(text, "text/html");
+
+      // ====== 【核心解析邏輯：請依據您實際 HTML 的結構調整】 ======
+      // 這裡提供一個抓取範例。假設您的原始報表中，會有文字包含 Lane 0 ~ Lane 3 及其對應數值。
+      // 實務上 AMD MMT 報表通常是用 Table 呈現，您可以透過 querySelector 抓取。
+      
+      let lanes = [Infinity, Infinity, Infinity, Infinity];
+      
+      // 假設：讀取報表內所有的 <tr>，尋找含有數值的欄位 (這裡以簡單正則或固定表格位置為例)
+      // 注意：以下抓取邏輯為通用範例，若未能準確抓到值，請根據原始 HTML 的表格結構修改這裡！
+      let rows = doc.querySelectorAll("tr");
+      rows.forEach(row => {
+        let cells = row.querySelectorAll("td");
+        // 假設有某一行包含 'Lane 0'，而下一欄是數值 (Eye Area)
+        for (let j = 0; j < cells.length; j++) {
+          let cellText = cells[j].innerText.trim();
+          let nextCellText = cells[j+1] ? cells[j+1].innerText.trim() : null;
+          
+          if (cellText.includes("Lane 0") && nextCellText && !isNaN(parseFloat(nextCellText))) lanes[0] = parseFloat(nextCellText);
+          if (cellText.includes("Lane 1") && nextCellText && !isNaN(parseFloat(nextCellText))) lanes[1] = parseFloat(nextCellText);
+          if (cellText.includes("Lane 2") && nextCellText && !isNaN(parseFloat(nextCellText))) lanes[2] = parseFloat(nextCellText);
+          if (cellText.includes("Lane 3") && nextCellText && !isNaN(parseFloat(nextCellText))) lanes[3] = parseFloat(nextCellText);
+        }
+      });
+
+      // 如果上述通用寫法抓不到，也可以設計成抓特定 ID 或 Class，例如:
+      // lanes[0] = parseFloat(doc.getElementById("lane0_eye_area").innerText);
+
+      // 把 Infinity 替換回 null (代表沒抓到或 Normal)
+      lanes = lanes.map(v => v === Infinity ? null : v);
+
+      // 使用檔名作為 Device Name
+      let deviceName = file.name.replace('.html', '');
+
+      // 只有當至少抓到一個數值時，才加入比較清單
+      if (lanes.some(val => val !== null)) {
+        deviceData.push({ name: deviceName, lanes: lanes });
       }
-    });
-    return extractedData;
+    }
+
+    if (deviceData.length > 0) {
+      renderCompareTable(deviceData);
+    } else {
+      alert("無法從上傳的檔案中解析出 Lane 數值，請確認 HTML 結構。");
+    }
   }
 
-  // 執行抓取
-  const deviceData = extractDataFromHTML();
-
-  // 2. 找出每個 Lane 的最差值 (最小值)
-  const numLanes = 4;
-  const minLanes = Array(numLanes).fill(Infinity);
-  
-  deviceData.forEach(device => {
-    device.lanes.forEach((val, index) => {
-      if (!isNaN(val) && val < minLanes[index]) {
-        minLanes[index] = val;
-      }
-    });
-  });
-
-  // 3. 計算每個 Device 的整體最差值，並進行排名排序
-  deviceData.forEach(device => {
-    const validLanes = device.lanes.filter(val => !isNaN(val));
-    device.overallWorst = Math.min(...validLanes);
-  });
-
-  // 依照 overallWorst 由小到大排序 (數值越小代表越差，排越前面)
-  deviceData.sort((a, b) => a.overallWorst - b.overallWorst);
-
-  // 4. 動態生成 Compare 表格 HTML
-  const tbody = document.getElementById("compareBody");
-  
-  deviceData.forEach((device, index) => {
-    const tr = document.createElement("tr");
+  // 渲染比較結果表格
+  function renderCompareTable(deviceData) {
+    const numLanes = 4;
+    const minLanes = Array(numLanes).fill(Infinity);
     
-    // 設定排名樣式
-    let rankClass = "rank-other";
-    if (index === 0) rankClass = "rank-1";
-    else if (index === 1) rankClass = "rank-2";
-    else if (index === 2) rankClass = "rank-3";
-    
-    const rankHtml = `<td><span class="${rankClass}">Rank ${index + 1}</span></td>`;
-    const nameHtml = `<td><strong>${device.name}</strong></td>`;
-    
-    // 生成 Lanes 的欄位並比對最差值
-    let lanesHtml = "";
-    device.lanes.forEach((val, laneIndex) => {
-      const isWorstInLane = val === minLanes[laneIndex];
-      const tdClass = isWorstInLane ? "worst-in-lane" : "";
-      lanesHtml += `<td class="${tdClass}">${val.toFixed(2)}</td>`;
+    // 1. 找出每個 Lane 的最差值 (最小值)
+    deviceData.forEach(device => {
+      device.lanes.forEach((val, index) => {
+        if (val !== null && val < minLanes[index]) {
+          minLanes[index] = val;
+        }
+      });
     });
 
-    const worstValueHtml = `<td><strong>${device.overallWorst.toFixed(2)}</strong></td>`;
+    // 2. 計算每個 Device 的整體最差值
+    deviceData.forEach(device => {
+      const validLanes = device.lanes.filter(val => val !== null);
+      device.overallWorst = validLanes.length > 0 ? Math.min(...validLanes) : Infinity;
+    });
+
+    // 3. 排序 (最低分最差，排第一)
+    deviceData.sort((a, b) => a.overallWorst - b.overallWorst);
+
+    // 4. 生成 HTML
+    const tbody = document.getElementById("compareBody");
+    tbody.innerHTML = ""; // 清空舊資料
+    document.getElementById("compareTable").style.display = "table"; // 顯示表格
     
-    tr.innerHTML = rankHtml + nameHtml + lanesHtml + worstValueHtml;
-    tbody.appendChild(tr);
-  });
+    deviceData.forEach((device, index) => {
+      const tr = document.createElement("tr");
+      
+      let rankClass = "rank-other";
+      if (index === 0) rankClass = "rank-1";
+      else if (index === 1) rankClass = "rank-2";
+      else if (index === 2) rankClass = "rank-3";
+      
+      const rankHtml = `<td><span class="${rankClass}">Rank ${index + 1}</span></td>`;
+      const nameHtml = `<td><strong>${device.name}</strong></td>`;
+      
+      let lanesHtml = "";
+      device.lanes.forEach((val, laneIndex) => {
+        if (val === null) {
+          lanesHtml += `<td style="color: #999;">-</td>`;
+        } else {
+          const isWorstInLane = val === minLanes[laneIndex];
+          const tdClass = isWorstInLane ? "worst-in-lane" : "";
+          lanesHtml += `<td class="${tdClass}">${val.toFixed(2)}</td>`;
+        }
+      });
+
+      const worstValueHtml = `<td><strong>${device.overallWorst === Infinity ? '-' : device.overallWorst.toFixed(2)}</strong></td>`;
+      
+      tr.innerHTML = rankHtml + nameHtml + lanesHtml + worstValueHtml;
+      tbody.appendChild(tr);
+    });
+  }
 </script>
 
 </body>
