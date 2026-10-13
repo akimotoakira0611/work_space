@@ -4,20 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SP7-MMT-Analyst</title>
-    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 Chart.js 折線圖套件 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 引入 Chart.js BoxPlot 擴充套件 -->
     <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@4.3.0/build/index.umd.min.js"></script>
-    <!-- 引入 html2canvas (匯出 PNG 用) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- 引入 SheetJS (匯出 Excel 用) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
-    <!-- ================= CSS 自訂樣式設定 ================= -->
     <style>
         body { font-family: 'Calibri', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6; font-size: 13px; }
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
@@ -38,7 +31,7 @@
 </head>
 <body class="h-screen flex overflow-hidden">
     
-    <!-- ================= 左側控制面板 (Sidebar) ================= -->
+    <!-- ================= 左側控制面板 ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm shrink-0">
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
@@ -71,7 +64,6 @@
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
 
-            <!-- 原本的左側 Criteria 區塊 (不受新功能影響) -->
             <div>
                 <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-wrench text-gray-400 mr-1"></i>Criteria Preset</h2>
                 <div class="grid grid-cols-2 gap-1.5 mb-2">
@@ -138,7 +130,7 @@
         </div>
     </aside>
 
-    <!-- ================= 右側主要報表顯示區 ================= -->
+    <!-- ================= 右側主畫面 ================= -->
     <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
         
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
@@ -150,12 +142,11 @@
         </div>
 
         <div id="exportContainer" class="space-y-6">
-            <!-- 總表 (Worst Margin) -->
+            <!-- 總表 -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
                     Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
                 </div>
-                
                 <div class="overflow-x-auto relative p-0 bg-white">
                     <table class="w-full border-collapse" id="mainReportTable">
                         <thead class="bg-gray-200 shadow-sm">
@@ -176,16 +167,12 @@
                                 <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
                             </tr>
                             <tr>
-                                <th class="table-header border border-gray-300 py-1">Min Vref</th>
-                                <th class="table-header border border-gray-300 py-1">Max Vref</th>
-                                <th class="table-header border border-gray-300 py-1">Total Vref</th>
-                                <th class="table-header border border-gray-300 py-1">Min Delay</th>
-                                <th class="table-header border border-gray-300 py-1">Max Delay</th>
-                                <th class="table-header border border-gray-300 py-1">Total Delay</th>
+                                <th class="table-header border border-gray-300 py-1">Min Vref</th><th class="table-header border border-gray-300 py-1">Max Vref</th><th class="table-header border border-gray-300 py-1">Total Vref</th>
+                                <th class="table-header border border-gray-300 py-1">Min Delay</th><th class="table-header border border-gray-300 py-1">Max Delay</th><th class="table-header border border-gray-300 py-1">Total Delay</th>
                             </tr>
                         </thead>
                         <tbody id="mainReportBody">
-                            <tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">No data generated yet. Please upload files and click Generate.</td></tr>
+                            <tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">Please upload files and click Generate.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -195,15 +182,12 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between" data-html2canvas-ignore="true">
                     <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
-                    <div class="flex items-center text-sm">
-                        <span class="mr-2 text-gray-600 text-xs font-semibold">File:</span>
-                        <select id="dimmFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]"><option value="">-- Select a file --</option></select>
-                    </div>
+                    <div class="flex items-center text-sm"><span class="mr-2 text-gray-600 text-xs font-semibold">File:</span><select id="dimmFileSelect" class="border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500 min-w-[250px]"><option value="">-- Select a file --</option></select></div>
                 </div>
                 <div class="p-3 bg-gray-50 border-b border-gray-200 hidden html2canvas-visible-header font-bold text-gray-700 text-sm">DIMM Information</div>
                 <div class="overflow-x-auto relative p-0 bg-white">
                     <table class="w-full border-collapse text-sm text-center">
-                        <thead class="shadow-sm"><tr class="bg-gray-100 text-gray-600 text-xs uppercase"><th class="p-2 border-b border-gray-300 bg-gray-100">Position (Bank Locator)</th><th class="p-2 border-b border-gray-300 bg-gray-100">Manufacturer</th><th class="p-2 border-b border-gray-300 bg-gray-100">Part Number</th><th class="p-2 border-b border-gray-300 bg-gray-100">Serial Number</th><th class="p-2 border-b border-gray-300 bg-gray-100 text-right">Speed</th></tr></thead>
+                        <thead class="shadow-sm"><tr class="bg-gray-100 text-gray-600 text-xs uppercase"><th class="p-2 border-b border-gray-300 bg-gray-100">Position</th><th class="p-2 border-b border-gray-300 bg-gray-100">Manufacturer</th><th class="p-2 border-b border-gray-300 bg-gray-100">Part Number</th><th class="p-2 border-b border-gray-300 bg-gray-100">Serial Number</th><th class="p-2 border-b border-gray-300 bg-gray-100 text-right">Speed</th></tr></thead>
                         <tbody id="dimmInfoBody"><tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr></tbody>
                     </table>
                 </div>
@@ -219,7 +203,7 @@
             <div class="p-4 border-b border-gray-200 bg-white flex flex-col gap-3">
                 <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Quadrant:</span><div class="flex gap-2" id="chart-quadrant-group"><button class="chart-ctrl-btn active" data-val="CS">CS</button><button class="chart-ctrl-btn" data-val="CA">CA</button><button class="chart-ctrl-btn" data-val="Read">Read</button><button class="chart-ctrl-btn" data-val="Write">Write</button></div></div>
                 <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Metric:</span><div class="flex gap-2" id="chart-metric-group"><button class="chart-ctrl-btn active" data-val="maxDelay">Max Delay</button><button class="chart-ctrl-btn" data-val="minDelay">Min Delay</button><button class="chart-ctrl-btn" data-val="maxVref">Max Vref</button><button class="chart-ctrl-btn" data-val="minVref">Min Vref</button></div></div>
-                <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Granularity:</span><div class="flex gap-2" id="chart-granularity-group"><button class="chart-ctrl-btn active" data-val="perUmc">Per UMC (min)</button><button class="chart-ctrl-btn" data-val="perChannel">Per Channel</button><button class="chart-ctrl-btn" data-val="perRank">Per Rank</button></div></div>
+                <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Granularity:</span><div class="flex gap-2" id="chart-granularity-group"><button class="chart-ctrl-btn active" data-val="perUmc">Per UMC</button><button class="chart-ctrl-btn" data-val="perChannel">Per Channel</button><button class="chart-ctrl-btn" data-val="perRank">Per Rank</button></div></div>
                 <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Chart Type:</span><div class="flex gap-2" id="chart-type-group"><button class="chart-ctrl-btn active" data-val="line"><i class="fa-solid fa-chart-line mr-1"></i> Line</button><button class="chart-ctrl-btn" data-val="boxplot"><i class="fa-solid fa-box w-3 mr-1"></i> Box Plot</button></div></div>
             </div>
 
@@ -244,7 +228,7 @@
                         </tr>
                     </thead>
                     <tbody id="rankInfoBody">
-                        <tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file and click generate to view per-rank details.</td></tr>
+                        <tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -255,9 +239,10 @@
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-microchip text-green-600 mr-2"></i>PCB Pass/Fail Criteria (AMD Spec)</div>
                 <div class="flex items-center text-sm gap-2">
-                    <span class="text-gray-600 text-xs font-semibold">Target:</span>
+                    <span class="text-gray-600 text-xs font-semibold">Target File:</span>
+                    <!-- 修改點: 移除 Group 僅保留 File -->
                     <select id="pcbTargetSelect" class="border border-gray-300 rounded px-2 py-1 text-xs w-64 outline-none focus:border-blue-500">
-                        <option value="">-- Select Group or File --</option>
+                        <option value="">-- Select File --</option>
                     </select>
                 </div>
             </div>
@@ -277,7 +262,7 @@
                         </tr>
                     </thead>
                     <tbody id="pcbCriteriaBody">
-                        <tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a target to view PCB criteria analysis.</td></tr>
+                        <tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -313,18 +298,19 @@
         let definedGroups = []; 
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
+        
+        // 加入 Report 產生狀態鎖，預防還沒 Generate 就渲染畫面
+        let isReportGenerated = false;
 
         let chartInstance = null;
         let chartState = { quadrant: 'CS', metric: 'maxDelay', granularity: 'perUmc', chartType: 'line' };
 
-        // 用於左側輸入框填入的初始單一標準
         const presetData = {
             "6400": { Read: {vMax: 70, vMin: 52, dMax: 9, dMin: 9}, Write: {vMax: 71, vMin: 60, dMax: 10, dMin: 10}, CA: {vMax: 100, vMin: 100, dMax: 12, dMin: 12}, CS: {vMax: 100, vMin: 100, dMax: 45, dMin: 45} },
             "8000": { Read: {vMax: 70, vMin: 50, dMax: 10, dMin: 8}, Write: {vMax: 60, vMin: 49, dMax: 8, dMin: 8}, CA: {vMax: 100, vMin: 100, dMax: 12, dMin: 12}, CS: {vMax: 100, vMin: 100, dMax: 45, dMin: 45} },
             "12800": { Read: {vMax: 45, vMin: 45, dMax: 6, dMin: 6}, Write: {vMax: 49, vMin: 49, dMax: 6, dMin: 6}, CA: {vMax: 60, vMin: 60, dMax: 7, dMin: 7}, CS: {vMax: 200, vMin: 200, dMax: 40, dMin: 40} }
         };
 
-        // 獨立專用於 PCB Pass/Fail Criteria 區塊的 AMD 硬體規格資料庫 (A, B, Risk 完整數值)
         const amdSpecs = {
             "6400": { 
                 A: { Read: {vMax: 70, vMin: 52, dMax: 9, dMin: 9}, Write: {vMax: 71, vMin: 60, dMax: 10, dMin: 10}, CA: {vMax: 100, vMin: 100, dMax: 12, dMin: 12}, CS: {vMax: 100, vMin: 100, dMax: 45, dMin: 45} },
@@ -345,12 +331,30 @@
 
         const presetBtns = document.querySelectorAll('.preset-btn');
         const allCriteriaInputs = document.querySelectorAll('.criteria-input');
-        let currentPresetLabel = "Custom"; 
+        let currentPresetLabel = "6400 RDIMM"; 
 
-        // 綁定輸入框事件即時連動
+        // 安全初始化 UI 資料
+        function initializeUI() {
+            const initData = presetData["6400"];
+            ["Read", "Write", "CA", "CS"].forEach(t => {
+                document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = initData[t].vMax;
+                document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = initData[t].vMin;
+                document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = initData[t].dMax;
+                document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = initData[t].dMin;
+            });
+            allCriteriaInputs.forEach(input => { input.readOnly = true; });
+            updateCriteria();
+        }
+        
+        // 頁面載入時確保初始值設定完畢
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeUI();
+        });
+
+        // 綁定輸入框事件即時連動圖表與表格
         allCriteriaInputs.forEach(input => {
             input.addEventListener('input', () => {
-                if(uploadedFiles.length > 0) { renderRankDetails(); renderChart(); }
+                if(isReportGenerated && uploadedFiles.length > 0) { renderRankDetails(); renderChart(); }
             });
         });
 
@@ -365,8 +369,7 @@
                     allCriteriaInputs.forEach(input => { input.readOnly = false; input.value = ""; });
                 } else {
                     const data = presetData[mode];
-                    const types = ["Read", "Write", "CA", "CS"];
-                    types.forEach(t => {
+                    ["Read", "Write", "CA", "CS"].forEach(t => {
                         document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax;
                         document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
                         document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax;
@@ -375,7 +378,7 @@
                     allCriteriaInputs.forEach(input => { input.readOnly = true; });
                 }
                 
-                if(uploadedFiles.length > 0) { renderRankDetails(); renderChart(); }
+                if(isReportGenerated && uploadedFiles.length > 0) { renderRankDetails(); renderChart(); }
             });
         });
 
@@ -410,15 +413,14 @@
             definedGroups.forEach((grp, idx) => {
                 gl.innerHTML += `<div class="flex items-center gap-2"><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)"><button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button></div>`;
             });
-            updatePcbTargetSelect();
         }
 
-        window.updateDefinedGroup = function(idx, val) { let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList(); updatePcbTargetSelect(); }
-        window.removeDefinedGroup = function(idx) { let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList(); updatePcbTargetSelect(); }
+        window.updateDefinedGroup = function(idx, val) { let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList(); }
+        window.removeDefinedGroup = function(idx) { let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList(); }
         document.getElementById('addGroupBtn').addEventListener('click', () => { definedGroups.push("Group " + String.fromCharCode(65 + definedGroups.length)); renderGroupManager(); renderFileList(); });
 
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'));
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'); });
         dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('bg-blue-50', 'border-blue-400'); handleFiles(e.dataTransfer.files); });
         dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
@@ -431,8 +433,8 @@
         });
 
         dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
-        rankFileSelect.addEventListener('change', renderRankDetails);
-        pcbTargetSelect.addEventListener('change', renderPcbCriteria);
+        rankFileSelect.addEventListener('change', () => { if(isReportGenerated) renderRankDetails(); });
+        pcbTargetSelect.addEventListener('change', () => { if(isReportGenerated) renderPcbCriteria(); });
 
         generateBtn.addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload files first.");
@@ -446,7 +448,7 @@
         });
 
         exportPngBtn.addEventListener('click', () => {
-            if (uploadedFiles.length === 0) return alert("No data to export.");
+            if (uploadedFiles.length === 0 || !isReportGenerated) return alert("No data to export.");
             const exportTarget = document.getElementById('exportContainer');
             const ignores = exportTarget.querySelectorAll('[data-html2canvas-ignore="true"]'); const hiddenHeaders = exportTarget.querySelectorAll('.html2canvas-visible-header');
             ignores.forEach(el => el.style.display = 'none'); hiddenHeaders.forEach(el => el.style.display = 'block');
@@ -457,7 +459,7 @@
         });
 
         exportExcelBtn.addEventListener('click', () => {
-            if (uploadedFiles.length === 0) return alert("No data to export.");
+            if (uploadedFiles.length === 0 || !isReportGenerated) return alert("No data to export.");
             let wb = XLSX.utils.book_new();
             let wsMargin = XLSX.utils.table_to_sheet(document.getElementById('mainReportTable')); XLSX.utils.book_append_sheet(wb, wsMargin, "Summary Margin Report");
             let dimmData = [];
@@ -471,7 +473,14 @@
             globalMissingInfo.agesa = document.getElementById('modal-agesa').value || "-"; globalMissingInfo.type = document.getElementById('modal-type').value || "-";
             globalMissingInfo.rank = document.getElementById('modal-rank').value || "-"; globalMissingInfo.size = document.getElementById('modal-size').value || "-";
             if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "All Files";
-            closeModal(); renderMainReport(); renderRankDetails(); renderChart(); renderPcbCriteria();
+            closeModal(); 
+            
+            // 點擊 Continue 後解鎖生成，並呼叫所有的 Render 函數
+            isReportGenerated = true;
+            renderMainReport(); 
+            renderRankDetails(); 
+            renderChart(); 
+            renderPcbCriteria();
         }
 
         async function handleFiles(files) {
@@ -498,28 +507,32 @@
             });
         }
         window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); updateFileSelects(); }
-        window.updateGroup = function(idx, val) { uploadedFiles[idx].group = val; updatePcbTargetSelect(); }
+        window.updateGroup = function(idx, val) { uploadedFiles[idx].group = val; }
 
         function updateFileSelects() {
             let opts = '<option value="">-- Select a file --</option>' + uploadedFiles.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
             let cvD = dimmFileSelect.value, cvR = rankFileSelect.value;
             dimmFileSelect.innerHTML = opts; rankFileSelect.innerHTML = opts;
             if(uploadedFiles.find(f => f.id === cvD)) dimmFileSelect.value = cvD; if(uploadedFiles.find(f => f.id === cvR)) rankFileSelect.value = cvR;
+            
+            // 下拉選單文字提示與鎖定邏輯連動
             if(!dimmFileSelect.value) dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
-            if(!rankFileSelect.value) rankInfoBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-6 text-xs">Select a file and click generate to view per-rank details.</td></tr>';
+            if(!rankFileSelect.value) {
+                rankInfoBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">${isReportGenerated ? 'Select a file to view per-rank details.' : 'Please click Generate Report to view data.'}</td></tr>`;
+            }
             updatePcbTargetSelect();
         }
 
         function updatePcbTargetSelect() {
-            let cv = pcbTargetSelect.value; let html = '<option value="">-- Select Group or File --</option>';
-            if (groupMode && definedGroups.length > 0) {
-                html += '<optgroup label="Groups">'; definedGroups.forEach(g => html += `<option value="GRP_${g}">${g}</option>`); html += '</optgroup>';
-            }
+            let cv = pcbTargetSelect.value; 
+            let html = '<option value="">-- Select File --</option>';
             if (uploadedFiles.length > 0) {
-                html += '<optgroup label="Files">'; uploadedFiles.forEach(f => html += `<option value="FILE_${f.id}">${f.name}</option>`); html += '</optgroup>';
+                uploadedFiles.forEach(f => { html += `<option value="${f.id}">${f.name}</option>`; });
             }
             pcbTargetSelect.innerHTML = html;
-            if(pcbTargetSelect.querySelector(`option[value="${cv}"]`)) pcbTargetSelect.value = cv;
+            // 安全匹配以防值有特俗字元
+            let optExists = Array.from(pcbTargetSelect.options).some(o => o.value === cv);
+            if(optExists) pcbTargetSelect.value = cv;
         }
 
         window.renderDimmInfo = function(fileId) {
@@ -546,7 +559,7 @@
                         let type = res.output["bus type"]; 
                         if (currentRecord[type] !== null) { records.push({...currentRecord}); currentRecord = { Read:null, Write:null, CA:null, CS:null }; }
                         let sys = res.output.systemmargin;
-                        if(sys.length>=3) currentRecord[type] = { minD:sys[0]["Delay (UI)"], maxD:sys[2]["Delay (UI)"], minV:sys[1]["Min Vref (mV)"], maxV:sys[1]["Max Vref (mV)"] };
+                        if(sys.length>=3) currentRecord[type] = { minDelay:sys[0]["Delay (UI)"], maxDelay:sys[2]["Delay (UI)"], minVref:sys[1]["Min Vref (mV)"], maxVref:sys[1]["Max Vref (mV)"] };
                         if (res.output.rankmargins) res.output.rankmargins.forEach(rm => {
                             if (rm.Socket) Object.entries(rm.Socket).forEach(([sId, sObj]) => {
                                 if (sObj.Channel) Object.entries(sObj.Channel).forEach(([chId, chObj]) => {
@@ -567,10 +580,10 @@
 
         function updateCriteria() {
             currentCriteria = {
-                Read: { vMax: parseFloat(document.getElementById('crit-read-vmax').value), vMin: parseFloat(document.getElementById('crit-read-vmin').value), dMax: parseFloat(document.getElementById('crit-read-dmax').value), dMin: parseFloat(document.getElementById('crit-read-dmin').value) },
-                Write: { vMax: parseFloat(document.getElementById('crit-write-vmax').value), vMin: parseFloat(document.getElementById('crit-write-vmin').value), dMax: parseFloat(document.getElementById('crit-write-dmax').value), dMin: parseFloat(document.getElementById('crit-write-dmin').value) },
-                CA: { vMax: parseFloat(document.getElementById('crit-ca-vmax').value), vMin: parseFloat(document.getElementById('crit-ca-vmin').value), dMax: parseFloat(document.getElementById('crit-ca-dmax').value), dMin: parseFloat(document.getElementById('crit-ca-dmin').value) },
-                CS: { vMax: parseFloat(document.getElementById('crit-cs-vmax').value), vMin: parseFloat(document.getElementById('crit-cs-vmin').value), dMax: parseFloat(document.getElementById('crit-cs-dmax').value), dMin: parseFloat(document.getElementById('crit-cs-dmin').value) }
+                Read: { vMax: parseFloat(document.getElementById('crit-read-vmax').value)||0, vMin: parseFloat(document.getElementById('crit-read-vmin').value)||0, dMax: parseFloat(document.getElementById('crit-read-dmax').value)||0, dMin: parseFloat(document.getElementById('crit-read-dmin').value)||0 },
+                Write: { vMax: parseFloat(document.getElementById('crit-write-vmax').value)||0, vMin: parseFloat(document.getElementById('crit-write-vmin').value)||0, dMax: parseFloat(document.getElementById('crit-write-dmax').value)||0, dMin: parseFloat(document.getElementById('crit-write-dmin').value)||0 },
+                CA: { vMax: parseFloat(document.getElementById('crit-ca-vmax').value)||0, vMin: parseFloat(document.getElementById('crit-ca-vmin').value)||0, dMax: parseFloat(document.getElementById('crit-ca-dmax').value)||0, dMin: parseFloat(document.getElementById('crit-ca-dmin').value)||0 },
+                CS: { vMax: parseFloat(document.getElementById('crit-cs-vmax').value)||0, vMin: parseFloat(document.getElementById('crit-cs-vmin').value)||0, dMax: parseFloat(document.getElementById('crit-cs-dmax').value)||0, dMin: parseFloat(document.getElementById('crit-cs-dmin').value)||0 }
             };
         }
 
@@ -588,7 +601,15 @@
         }
 
         function renderMainReport() {
-            mainReportBody.innerHTML = '';
+            const tbody = document.getElementById('mainReportBody');
+            
+            // 如果還沒按下 Generate，就不渲染資料
+            if (!isReportGenerated) {
+                tbody.innerHTML = '<tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">Please upload files and click Generate.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
             let groups = groupMode ? uploadedFiles.reduce((acc, f) => { (acc[f.group||"Ungrouped"]=acc[f.group||"Ungrouped"]||[]).push(f); return acc; }, {}) : {"All Files": uploadedFiles};
             document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
 
@@ -625,21 +646,27 @@
                         html += `<td class="table-cell"><span class="${getBasicColorClass(minD, crit.dMin, false)}">${minD!==null?minD.toFixed(2):'-'}</span></td><td class="table-cell"><span class="${getBasicColorClass(maxD, crit.dMax, true)}">${maxD!==null?maxD.toFixed(2):'-'}</span></td><td class="table-cell bg-green-50/20"><span class="font-bold text-green-700">${(maxD!==null&&minD!==null)?(maxD-minD).toFixed(2):'-'}</span></td>`;
                         
                         if (isFirstOverallRow) { html += `<td rowspan="${totalRows}" class="table-cell bg-white"></td>`; isFirstOverallRow = false; }
-                        isFirstRowOfItem = false; tr.innerHTML = html; mainReportBody.appendChild(tr); 
+                        isFirstRowOfItem = false; tr.innerHTML = html; tbody.appendChild(tr); 
                     });
                 });
             }
         }
 
-        // ================= Per-UMC / Rank 詳細報表 =================
         function renderRankDetails() {
-            const fileId = document.getElementById('rankFileSelect').value; const tbody = document.getElementById('rankInfoBody');
+            const tbody = document.getElementById('rankInfoBody');
+            
+            // 檢查鎖定狀態
+            if (!isReportGenerated) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>';
+                return;
+            }
+
+            const fileId = document.getElementById('rankFileSelect').value; 
             if (!fileId || !uploadedFiles.length) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">Select a file and click generate.</td></tr>';
             const file = uploadedFiles.find(f => f.id === fileId); if (!file || !file.data.rankDetails) return;
             
             const q = chartState.quadrant; const qLower = q.toLowerCase();
             
-            // 即時抓取 Criteria 的值
             let critMaxD = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmax`).value) || 0);
             let critMinD = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmin`).value) || 0);
             let critMaxV = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmax`).value) || 0);
@@ -656,7 +683,7 @@
                 let name = `P${row.socket}-${row.channel.length>1?row.channel.charAt(1):row.channel}-${row.umc.slice(-1)} R${row.rank}`; ranksMap[name] = row;
             });
             const rankNames = Object.keys(ranksMap).sort();
-            if(rankNames.length === 0) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">No rank data found.</td></tr>';
+            if(rankNames.length === 0) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">No rank data found for this quadrant.</td></tr>';
 
             rankNames.forEach(name => {
                 let row = ranksMap[name]; let tr = document.createElement('tr'); tr.className = "border-b border-gray-200 hover:bg-gray-50";
@@ -692,19 +719,21 @@
             });
         }
 
-        // ================= PCB Pass/Fail Criteria 獨立區塊 (新功能) =================
         function renderPcbCriteria() {
-            const targetVal = pcbTargetSelect.value;
             const tbody = document.getElementById('pcbCriteriaBody');
+            
+            // 檢查鎖定狀態
+            if (!isReportGenerated) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>';
+                return;
+            }
+
+            const targetVal = pcbTargetSelect.value;
             if (!targetVal) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">Select a target.</td></tr>';
 
-            let tFiles = [];
-            if (targetVal.startsWith('GRP_')) tFiles = uploadedFiles.filter(f => f.group === targetVal.replace('GRP_', ''));
-            else if (targetVal.startsWith('FILE_')) tFiles = uploadedFiles.filter(f => f.id === targetVal.replace('FILE_', ''));
-            
+            let tFiles = uploadedFiles.filter(f => f.id === targetVal);
             if (tFiles.length === 0) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">No data found.</td></tr>';
 
-            // 判斷 Data Rate
             let speedStr = tFiles[0].data.speed || "";
             let dataRate = "6400";
             if (speedStr.includes("8000")) dataRate = "8000";
@@ -730,10 +759,9 @@
                 if(arr.length===0 || !cA) return '<td class="p-2 text-gray-300">-</td>';
                 let vals = arr.map(x=>x[key]);
                 let A = Math.min(...vals);
-                let B = Math.max(...vals) - Math.min(...vals);
+                let B = 0.0; 
                 let Risk = A - B;
 
-                // 判斷 (A越大越好, B越小越好, Risk越大越好)
                 let stA = A >= cA; let stB = B <= cB; let stRisk = Risk >= cRisk;
                 let colorA = stA ? 'text-green-600' : 'text-red-600';
                 let colorB = stB ? 'text-green-600' : 'text-red-600';
@@ -766,11 +794,12 @@
         }
 
         function renderChart() {
-            if (uploadedFiles.length === 0) return;
+            // 鎖定狀態檢查，避免未載入資料前就繪圖
+            if (!isReportGenerated || uploadedFiles.length === 0) return;
+            
             const q = chartState.quadrant; const m = chartState.metric; const g = chartState.granularity; const cType = chartState.chartType;  
             let allLbls = new Set(), fDsets = [];
-            const isMax = (m === 'maxDelay' || m === 'maxVref');
-
+            
             uploadedFiles.forEach(file => {
                 let dMap = {}; 
                 if (file.data.rankDetails && file.data.rankDetails[q]) {
