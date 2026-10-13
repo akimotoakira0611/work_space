@@ -10,7 +10,6 @@
     <script src="https://unpkg.com/@sgratzl/chartjs-chart-boxplot@4.3.0/build/index.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <style>
         body { font-family: 'Calibri', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6; font-size: 13px; }
         .sidebar-scroll::-webkit-scrollbar { width: 6px; }
@@ -31,7 +30,6 @@
 </head>
 <body class="h-screen flex overflow-hidden">
     
-    <!-- ================= 左側控制面板 ================= -->
     <aside class="w-72 bg-white border-r border-gray-200 flex flex-col h-full z-10 shadow-sm shrink-0">
         <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <h1 class="font-bold text-gray-800 text-lg"><i class="fa-solid fa-microchip text-blue-600 mr-2"></i>SP7-MMT-Analyst</h1>
@@ -40,7 +38,7 @@
         <div class="flex-1 overflow-y-auto sidebar-scroll p-4 space-y-6">
             <div class="flex flex-col bg-gray-50 p-3 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm font-semibold text-gray-700"><i class="fa-solid fa-folder text-yellow-400 mr-2"></i>GROUP MODE</span>
+                    <span class="text-sm font-semibold text-gray-700">GROUP MODE</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="groupModeToggle" class="sr-only peer">
                         <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
@@ -55,11 +53,10 @@
             </div>
 
             <div>
-                <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data (MMT JSON)</h2>
+                <h2 class="text-xs font-bold text-gray-400 mb-2 uppercase"><i class="fa-solid fa-folder-open text-yellow-400 mr-1"></i>Test Data</h2>
                 <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors">
-                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-2"></i>
-                    <p class="text-xs text-gray-500">Drag & Drop MMT JSON files<br><span class="text-blue-500">or click to browse</span></p>
-                    <input type="file" id="fileInput" multiple accept=".json,.csv,.tsv" class="hidden">
+                    <p class="text-xs text-gray-500">Drag & Drop JSON files<br><span class="text-blue-500">or click to browse</span></p>
+                    <input type="file" id="fileInput" multiple accept=".json" class="hidden">
                 </div>
                 <div id="fileList" class="mt-3 space-y-2"></div>
             </div>
@@ -76,49 +73,12 @@
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
                     <div class="flex items-center pb-2 border-b border-gray-200">
                         <span class="font-semibold text-gray-700 w-10">Item</span>
-                        <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end">
-                            <span class="w-[42px] text-center">V-Max</span>
-                            <span class="w-[42px] text-center">V-Min</span>
-                            <span class="w-[42px] text-center">D-Max</span>
-                            <span class="w-[42px] text-center">D-Min</span>
-                        </div>
+                        <div class="flex gap-1.5 text-gray-500 text-[10px] flex-1 justify-end"><span class="w-[42px] text-center">V-Max</span><span class="w-[42px] text-center">V-Min</span><span class="w-[42px] text-center">D-Max</span><span class="w-[42px] text-center">D-Min</span></div>
                     </div>
-                    <div class="flex items-center mt-2">
-                        <span class="font-semibold text-blue-600 w-10">Read</span>
-                        <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-read-vmax" class="criteria-input">
-                            <input type="number" id="crit-read-vmin" class="criteria-input">
-                            <input type="number" id="crit-read-dmax" class="criteria-input">
-                            <input type="number" id="crit-read-dmin" class="criteria-input">
-                        </div>
-                    </div>
-                    <div class="flex items-center mt-2">
-                        <span class="font-semibold text-green-600 w-10">Write</span>
-                        <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-write-vmax" class="criteria-input">
-                            <input type="number" id="crit-write-vmin" class="criteria-input">
-                            <input type="number" id="crit-write-dmax" class="criteria-input">
-                            <input type="number" id="crit-write-dmin" class="criteria-input">
-                        </div>
-                    </div>
-                    <div class="flex items-center mt-2">
-                        <span class="font-semibold text-orange-500 w-10">CA</span>
-                        <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-ca-vmax" class="criteria-input">
-                            <input type="number" id="crit-ca-vmin" class="criteria-input">
-                            <input type="number" id="crit-ca-dmax" class="criteria-input">
-                            <input type="number" id="crit-ca-dmin" class="criteria-input">
-                        </div>
-                    </div>
-                    <div class="flex items-center mt-2">
-                        <span class="font-semibold text-purple-600 w-10">CS</span>
-                        <div class="flex gap-1.5 flex-1 justify-end">
-                            <input type="number" id="crit-cs-vmax" class="criteria-input">
-                            <input type="number" id="crit-cs-vmin" class="criteria-input">
-                            <input type="number" id="crit-cs-dmax" class="criteria-input">
-                            <input type="number" id="crit-cs-dmin" class="criteria-input">
-                        </div>
-                    </div>
+                    <div class="flex items-center mt-2"><span class="font-semibold text-blue-600 w-10">Read</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-read-vmax" class="criteria-input"><input type="number" id="crit-read-vmin" class="criteria-input"><input type="number" id="crit-read-dmax" class="criteria-input"><input type="number" id="crit-read-dmin" class="criteria-input"></div></div>
+                    <div class="flex items-center mt-2"><span class="font-semibold text-green-600 w-10">Write</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-write-vmax" class="criteria-input"><input type="number" id="crit-write-vmin" class="criteria-input"><input type="number" id="crit-write-dmax" class="criteria-input"><input type="number" id="crit-write-dmin" class="criteria-input"></div></div>
+                    <div class="flex items-center mt-2"><span class="font-semibold text-orange-500 w-10">CA</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-ca-vmax" class="criteria-input"><input type="number" id="crit-ca-vmin" class="criteria-input"><input type="number" id="crit-ca-dmax" class="criteria-input"><input type="number" id="crit-ca-dmin" class="criteria-input"></div></div>
+                    <div class="flex items-center mt-2"><span class="font-semibold text-purple-600 w-10">CS</span><div class="flex gap-1.5 flex-1 justify-end"><input type="number" id="crit-cs-vmax" class="criteria-input"><input type="number" id="crit-cs-vmin" class="criteria-input"><input type="number" id="crit-cs-dmax" class="criteria-input"><input type="number" id="crit-cs-dmin" class="criteria-input"></div></div>
                 </div>
             </div>
         </div>
@@ -130,9 +90,7 @@
         </div>
     </aside>
 
-    <!-- ================= 右側主畫面 ================= -->
     <main class="flex-1 h-full overflow-y-auto p-6 bg-gray-100 space-y-6 block">
-        
         <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
             <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-lines text-red-500 mr-2"></i>Margin Report</h2>
             <div class="space-x-2">
@@ -142,43 +100,22 @@
         </div>
 
         <div id="exportContainer" class="space-y-6">
-            <!-- 總表 -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
-                    Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong>
-                </div>
+                <div class="p-3 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">Analyzer: <strong>SP7-MMT-Analyst</strong> / Criteria Preset: <strong id="reportCriteriaLabel">Custom</strong></div>
                 <div class="overflow-x-auto relative p-0 bg-white">
                     <table class="w-full border-collapse" id="mainReportTable">
                         <thead class="bg-gray-200 shadow-sm">
                             <tr>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Type</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Size</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">MB</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">File Name</th>
-                                <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th>
-                                <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th>
-                                <th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
+                                <th rowspan="2" class="table-header border border-gray-300 py-2">DIMM Vendor</th><th rowspan="2" class="table-header border border-gray-300 py-2">Agesa Code</th><th rowspan="2" class="table-header border border-gray-300 py-2 w-48">Part Number</th><th rowspan="2" class="table-header border border-gray-300 py-2">Type</th><th rowspan="2" class="table-header border border-gray-300 py-2">Rank</th><th rowspan="2" class="table-header border border-gray-300 py-2">Speed</th><th rowspan="2" class="table-header border border-gray-300 py-2">Size</th><th rowspan="2" class="table-header border border-gray-300 py-2">CPU</th><th rowspan="2" class="table-header border border-gray-300 py-2">MB</th><th rowspan="2" class="table-header border border-gray-300 py-2">Test Item</th><th rowspan="2" class="table-header border border-gray-300 py-2">File Name</th>
+                                <th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Vref Offset (mV)</th><th colspan="3" class="table-header border border-gray-300 py-1 border-b-0">Delay (UI)</th><th rowspan="2" class="table-header border border-gray-300 py-2">Note</th>
                             </tr>
-                            <tr>
-                                <th class="table-header border border-gray-300 py-1">Min Vref</th><th class="table-header border border-gray-300 py-1">Max Vref</th><th class="table-header border border-gray-300 py-1">Total Vref</th>
-                                <th class="table-header border border-gray-300 py-1">Min Delay</th><th class="table-header border border-gray-300 py-1">Max Delay</th><th class="table-header border border-gray-300 py-1">Total Delay</th>
-                            </tr>
+                            <tr><th class="table-header border border-gray-300 py-1">Min Vref</th><th class="table-header border border-gray-300 py-1">Max Vref</th><th class="table-header border border-gray-300 py-1">Total Vref</th><th class="table-header border border-gray-300 py-1">Min Delay</th><th class="table-header border border-gray-300 py-1">Max Delay</th><th class="table-header border border-gray-300 py-1">Total Delay</th></tr>
                         </thead>
-                        <tbody id="mainReportBody">
-                            <tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">Please upload files and click Generate.</td></tr>
-                        </tbody>
+                        <tbody id="mainReportBody"><tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">Please click Generate Report to view data.</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- DIMM 資訊 -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between" data-html2canvas-ignore="true">
                     <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-memory text-purple-600 mr-2"></i>DIMM Information</div>
@@ -194,7 +131,6 @@
             </div>
         </div>
 
-        <!-- Per-UMC / Rank Detail Analysis (連動圖表與表格) -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" id="detail-analysis-section">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-chart-line text-blue-600 mr-2"></i>Per-UMC / Per-Rank Detail</div>
@@ -203,7 +139,7 @@
             <div class="p-4 border-b border-gray-200 bg-white flex flex-col gap-3">
                 <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Quadrant:</span><div class="flex gap-2" id="chart-quadrant-group"><button class="chart-ctrl-btn active" data-val="CS">CS</button><button class="chart-ctrl-btn" data-val="CA">CA</button><button class="chart-ctrl-btn" data-val="Read">Read</button><button class="chart-ctrl-btn" data-val="Write">Write</button></div></div>
                 <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Metric:</span><div class="flex gap-2" id="chart-metric-group"><button class="chart-ctrl-btn active" data-val="maxDelay">Max Delay</button><button class="chart-ctrl-btn" data-val="minDelay">Min Delay</button><button class="chart-ctrl-btn" data-val="maxVref">Max Vref</button><button class="chart-ctrl-btn" data-val="minVref">Min Vref</button></div></div>
-                <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Granularity:</span><div class="flex gap-2" id="chart-granularity-group"><button class="chart-ctrl-btn active" data-val="perUmc">Per UMC</button><button class="chart-ctrl-btn" data-val="perChannel">Per Channel</button><button class="chart-ctrl-btn" data-val="perRank">Per Rank</button></div></div>
+                <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Granularity:</span><div class="flex gap-2" id="chart-granularity-group"><button class="chart-ctrl-btn active" data-val="perUmc">Per UMC (min)</button><button class="chart-ctrl-btn" data-val="perChannel">Per Channel</button><button class="chart-ctrl-btn" data-val="perRank">Per Rank</button></div></div>
                 <div class="flex items-center gap-2"><span class="text-xs font-semibold text-gray-500 w-24">Chart Type:</span><div class="flex gap-2" id="chart-type-group"><button class="chart-ctrl-btn active" data-val="line"><i class="fa-solid fa-chart-line mr-1"></i> Line</button><button class="chart-ctrl-btn" data-val="boxplot"><i class="fa-solid fa-box w-3 mr-1"></i> Box Plot</button></div></div>
             </div>
 
@@ -234,19 +170,16 @@
             </div>
         </div>
 
-        <!-- ================= 全新獨立區塊: PCB Pass/Fail Criteria (AMD Spec) ================= -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" id="pcb-criteria-section">
             <div class="p-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                 <div class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-microchip text-green-600 mr-2"></i>PCB Pass/Fail Criteria (AMD Spec)</div>
                 <div class="flex items-center text-sm gap-2">
                     <span class="text-gray-600 text-xs font-semibold">Target File:</span>
-                    <!-- 修改點: 移除 Group 僅保留 File -->
                     <select id="pcbTargetSelect" class="border border-gray-300 rounded px-2 py-1 text-xs w-64 outline-none focus:border-blue-500">
                         <option value="">-- Select File --</option>
                     </select>
                 </div>
             </div>
-            
             <div class="overflow-x-auto relative p-0 bg-white max-h-[600px] overflow-y-auto">
                 <table class="w-full border-collapse text-sm text-center">
                     <thead class="shadow-sm sticky top-0 bg-gray-100 z-10 border-b-2 border-gray-300">
@@ -267,10 +200,8 @@
                 </table>
             </div>
         </div>
-
     </main>
 
-    <!-- Modal -->
     <div id="infoModal" class="modal">
         <div class="bg-white rounded-lg shadow-xl w-96 overflow-hidden">
             <div class="bg-blue-600 text-white p-4 font-bold flex justify-between items-center">
@@ -278,12 +209,12 @@
                 <button onclick="closeModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="p-6 space-y-4">
-                <p class="text-xs text-gray-600 mb-4">The following fields are not found in the JSON. Please provide them to complete the report.</p>
-                <div><label class="block text-xs font-bold text-gray-700 mb-1">Agesa Code</label><input type="text" id="modal-agesa" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
-                <div><label class="block text-xs font-bold text-gray-700 mb-1">Type</label><input type="text" id="modal-type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
-                <div><label class="block text-xs font-bold text-gray-700 mb-1">Rank</label><input type="text" id="modal-rank" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
-                <div><label class="block text-xs font-bold text-gray-700 mb-1">Size</label><input type="text" id="modal-size" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
-                <div id="modal-mb-container"><label class="block text-xs font-bold text-gray-700 mb-1">MB</label><input type="text" id="modal-mb" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></div>
+                <p class="text-xs text-gray-600 mb-4">Please provide additional info to complete the report.</p>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Agesa Code</label><input type="text" id="modal-agesa" class="w-full border rounded px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Type</label><input type="text" id="modal-type" class="w-full border rounded px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Rank</label><input type="text" id="modal-rank" class="w-full border rounded px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-bold text-gray-700 mb-1">Size</label><input type="text" id="modal-size" class="w-full border rounded px-3 py-2 text-sm"></div>
+                <div id="modal-mb-container"><label class="block text-xs font-bold text-gray-700 mb-1">MB</label><input type="text" id="modal-mb" class="w-full border rounded px-3 py-2 text-sm"></div>
             </div>
             <div class="bg-gray-50 p-4 border-t flex justify-end">
                 <button onclick="submitModal()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded text-sm">Continue to Report</button>
@@ -291,17 +222,14 @@
         </div>
     </div>
 
-    <!-- Script -->
+    <!-- 統一的 JavaScript 邏輯 (無重複變數) -->
     <script>
         let uploadedFiles = []; 
         let groupMode = false;  
         let definedGroups = []; 
         let globalMissingInfo = { agesa: "-", type: "-", rank: "-", size: "-", mb: "All Files" };
         let currentCriteria = {}; 
-        
-        // 加入 Report 產生狀態鎖，預防還沒 Generate 就渲染畫面
         let isReportGenerated = false;
-
         let chartInstance = null;
         let chartState = { quadrant: 'CS', metric: 'maxDelay', granularity: 'perUmc', chartType: 'line' };
 
@@ -329,66 +257,45 @@
             }
         };
 
-        const presetBtns = document.querySelectorAll('.preset-btn');
-        const allCriteriaInputs = document.querySelectorAll('.criteria-input');
         let currentPresetLabel = "6400 RDIMM"; 
 
-        // 安全初始化 UI 資料
-        function initializeUI() {
-            const initData = presetData["6400"];
-            ["Read", "Write", "CA", "CS"].forEach(t => {
-                document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = initData[t].vMax;
-                document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = initData[t].vMin;
-                document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = initData[t].dMax;
-                document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = initData[t].dMin;
-            });
-            allCriteriaInputs.forEach(input => { input.readOnly = true; });
-            updateCriteria();
-        }
-        
-        // 頁面載入時確保初始值設定完畢
-        window.addEventListener('DOMContentLoaded', () => {
-            initializeUI();
-        });
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const allCriteriaInputs = document.querySelectorAll('.criteria-input');
 
-        // 綁定輸入框事件即時連動圖表與表格
-        allCriteriaInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                if(isReportGenerated && uploadedFiles.length > 0) { renderRankDetails(); renderChart(); }
+        function initUI() {
+            const data = presetData["6400"];
+            ["Read", "Write", "CA", "CS"].forEach(t => {
+                document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax; document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
+                document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax; document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
             });
+            allCriteriaInputs.forEach(i => i.readOnly = true); updateCriteria();
+        }
+        window.addEventListener('DOMContentLoaded', initUI);
+
+        allCriteriaInputs.forEach(input => {
+            input.addEventListener('input', () => { if(isReportGenerated && uploadedFiles.length>0) { updateCriteria(); renderRankDetails(); renderChart(); } });
         });
 
         presetBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 presetBtns.forEach(b => { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('bg-gray-200', 'text-gray-700'); });
                 e.target.classList.remove('bg-gray-200', 'text-gray-700'); e.target.classList.add('bg-blue-600', 'text-white');
-                const mode = e.target.getAttribute('data-preset');
-                currentPresetLabel = e.target.innerText; 
-                
-                if (mode === 'custom') {
-                    allCriteriaInputs.forEach(input => { input.readOnly = false; input.value = ""; });
-                } else {
+                const mode = e.target.getAttribute('data-preset'); currentPresetLabel = e.target.innerText; 
+                if (mode === 'custom') { allCriteriaInputs.forEach(input => { input.readOnly = false; }); } else {
                     const data = presetData[mode];
                     ["Read", "Write", "CA", "CS"].forEach(t => {
-                        document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax;
-                        document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
-                        document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax;
-                        document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
+                        document.getElementById(`crit-${t.toLowerCase()}-vmax`).value = data[t].vMax; document.getElementById(`crit-${t.toLowerCase()}-vmin`).value = data[t].vMin;
+                        document.getElementById(`crit-${t.toLowerCase()}-dmax`).value = data[t].dMax; document.getElementById(`crit-${t.toLowerCase()}-dmin`).value = data[t].dMin;
                     });
                     allCriteriaInputs.forEach(input => { input.readOnly = true; });
                 }
-                
-                if(isReportGenerated && uploadedFiles.length > 0) { renderRankDetails(); renderChart(); }
+                updateCriteria();
+                if(isReportGenerated && uploadedFiles.length>0) { renderRankDetails(); renderChart(); }
             });
         });
 
-        const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
-        const fileList = document.getElementById('fileList'); const groupModeToggle = document.getElementById('groupModeToggle');
-        const generateBtn = document.getElementById('generateBtn'); const dimmFileSelect = document.getElementById('dimmFileSelect');
-        const rankFileSelect = document.getElementById('rankFileSelect'); const dimmInfoBody = document.getElementById('dimmInfoBody');
-        const mainReportBody = document.getElementById('mainReportBody'); const rankInfoBody = document.getElementById('rankInfoBody');
-        const infoModal = document.getElementById('infoModal'); const exportPngBtn = document.getElementById('exportPngBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn'); const pcbTargetSelect = document.getElementById('pcbTargetSelect');
+        const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput'); const fileList = document.getElementById('fileList'); const groupModeToggle = document.getElementById('groupModeToggle');
+        const pcbTargetSelect = document.getElementById('pcbTargetSelect'); const rankFileSelect = document.getElementById('rankFileSelect'); const dimmFileSelect = document.getElementById('dimmFileSelect');
 
         function setupChartControls() {
             const bindGroup = (groupId, stateKey) => {
@@ -396,58 +303,110 @@
                 btns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         btns.forEach(b => b.classList.remove('active')); e.target.classList.add('active');
-                        chartState[stateKey] = e.target.getAttribute('data-val');
-                        renderChart();
+                        chartState[stateKey] = e.target.getAttribute('data-val'); renderChart();
                         if (stateKey === 'quadrant') renderRankDetails(); 
                     });
                 });
             };
-            bindGroup('chart-quadrant-group', 'quadrant'); bindGroup('chart-metric-group', 'metric');
-            bindGroup('chart-granularity-group', 'granularity'); bindGroup('chart-type-group', 'chartType');
+            bindGroup('chart-quadrant-group', 'quadrant'); bindGroup('chart-metric-group', 'metric'); bindGroup('chart-granularity-group', 'granularity'); bindGroup('chart-type-group', 'chartType');
         }
         setupChartControls();
 
         function renderGroupManager() {
             const gl = document.getElementById('groupList'); const msg = document.getElementById('noGroupsMsg'); gl.innerHTML = '';
             if (definedGroups.length > 0) msg.classList.add('hidden'); else msg.classList.remove('hidden');
-            definedGroups.forEach((grp, idx) => {
-                gl.innerHTML += `<div class="flex items-center gap-2"><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)"><button onclick="removeDefinedGroup(${idx})" class="text-gray-400 hover:text-red-500 border border-gray-200 rounded w-6 h-6 flex items-center justify-center"><i class="fa-solid fa-xmark text-xs"></i></button></div>`;
-            });
+            definedGroups.forEach((grp, idx) => { gl.innerHTML += `<div class="flex items-center gap-1"><input type="text" class="flex-1 border rounded px-1 text-xs" value="${grp}" onchange="updateDefinedGroup(${idx}, this.value)"><button onclick="removeDefinedGroup(${idx})" class="text-red-400 hover:text-red-600 px-1"><i class="fa-solid fa-xmark"></i></button></div>`; });
+            updatePcbTargetSelect();
         }
 
-        window.updateDefinedGroup = function(idx, val) { let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList(); }
-        window.removeDefinedGroup = function(idx) { let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList(); }
+        window.updateDefinedGroup = function(idx, val) { let oldVal = definedGroups[idx]; definedGroups[idx] = val; uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = val; }); renderFileList(); updatePcbTargetSelect(); }
+        window.removeDefinedGroup = function(idx) { let oldVal = definedGroups[idx]; definedGroups.splice(idx, 1); uploadedFiles.forEach(f => { if (f.group === oldVal) f.group = definedGroups[0] || ""; }); renderGroupManager(); renderFileList(); updatePcbTargetSelect(); }
         document.getElementById('addGroupBtn').addEventListener('click', () => { definedGroups.push("Group " + String.fromCharCode(65 + definedGroups.length)); renderGroupManager(); renderFileList(); });
 
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('bg-blue-50', 'border-blue-400'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-blue-50', 'border-blue-400'); });
-        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('bg-blue-50', 'border-blue-400'); handleFiles(e.dataTransfer.files); });
-        dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); });
-        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); }); dropZone.addEventListener('drop', (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); }); dropZone.addEventListener('click', (e) => { if (e.target !== fileInput) fileInput.click(); }); fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
         groupModeToggle.addEventListener('change', (e) => {
             groupMode = e.target.checked;
             if (groupMode) { document.getElementById('groupManagerContainer').classList.remove('hidden'); renderGroupManager(); uploadedFiles.forEach(f => { if (!f.group && definedGroups.length > 0) f.group = definedGroups[0]; }); } 
             else { document.getElementById('groupManagerContainer').classList.add('hidden'); }
-            renderFileList();
+            renderFileList(); updatePcbTargetSelect();
         });
 
-        dimmFileSelect.addEventListener('change', (e) => renderDimmInfo(e.target.value));
+        async function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i]; if (!file.name.endsWith('.json')) continue; 
+                try {
+                    const json = JSON.parse(await file.text()); 
+                    uploadedFiles.push({ id: 'f_'+Date.now()+'_'+i, name: file.name, group: (groupMode && definedGroups.length>0)?definedGroups[0]:"", data: extractMmtData(json) });
+                } catch (e) { console.error(e); }
+            }
+            fileInput.value = ''; renderFileList(); updateFileSelects();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((file, index) => {
+                let gSel = '';
+                if (groupMode) {
+                    let opts = definedGroups.map(g => `<option value="${g}" ${file.group===g?'selected':''}>${g}</option>`).join('');
+                    gSel = `<select class="border rounded px-1 text-xs w-full mt-1" onchange="uploadedFiles[${index}].group=this.value; updatePcbTargetSelect();">${opts}</select>`;
+                }
+                fileList.innerHTML += `<div class="bg-white border rounded p-2 text-xs relative"><div class="pr-4 truncate font-semibold" title="${file.name}">${file.name}</div><button onclick="removeFile(${index})" class="text-red-400 absolute top-2 right-2"><i class="fa-solid fa-times"></i></button>${gSel}</div>`;
+            });
+        }
+        window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); updateFileSelects(); }
+
+        function updateFileSelects() {
+            let opts = '<option value="">-- Select a file --</option>' + uploadedFiles.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            let cvD = dimmFileSelect.value, cvR = rankFileSelect.value;
+            dimmFileSelect.innerHTML = opts; rankFileSelect.innerHTML = opts;
+            if(uploadedFiles.find(f=>f.id===cvD)) dimmFileSelect.value = cvD; if(uploadedFiles.find(f=>f.id===cvR)) rankFileSelect.value = cvR;
+            
+            if(!dimmFileSelect.value) document.getElementById('dimmInfoBody').innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
+            
+            if(!isReportGenerated) {
+                document.getElementById('rankInfoBody').innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>';
+                document.getElementById('pcbCriteriaBody').innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>';
+            } else {
+                if(!rankFileSelect.value) document.getElementById('rankInfoBody').innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Select a file.</td></tr>';
+                else renderRankDetails();
+            }
+            updatePcbTargetSelect();
+        }
+
+        function updatePcbTargetSelect() {
+            let cv = pcbTargetSelect.value; let html = '<option value="">-- Select File --</option>';
+            if (uploadedFiles.length > 0) { uploadedFiles.forEach(f => html += `<option value="${f.id}">${f.name}</option>`); }
+            pcbTargetSelect.innerHTML = html;
+            if(Array.from(pcbTargetSelect.options).some(o => o.value === cv)) pcbTargetSelect.value = cv;
+            if(isReportGenerated && pcbTargetSelect.value) renderPcbCriteria();
+        }
+
+        dimmFileSelect.addEventListener('change', (e) => {
+            const body = document.getElementById('dimmInfoBody'); const file = uploadedFiles.find(f => f.id === e.target.value);
+            if(!file || !file.data.dimms) return body.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-4">No Data</td></tr>';
+            body.innerHTML = file.data.dimms.map(d => `<tr class="border-b"><td class="p-2">${d.locator}</td><td class="p-2">${d.mfg}</td><td class="p-2">${d.part}</td><td class="p-2">${d.sn}</td><td class="p-2 text-right">${d.speed}</td></tr>`).join('');
+        });
+
         rankFileSelect.addEventListener('change', () => { if(isReportGenerated) renderRankDetails(); });
         pcbTargetSelect.addEventListener('change', () => { if(isReportGenerated) renderPcbCriteria(); });
 
-        generateBtn.addEventListener('click', () => {
+        document.getElementById('generateBtn').addEventListener('click', () => {
             if(uploadedFiles.length === 0) return alert("Please upload files first.");
             updateCriteria(); 
-            document.getElementById('modal-agesa').value = globalMissingInfo.agesa === "-" ? "" : globalMissingInfo.agesa;
-            document.getElementById('modal-type').value = globalMissingInfo.type === "-" ? "" : globalMissingInfo.type;
-            document.getElementById('modal-rank').value = globalMissingInfo.rank === "-" ? "" : globalMissingInfo.rank;
-            document.getElementById('modal-size').value = globalMissingInfo.size === "-" ? "" : globalMissingInfo.size;
-            if(groupMode) document.getElementById('modal-mb-container').style.display = 'none'; else { document.getElementById('modal-mb-container').style.display = 'block'; document.getElementById('modal-mb').value = globalMissingInfo.mb === "All Files" ? "" : globalMissingInfo.mb; }
-            infoModal.classList.add('active'); 
+            if(groupMode) document.getElementById('modal-mb-container').style.display = 'none'; else document.getElementById('modal-mb-container').style.display = 'block';
+            document.getElementById('infoModal').classList.add('active'); 
         });
 
-        exportPngBtn.addEventListener('click', () => {
+        function closeModal() { document.getElementById('infoModal').classList.remove('active'); }
+        function submitModal() {
+            globalMissingInfo.agesa = document.getElementById('modal-agesa').value || "-"; globalMissingInfo.type = document.getElementById('modal-type').value || "-";
+            globalMissingInfo.rank = document.getElementById('modal-rank').value || "-"; globalMissingInfo.size = document.getElementById('modal-size').value || "-";
+            if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "All Files";
+            closeModal(); isReportGenerated = true; renderMainReport(); renderRankDetails(); renderChart(); renderPcbCriteria();
+        }
+
+        document.getElementById('exportPngBtn').addEventListener('click', () => {
             if (uploadedFiles.length === 0 || !isReportGenerated) return alert("No data to export.");
             const exportTarget = document.getElementById('exportContainer');
             const ignores = exportTarget.querySelectorAll('[data-html2canvas-ignore="true"]'); const hiddenHeaders = exportTarget.querySelectorAll('.html2canvas-visible-header');
@@ -458,7 +417,7 @@
             });
         });
 
-        exportExcelBtn.addEventListener('click', () => {
+        document.getElementById('exportExcelBtn').addEventListener('click', () => {
             if (uploadedFiles.length === 0 || !isReportGenerated) return alert("No data to export.");
             let wb = XLSX.utils.book_new();
             let wsMargin = XLSX.utils.table_to_sheet(document.getElementById('mainReportTable')); XLSX.utils.book_append_sheet(wb, wsMargin, "Summary Margin Report");
@@ -467,80 +426,6 @@
             let wsDimm = XLSX.utils.json_to_sheet(dimmData); XLSX.utils.book_append_sheet(wb, wsDimm, "All Files DIMM Info");
             XLSX.writeFile(wb, "SP7_Margin_Report.xlsx");
         });
-
-        function closeModal() { infoModal.classList.remove('active'); }
-        function submitModal() {
-            globalMissingInfo.agesa = document.getElementById('modal-agesa').value || "-"; globalMissingInfo.type = document.getElementById('modal-type').value || "-";
-            globalMissingInfo.rank = document.getElementById('modal-rank').value || "-"; globalMissingInfo.size = document.getElementById('modal-size').value || "-";
-            if(!groupMode) globalMissingInfo.mb = document.getElementById('modal-mb').value || "All Files";
-            closeModal(); 
-            
-            // 點擊 Continue 後解鎖生成，並呼叫所有的 Render 函數
-            isReportGenerated = true;
-            renderMainReport(); 
-            renderRankDetails(); 
-            renderChart(); 
-            renderPcbCriteria();
-        }
-
-        async function handleFiles(files) {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i]; if (!file.name.endsWith('.json')) continue; 
-                try {
-                    const json = JSON.parse(await file.text()); const parsedData = extractMmtData(json); 
-                    uploadedFiles.push({ id: 'file_' + Date.now() + '_' + i, name: file.name, group: (groupMode && definedGroups.length > 0) ? definedGroups[0] : "", data: parsedData });
-                } catch (e) { console.error(e); }
-            }
-            fileInput.value = ''; renderFileList(); updateFileSelects();
-        }
-
-        function renderFileList() {
-            fileList.innerHTML = '';
-            uploadedFiles.forEach((file, index) => {
-                let groupSelector = '';
-                if (groupMode) {
-                    let options = definedGroups.map(g => `<option value="${g}" ${file.group === g ? 'selected' : ''}>${g}</option>`).join('');
-                    if (definedGroups.length === 0) options = `<option value="">-- Create group --</option>`;
-                    groupSelector = `<div class="mt-1 flex items-center"><span class="text-gray-500 mr-2">Group:</span><select class="border border-gray-300 rounded px-1 flex-1 py-0.5 outline-none" onchange="updateGroup(${index}, this.value)">${options}</select></div>`;
-                }
-                fileList.innerHTML += `<div class="bg-white border border-gray-200 rounded p-2 text-xs flex flex-col gap-1 relative shadow-sm"><div class="flex justify-between items-start"><span class="font-semibold text-gray-700 truncate pr-4" title="${file.name}">${file.name}</span><button onclick="removeFile(${index})" class="text-red-400 hover:text-red-600 absolute top-2 right-2"><i class="fa-solid fa-times"></i></button></div>${groupSelector}</div>`;
-            });
-        }
-        window.removeFile = function(idx) { uploadedFiles.splice(idx, 1); renderFileList(); updateFileSelects(); }
-        window.updateGroup = function(idx, val) { uploadedFiles[idx].group = val; }
-
-        function updateFileSelects() {
-            let opts = '<option value="">-- Select a file --</option>' + uploadedFiles.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
-            let cvD = dimmFileSelect.value, cvR = rankFileSelect.value;
-            dimmFileSelect.innerHTML = opts; rankFileSelect.innerHTML = opts;
-            if(uploadedFiles.find(f => f.id === cvD)) dimmFileSelect.value = cvD; if(uploadedFiles.find(f => f.id === cvR)) rankFileSelect.value = cvR;
-            
-            // 下拉選單文字提示與鎖定邏輯連動
-            if(!dimmFileSelect.value) dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
-            if(!rankFileSelect.value) {
-                rankInfoBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">${isReportGenerated ? 'Select a file to view per-rank details.' : 'Please click Generate Report to view data.'}</td></tr>`;
-            }
-            updatePcbTargetSelect();
-        }
-
-        function updatePcbTargetSelect() {
-            let cv = pcbTargetSelect.value; 
-            let html = '<option value="">-- Select File --</option>';
-            if (uploadedFiles.length > 0) {
-                uploadedFiles.forEach(f => { html += `<option value="${f.id}">${f.name}</option>`; });
-            }
-            pcbTargetSelect.innerHTML = html;
-            // 安全匹配以防值有特俗字元
-            let optExists = Array.from(pcbTargetSelect.options).some(o => o.value === cv);
-            if(optExists) pcbTargetSelect.value = cv;
-        }
-
-        window.renderDimmInfo = function(fileId) {
-            if(!fileId) return dimmInfoBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-6 text-xs">Select a file to view DIMM details.</td></tr>';
-            const file = uploadedFiles.find(f => f.id === fileId);
-            if(!file || !file.data.dimms) return;
-            dimmInfoBody.innerHTML = file.data.dimms.map(d => `<tr class="border-b border-gray-100 hover:bg-gray-50"><td class="p-2">${d.locator}</td><td class="p-2">${d.mfg}</td><td class="p-2">${d.part}</td><td class="p-2">${d.sn}</td><td class="p-2 text-right">${d.speed}</td></tr>`).join('');
-        }
 
         function extractMmtData(json) {
             let dimms=[], vendors=new Set(), parts=new Set(), cpu="-", speed="-";
@@ -556,16 +441,16 @@
             if(json["Margin Results"]) {
                 Object.values(json["Margin Results"]).forEach(res => {
                     if(res.output && res.output.systemmargin) {
-                        let type = res.output["bus type"]; 
-                        if (currentRecord[type] !== null) { records.push({...currentRecord}); currentRecord = { Read:null, Write:null, CA:null, CS:null }; }
+                        let t = res.output["bus type"];
+                        if(currentRecord[t]) { records.push({...currentRecord}); currentRecord={Read:null, Write:null, CA:null, CS:null}; }
                         let sys = res.output.systemmargin;
-                        if(sys.length>=3) currentRecord[type] = { minDelay:sys[0]["Delay (UI)"], maxDelay:sys[2]["Delay (UI)"], minVref:sys[1]["Min Vref (mV)"], maxVref:sys[1]["Max Vref (mV)"] };
-                        if (res.output.rankmargins) res.output.rankmargins.forEach(rm => {
-                            if (rm.Socket) Object.entries(rm.Socket).forEach(([sId, sObj]) => {
-                                if (sObj.Channel) Object.entries(sObj.Channel).forEach(([chId, chObj]) => {
-                                    if (chObj.UMC) Object.entries(chObj.UMC).forEach(([uId, uObj]) => {
-                                        if (uObj.rank) uObj.rank.forEach(rankObj => Object.entries(rankObj).forEach(([rId, rData]) => {
-                                            if (rData.length >= 3) rankDetails[type].push({ socket:sId, channel:chId, umc:uId, rank:rId, minDelay:rData[0]["Delay (UI)"], maxDelay:rData[2]["Delay (UI)"], minVref:rData[1]["Min Vref (mV)"], maxVref:rData[1]["Max Vref (mV)"] });
+                        if(sys.length>=3) currentRecord[t] = {minD:sys[0]["Delay (UI)"], maxD:sys[2]["Delay (UI)"], minV:sys[1]["Min Vref (mV)"], maxV:sys[1]["Max Vref (mV)"]};
+                        if(res.output.rankmargins) res.output.rankmargins.forEach(rm => {
+                            if(rm.Socket) Object.entries(rm.Socket).forEach(([sId, sObj]) => {
+                                if(sObj.Channel) Object.entries(sObj.Channel).forEach(([cId, cObj]) => {
+                                    if(cObj.UMC) Object.entries(cObj.UMC).forEach(([uId, uObj]) => {
+                                        if(uObj.rank) uObj.rank.forEach(rObj => Object.entries(rObj).forEach(([rId, rData]) => {
+                                            if(rData.length>=3) rankDetails[t].push({ socket:sId, channel:cId, umc:uId, rank:rId, minD:rData[0]["Delay (UI)"], maxD:rData[2]["Delay (UI)"], minV:rData[1]["Min Vref (mV)"], maxV:rData[1]["Max Vref (mV)"] });
                                         }));
                                     });
                                 });
@@ -573,7 +458,7 @@
                         });
                     }
                 });
-                if (currentRecord.Read||currentRecord.Write||currentRecord.CA||currentRecord.CS) records.push(currentRecord);
+                if(currentRecord.Read||currentRecord.Write||currentRecord.CA||currentRecord.CS) records.push(currentRecord);
             }
             return { dimms, vendors:Array.from(vendors).join(", "), parts:Array.from(parts).join("<br>"), cpu, speed, records, rankDetails };
         }
@@ -587,219 +472,177 @@
             };
         }
 
-        function getBasicColorClass(val, limit, isMax) {
-            if (val === null || val === undefined || isNaN(val)) return "text-gray-700 font-bold";
-            if (isNaN(limit) || limit === 0) return "text-gray-700 font-bold"; 
-            if (isMax) return val >= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
-            else return val <= limit ? "text-green-600 font-bold" : "text-red-600 font-bold";
-        }
-        
-        function getAbsColorClass(absVal, absLimit) {
-            if (absVal === null || absVal === undefined || isNaN(absVal)) return "text-gray-700 font-bold";
+        function getBasicColorClass(absVal, absLimit) {
+            if (absVal === null || isNaN(absVal)) return "text-gray-700 font-bold";
             if (isNaN(absLimit) || absLimit === 0) return "text-gray-700 font-bold"; 
             return absVal >= absLimit ? "text-green-600 font-bold" : "text-red-600 font-bold";
         }
 
         function renderMainReport() {
-            const tbody = document.getElementById('mainReportBody');
+            const body = document.getElementById('mainReportBody'); body.innerHTML = '';
+            if(!isReportGenerated) return body.innerHTML = '<tr><td colspan="18" class="text-center py-10 text-gray-400">Please click Generate Report to view data.</td></tr>';
             
-            // 如果還沒按下 Generate，就不渲染資料
-            if (!isReportGenerated) {
-                tbody.innerHTML = '<tr><td colspan="18" class="text-center text-gray-400 py-10 text-sm">Please upload files and click Generate.</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = '';
             let groups = groupMode ? uploadedFiles.reduce((acc, f) => { (acc[f.group||"Ungrouped"]=acc[f.group||"Ungrouped"]||[]).push(f); return acc; }, {}) : {"All Files": uploadedFiles};
             document.getElementById('reportCriteriaLabel').innerText = currentPresetLabel;
-
-            for (const [groupName, files] of Object.entries(groups)) {
-                if (files.length === 0) continue;
-                let allItems = { Read: [], Write: [], CA: [], CS: [] };
-                let vendors=new Set(), parts=new Set(), cpus=new Set(), speeds=new Set();
+            
+            for (const [gName, files] of Object.entries(groups)) {
+                if(files.length===0) continue;
+                let allItems = {Read:[], Write:[], CA:[], CS:[]};
+                let vSet=new Set(), pSet=new Set(), cSet=new Set(), sSet=new Set();
                 files.forEach(f => {
-                    if(f.data.vendors && f.data.vendors!=="-") f.data.vendors.split(", ").forEach(v=>vendors.add(v));
-                    if(f.data.parts && f.data.parts!=="-") f.data.parts.split("<br>").forEach(p=>parts.add(p));
-                    if(f.data.cpu!=="-") cpus.add(f.data.cpu); if(f.data.speed!=="-") speeds.add(f.data.speed);
-                    f.data.records.forEach(rec => { ["Read","Write","CA","CS"].forEach(t => { if(rec[t]) allItems[t].push({ ...rec[t], fileName: f.name }); }); });
+                    if(f.data.vendors!=="-") f.data.vendors.split(", ").forEach(x=>vSet.add(x));
+                    if(f.data.parts!=="-") f.data.parts.split("<br>").forEach(x=>pSet.add(x));
+                    if(f.data.cpu!=="-") cSet.add(f.data.cpu); if(f.data.speed!=="-") sSet.add(f.data.speed);
+                    f.data.records.forEach(r => { ["Read","Write","CA","CS"].forEach(t => { if(r[t]) allItems[t].push({...r[t], fName:f.name}); }); });
                 });
-                ["Read","Write","CA","CS"].forEach(bt => { if(allItems[bt].length===0) allItems[bt].push(null); });
-                let totalRows = allItems.Read.length + allItems.Write.length + allItems.CA.length + allItems.CS.length;
-                let isFirstOverallRow = true;
-
-                ["Read", "Write", "CA", "CS"].forEach(bt => {
-                    let isFirstRowOfItem = true;
-                    allItems[bt].forEach((item, itemIndex) => {
-                        const tr = document.createElement('tr');
-                        tr.className = `border-b ${itemIndex===allItems[bt].length-1?'border-gray-300':'border-gray-100'} hover:bg-gray-50/70`;
-                        if (isFirstOverallRow) tr.classList.add("border-t-[3px]", "border-gray-400");
-                        let html = "";
-                        if (isFirstOverallRow) {
-                            html += `<td rowspan="${totalRows}" class="table-cell font-medium bg-white">${Array.from(vendors).join(", ")||"-"}</td><td rowspan="${totalRows}" class="table-cell bg-white">${globalMissingInfo.agesa}</td><td rowspan="${totalRows}" class="table-cell text-[10px] text-left pl-2 bg-white">${Array.from(parts).join("<br>")||"-"}</td><td rowspan="${totalRows}" class="table-cell bg-white">${globalMissingInfo.type}</td><td rowspan="${totalRows}" class="table-cell bg-white">${globalMissingInfo.rank}</td><td rowspan="${totalRows}" class="table-cell bg-white">${Array.from(speeds).join(", ")||"-"}</td><td rowspan="${totalRows}" class="table-cell bg-white">${globalMissingInfo.size}</td><td rowspan="${totalRows}" class="table-cell bg-white">${Array.from(cpus).join(", ")||"-"}</td><td rowspan="${totalRows}" class="table-cell font-bold text-blue-800 bg-white">${groupMode?groupName:globalMissingInfo.mb}</td>`;
+                ["Read","Write","CA","CS"].forEach(t => { if(allItems[t].length===0) allItems[t].push(null); });
+                let tRows = allItems.Read.length+allItems.Write.length+allItems.CA.length+allItems.CS.length;
+                let isF = true;
+                
+                ["Read","Write","CA","CS"].forEach(bt => {
+                    let isF_bt = true;
+                    allItems[bt].forEach((it, i) => {
+                        let tr = document.createElement('tr'); tr.className = `border-b ${i===allItems[bt].length-1?'border-gray-300':'border-gray-100'} hover:bg-gray-50`;
+                        if(isF) tr.classList.add("border-t-[3px]", "border-gray-400");
+                        let h = "";
+                        if(isF) {
+                            h += `<td rowspan="${tRows}" class="table-cell">${Array.from(vSet).join(", ")||"_"}</td><td rowspan="${tRows}" class="table-cell">${globalMissingInfo.agesa}</td><td rowspan="${tRows}" class="table-cell text-[10px]">${Array.from(pSet).join("<br>")||"_"}</td><td rowspan="${tRows}" class="table-cell">${globalMissingInfo.type}</td><td rowspan="${tRows}" class="table-cell">${globalMissingInfo.rank}</td><td rowspan="${tRows}" class="table-cell">${Array.from(sSet).join(", ")||"_"}</td><td rowspan="${tRows}" class="table-cell">${globalMissingInfo.size}</td><td rowspan="${tRows}" class="table-cell">${Array.from(cSet).join(", ")||"_"}</td><td rowspan="${tRows}" class="table-cell font-bold text-blue-800">${groupMode?gName:globalMissingInfo.mb}</td>`;
                         }
-                        if (isFirstRowOfItem) html += `<td rowspan="${allItems[bt].length}" class="table-cell font-semibold bg-gray-50">${bt}</td>`;
-                        html += `<td class="table-cell text-[11px] text-gray-600 truncate max-w-[150px]" title="${item?item.fileName:'-'}">${item?item.fileName:'-'}</td>`;
+                        if(isF_bt) h += `<td rowspan="${allItems[bt].length}" class="table-cell font-semibold bg-gray-50">${bt}</td>`;
+                        h += `<td class="table-cell text-[11px] max-w-[100px] truncate" title="${it?it.fName:'-'}">${it?it.fName:'-'}</td>`;
                         
-                        let minV = item?parseFloat(item.minVref):null, maxV = item?parseFloat(item.maxVref):null, minD = item?parseFloat(item.minDelay):null, maxD = item?parseFloat(item.maxDelay):null;
                         let crit = currentCriteria[bt];
-                        html += `<td class="table-cell"><span class="${getBasicColorClass(minV, crit.vMin, false)}">${minV!==null?minV.toFixed(2):'-'}</span></td><td class="table-cell"><span class="${getBasicColorClass(maxV, crit.vMax, true)}">${maxV!==null?maxV.toFixed(2):'-'}</span></td><td class="table-cell bg-green-50/20"><span class="font-bold text-green-700">${(maxV!==null&&minV!==null)?(maxV-minV).toFixed(2):'-'}</span></td>`;
-                        html += `<td class="table-cell"><span class="${getBasicColorClass(minD, crit.dMin, false)}">${minD!==null?minD.toFixed(2):'-'}</span></td><td class="table-cell"><span class="${getBasicColorClass(maxD, crit.dMax, true)}">${maxD!==null?maxD.toFixed(2):'-'}</span></td><td class="table-cell bg-green-50/20"><span class="font-bold text-green-700">${(maxD!==null&&minD!==null)?(maxD-minD).toFixed(2):'-'}</span></td>`;
+                        let miV = it?Math.abs(it.minV):null, maV = it?Math.abs(it.maxV):null, miD = it?Math.abs(it.minD):null, maD = it?Math.abs(it.maxD):null;
                         
-                        if (isFirstOverallRow) { html += `<td rowspan="${totalRows}" class="table-cell bg-white"></td>`; isFirstOverallRow = false; }
-                        isFirstRowOfItem = false; tr.innerHTML = html; tbody.appendChild(tr); 
+                        h += `<td class="table-cell"><span class="${getBasicColorClass(miV, crit.vMin)}">${miV!==null?miV.toFixed(2):'-'}</span></td>`;
+                        h += `<td class="table-cell"><span class="${getBasicColorClass(maV, crit.vMax)}">${maV!==null?maV.toFixed(2):'-'}</span></td>`;
+                        h += `<td class="table-cell bg-green-50/20 font-bold">${(maV!==null&&miV!==null)?(maV+miV).toFixed(2):'-'}</td>`;
+                        h += `<td class="table-cell"><span class="${getBasicColorClass(miD, crit.dMin)}">${miD!==null?miD.toFixed(2):'-'}</span></td>`;
+                        h += `<td class="table-cell"><span class="${getBasicColorClass(maD, crit.dMax)}">${maD!==null?maD.toFixed(2):'-'}</span></td>`;
+                        h += `<td class="table-cell bg-green-50/20 font-bold">${(maD!==null&&miD!==null)?(maD+miD).toFixed(2):'-'}</td>`;
+                        
+                        if(isF) { h+= `<td rowspan="${tRows}" class="table-cell"></td>`; isF=false; }
+                        isF_bt=false; tr.innerHTML = h; body.appendChild(tr);
                     });
                 });
             }
         }
 
         function renderRankDetails() {
-            const tbody = document.getElementById('rankInfoBody');
-            
-            // 檢查鎖定狀態
-            if (!isReportGenerated) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>';
-                return;
-            }
-
-            const fileId = document.getElementById('rankFileSelect').value; 
-            if (!fileId || !uploadedFiles.length) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">Select a file and click generate.</td></tr>';
-            const file = uploadedFiles.find(f => f.id === fileId); if (!file || !file.data.rankDetails) return;
+            const body = document.getElementById('rankInfoBody');
+            if(!isReportGenerated) return body.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-gray-400">Please click Generate Report to view data.</td></tr>';
+            const fId = document.getElementById('rankFileSelect').value; 
+            if(!fId) return body.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-gray-400">Select a file.</td></tr>';
+            const f = uploadedFiles.find(x=>x.id===fId); if(!f||!f.data.rankDetails) return;
             
             const q = chartState.quadrant; const qLower = q.toLowerCase();
+            const crit = currentCriteria[q];
+            let cMaD = Math.abs(crit.dMax), cMiD = Math.abs(crit.dMin), cMaV = Math.abs(crit.vMax), cMiV = Math.abs(crit.vMin);
             
-            let critMaxD = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmax`).value) || 0);
-            let critMinD = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmin`).value) || 0);
-            let critMaxV = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmax`).value) || 0);
-            let critMinV = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmin`).value) || 0);
-            
-            document.getElementById('th-dmax-crit').innerText = critMaxD ? `≥${critMaxD}UI` : '';
-            document.getElementById('th-dmin-crit').innerText = critMinD ? `≥${critMinD}UI` : '';
-            document.getElementById('th-vmax-crit').innerText = critMaxV ? `≥${critMaxV}mV` : '';
-            document.getElementById('th-vmin-crit').innerText = critMinV ? `≥${critMinV}mV` : '';
+            document.getElementById('th-dmax-crit').innerText = cMaD?`≥ ${cMaD} UI`:'';
+            document.getElementById('th-dmin-crit').innerText = cMiD?`≥ ${cMiD} UI`:'';
+            document.getElementById('th-vmax-crit').innerText = cMaV?`≥ ${cMaV} mV`:'';
+            document.getElementById('th-vmin-crit').innerText = cMiV?`≥ ${cMiV} mV`:'';
 
-            tbody.innerHTML = '';
-            let ranksMap = {}; 
-            if(file.data.rankDetails[q]) file.data.rankDetails[q].forEach(row => {
-                let name = `P${row.socket}-${row.channel.length>1?row.channel.charAt(1):row.channel}-${row.umc.slice(-1)} R${row.rank}`; ranksMap[name] = row;
-            });
-            const rankNames = Object.keys(ranksMap).sort();
-            if(rankNames.length === 0) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">No rank data found for this quadrant.</td></tr>';
+            body.innerHTML = '';
+            let rows = f.data.rankDetails[q] || [];
+            if(rows.length===0) return body.innerHTML = '<tr><td colspan="8" class="text-center py-6 text-gray-400">No Data.</td></tr>';
 
-            rankNames.forEach(name => {
-                let row = ranksMap[name]; let tr = document.createElement('tr'); tr.className = "border-b border-gray-200 hover:bg-gray-50";
-                let absMaxD = Math.abs(row.maxDelay), absMinD = Math.abs(row.minDelay), absMaxV = Math.abs(row.maxVref), absMinV = Math.abs(row.minVref);
+            rows.sort((a,b) => `P${a.socket}-${a.channel.slice(-1)}-${a.umc.slice(-1)} R${a.rank}`.localeCompare(`P${b.socket}-${b.channel.slice(-1)}-${b.umc.slice(-1)} R${b.rank}`));
+
+            rows.forEach(r => {
+                let name = `P${r.socket}-${r.channel.length>1?r.channel.charAt(1):r.channel}-${r.umc.slice(-1)} R${r.rank}`;
+                let maD = Math.abs(r.maxD), miD = Math.abs(r.minD), maV = Math.abs(r.maxV), miV = Math.abs(r.minV);
                 
-                let pctDmax = critMaxD > 0 ? (absMaxD / critMaxD)*100 : Infinity;
-                let pctDmin = critMinD > 0 ? (absMinD / critMinD)*100 : Infinity;
-                let pctVmax = critMaxV > 0 ? (absMaxV / critMaxV)*100 : Infinity;
-                let pctVmin = critMinV > 0 ? (absMinV / critMinV)*100 : Infinity;
+                let pDmax = cMaD ? (maD/cMaD)*100 : Infinity; let pDmin = cMiD ? (miD/cMiD)*100 : Infinity;
+                let pVmax = cMaV ? (maV/cMaV)*100 : Infinity; let pVmin = cMiV ? (miV/cMiV)*100 : Infinity;
                 
-                let worstPct = Math.min(pctDmax, pctDmin, pctVmax, pctVmin); if (worstPct === Infinity) worstPct = null;
-                let isPass = worstPct === null || worstPct >= 100;
-                
-                let failReason = "-";
-                if (worstPct !== null) {
-                    if (worstPct === pctDmax) failReason = `Max Delay ${absMaxD.toFixed(1)} / ${critMaxD}UI (${absMaxD>=critMaxD?'+':''}${(absMaxD-critMaxD).toFixed(1)})`;
-                    else if (worstPct === pctDmin) failReason = `Min Delay ${absMinD.toFixed(1)} / ${critMinD}UI (${absMinD>=critMinD?'+':''}${(absMinD-critMinD).toFixed(1)})`;
-                    else if (worstPct === pctVmax) failReason = `Max Vref ${absMaxV.toFixed(1)} / ${critMaxV}mV (${absMaxV>=critMaxV?'+':''}${(absMaxV-critMaxV).toFixed(1)})`;
-                    else if (worstPct === pctVmin) failReason = `Min Vref ${absMinV.toFixed(1)} / ${critMinV}mV (${absMinV>=critMinV?'+':''}${(absMinV-critMinV).toFixed(1)})`;
+                let wPct = Math.min(pDmax, pDmin, pVmax, pVmin); let isP = wPct>=100;
+                let fR = "-";
+                if(wPct !== Infinity) {
+                    if(wPct===pDmax) fR = `Max Delay ${maD.toFixed(1)} / ${cMaD}UI (${maD>=cMaD?'+':''}${(maD-cMaD).toFixed(1)})`;
+                    else if(wPct===pDmin) fR = `Min Delay ${miD.toFixed(1)} / ${cMiD}UI (${miD>=cMiD?'+':''}${(miD-cMiD).toFixed(1)})`;
+                    else if(wPct===pVmax) fR = `Max Vref ${maV.toFixed(1)} / ${cMaV}mV (${maV>=cMaV?'+':''}${(maV-cMaV).toFixed(1)})`;
+                    else if(wPct===pVmin) fR = `Min Vref ${miV.toFixed(1)} / ${cMiV}mV (${miV>=cMiV?'+':''}${(miV-cMiV).toFixed(1)})`;
                 }
 
-                tr.innerHTML = `
-                    <td class="p-2 whitespace-nowrap text-gray-700 text-left pl-4">${name}</td>
-                    <td class="p-2"><span class="${getAbsColorClass(absMaxD, critMaxD)}">${absMaxD.toFixed(1)}</span></td>
-                    <td class="p-2"><span class="${getAbsColorClass(absMinD, critMinD)}">${absMinD.toFixed(1)}</span></td>
-                    <td class="p-2"><span class="${getAbsColorClass(absMaxV, critMaxV)}">${absMaxV.toFixed(1)}</span></td>
-                    <td class="p-2"><span class="${getAbsColorClass(absMinV, critMinV)}">${absMinV.toFixed(1)}</span></td>
-                    <td class="p-2"><span class="${isPass?'text-green-600':'text-red-600'} font-bold">${worstPct!==null?worstPct.toFixed(1)+'%':'-'}</span></td>
-                    <td class="p-2 text-center text-gray-600 text-[11px]">${failReason}</td>
-                    <td class="p-2"><span class="${isPass?'text-green-600':'text-red-600'} font-bold">${isPass?'PASS':'FAIL'}</span></td>
-                `;
-                tbody.appendChild(tr);
+                let tr = document.createElement('tr'); tr.className="border-b hover:bg-gray-50";
+                tr.innerHTML = `<td class="p-2 text-left pl-4 font-semibold">${name}</td>
+                    <td class="p-2 ${getBasicColorClass(maD, cMaD)}">${maD.toFixed(1)}</td>
+                    <td class="p-2 ${getBasicColorClass(miD, cMiD)}">${miD.toFixed(1)}</td>
+                    <td class="p-2 ${getBasicColorClass(maV, cMaV)}">${maV.toFixed(1)}</td>
+                    <td class="p-2 ${getBasicColorClass(miV, cMiV)}">${miV.toFixed(1)}</td>
+                    <td class="p-2 font-bold ${isP?'text-green-600':'text-red-600'}">${wPct!==Infinity?wPct.toFixed(1)+'%':'-'}</td>
+                    <td class="p-2 text-xs text-gray-500">${fR}</td>
+                    <td class="p-2 font-bold ${isP?'text-green-600':'text-red-600'}">${isP?'PASS':'FAIL'}</td>`;
+                body.appendChild(tr);
             });
         }
 
         function renderPcbCriteria() {
-            const tbody = document.getElementById('pcbCriteriaBody');
+            const body = document.getElementById('pcbCriteriaBody');
+            if(!isReportGenerated) return body.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-gray-400">Please click Generate Report to view data.</td></tr>';
+            const tVal = document.getElementById('pcbTargetSelect').value; 
+            if(!tVal) return body.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-gray-400">Select a file.</td></tr>';
             
-            // 檢查鎖定狀態
-            if (!isReportGenerated) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10 text-xs">Please click Generate Report to view data.</td></tr>';
-                return;
-            }
+            let files = uploadedFiles.filter(f => f.id === tVal);
+            if(files.length === 0) return body.innerHTML = '<tr><td colspan="8" class="text-center py-6 text-gray-400">No files found.</td></tr>';
 
-            const targetVal = pcbTargetSelect.value;
-            if (!targetVal) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">Select a target.</td></tr>';
+            let speedStr = files[0].data.speed || "";
+            let dr = "6400"; if(speedStr.includes("8000")) dr="8000"; else if(speedStr.includes("12800")) dr="12800";
+            const spec = amdSpecs[dr];
 
-            let tFiles = uploadedFiles.filter(f => f.id === targetVal);
-            if (tFiles.length === 0) return tbody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-400 py-10">No data found.</td></tr>';
-
-            let speedStr = tFiles[0].data.speed || "";
-            let dataRate = "6400";
-            if (speedStr.includes("8000")) dataRate = "8000";
-            else if (speedStr.includes("12800")) dataRate = "12800";
-            
-            const spec = amdSpecs[dataRate];
-
+            body.innerHTML = '';
             let rMap = {};
-            tFiles.forEach(f => {
+            files.forEach(f => {
                 ["Read","Write","CA","CS"].forEach(bt => {
                     if(f.data.rankDetails[bt]) f.data.rankDetails[bt].forEach(r => {
                         let name = `P${r.socket}-${r.channel.length>1?r.channel.charAt(1):r.channel}-${r.umc.slice(-1)} R${r.rank}`;
                         if(!rMap[name]) rMap[name] = {Read:[], Write:[], CA:[], CS:[]};
-                        rMap[name][bt].push({ maD:Math.abs(r.maxDelay), miD:Math.abs(r.minDelay), maV:Math.abs(r.maxVref), miV:Math.abs(r.minVref) });
+                        rMap[name][bt].push({ maD:Math.abs(r.maxD), miD:Math.abs(r.minD), maV:Math.abs(r.maxV), miV:Math.abs(r.minV) });
                     });
                 });
             });
 
-            tbody.innerHTML = '';
-            const rNames = Object.keys(rMap).sort();
-            
-            const renderPcbCell = (arr, key, cA, cB, cRisk) => {
-                if(arr.length===0 || !cA) return '<td class="p-2 text-gray-300">-</td>';
+            const renderRiskCell = (arr, key, cA, cB, cRisk) => {
+                if(arr.length===0 || cA===0) return '<td class="p-2 text-gray-300">-</td>';
                 let vals = arr.map(x=>x[key]);
-                let A = Math.min(...vals);
-                let B = 0.0; 
-                let Risk = A - B;
-
+                let A = Math.min(...vals); let B = 0.0; let Risk = A - B;
                 let stA = A >= cA; let stB = B <= cB; let stRisk = Risk >= cRisk;
-                let colorA = stA ? 'text-green-600' : 'text-red-600';
-                let colorB = stB ? 'text-green-600' : 'text-red-600';
-                let colorRisk = stRisk ? 'text-green-600' : 'text-red-600';
-
-                return `<td class="p-2"><div class="flex justify-center items-center gap-1 font-bold text-[11px]"><span class="${colorA}" title="[A] ≥ ${cA}">${A.toFixed(1)}</span> / <span class="${colorB}" title="[B] ≤ ${cB}">${B.toFixed(1)}</span> / <span class="${colorRisk}" title="[Risk] ≥ ${cRisk}">${Risk.toFixed(1)}</span></div></td>`;
+                return `<td class="p-2"><div class="flex justify-center items-center gap-1 text-[11px] font-bold"><span class="${stA?'text-green-600':'text-red-600'}" title="A (≥${cA})">${A.toFixed(1)}</span> / <span class="${stB?'text-green-600':'text-red-600'}" title="B (≤${cB})">${B.toFixed(1)}</span> / <span class="${stRisk?'text-green-600':'text-red-600'}" title="|A|-|B| (≥${cRisk})">${Risk.toFixed(1)}</span></div></td>`;
             };
 
+            const rNames = Object.keys(rMap).sort();
             rNames.forEach(name => {
                 let isF = true;
                 ["Read","Write","CA","CS"].forEach(bt => {
                     let runs = rMap[name][bt]; if(runs.length===0) return;
-                    let cA = spec.A[bt]; let cB = spec.B[bt]; let cRisk = spec.Risk[bt];
+                    let crA = spec.A[bt], crB = spec.B[bt], crRisk = spec.Risk[bt];
                     
                     let tr = document.createElement('tr'); tr.className="border-b hover:bg-gray-50";
                     let h = "";
-                    if(isF) { h+=`<td rowspan="4" class="p-2 font-bold text-left pl-4 align-middle border-r border-gray-200">${name}</td>`; isF=false; }
+                    if(isF) { h+=`<td rowspan="4" class="p-2 font-bold text-left pl-4 align-middle border-r">${name}</td>`; isF=false; }
                     
-                    h += `<td class="p-2 font-semibold text-gray-600">${bt}</td><td class="p-2 text-xs text-blue-600 font-bold">${dataRate} MT/s</td>`;
-                    h += renderPcbCell(runs, 'maD', cA.dMax, cB.dMax, cRisk.dMax);
-                    h += renderPcbCell(runs, 'miD', cA.dMin, cB.dMin, cRisk.dMin);
-                    h += renderPcbCell(runs, 'maV', cA.vMax, cB.vMax, cRisk.vMax);
-                    h += renderPcbCell(runs, 'miV', cA.vMin, cB.vMin, cRisk.vMin);
+                    h += `<td class="p-2 font-semibold text-gray-600">${bt}</td><td class="p-2 text-blue-600 font-bold text-xs">${dr} MT/s</td>`;
+                    h += renderRiskCell(runs, 'maD', crA.dMax, crB.dMax, crRisk.dMax);
+                    h += renderRiskCell(runs, 'miD', crA.dMin, crB.dMin, crRisk.dMin);
+                    h += renderRiskCell(runs, 'maV', crA.vMax, crB.vMax, crRisk.vMax);
+                    h += renderRiskCell(runs, 'miV', crA.vMin, crB.vMin, crRisk.vMin);
                     
                     let isFail = h.includes('text-red-600');
                     h += `<td class="p-2 font-bold ${isFail?'text-red-600':'text-green-600'}">${isFail?'FAIL':'PASS'}</td>`;
-                    tr.innerHTML = h; tbody.appendChild(tr);
+                    
+                    tr.innerHTML = h; body.appendChild(tr);
                 });
             });
         }
 
         function renderChart() {
-            // 鎖定狀態檢查，避免未載入資料前就繪圖
             if (!isReportGenerated || uploadedFiles.length === 0) return;
-            
             const q = chartState.quadrant; const m = chartState.metric; const g = chartState.granularity; const cType = chartState.chartType;  
             let allLbls = new Set(), fDsets = [];
-            
+            const isMax = (m === 'maxDelay' || m === 'maxVref');
+
             uploadedFiles.forEach(file => {
                 let dMap = {}; 
                 if (file.data.rankDetails && file.data.rankDetails[q]) {
@@ -823,17 +666,16 @@
             let datasets = fDsets.map((fd, i) => ({
                 label: fd.label, data: labels.map(lbl => fd.rawData[lbl] !== undefined ? fd.rawData[lbl] : null),
                 borderColor: colors[i%colors.length], backgroundColor: cType==='boxplot'?colors[i%colors.length]+'80':colors[i%colors.length],
-                borderWidth: cType==='boxplot'?1:2, itemRadius: 2, pointRadius: cType==='boxplot'?2:3, tension: 0.1
+                borderWidth: cType==='boxplot'?1:2, pointRadius: cType==='boxplot'?2:3, tension: 0.1
             }));
 
-            let qLower = q.toLowerCase(); let critVal = null; let metricName = "";
-            if (m === 'maxDelay') { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmax`).value)||0); metricName = "Max Delay (UI)"; }
-            if (m === 'minDelay') { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-dmin`).value)||0); metricName = "Min Delay (UI)"; }
-            if (m === 'maxVref')  { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmax`).value)||0); metricName = "Max Vref (mV)"; }
-            if (m === 'minVref')  { critVal = Math.abs(parseFloat(document.getElementById(`crit-${qLower}-vmin`).value)||0); metricName = "Min Vref (mV)"; }
+            let cr = currentCriteria[q];
+            let cv = null, mn = "";
+            if(m==='maxDelay') { cv=Math.abs(cr.dMax); mn="Max Delay (UI)"; } else if(m==='minDelay') { cv=Math.abs(cr.dMin); mn="Min Delay (UI)"; }
+            else if(m==='maxVref') { cv=Math.abs(cr.vMax); mn="Max Vref (mV)"; } else if(m==='minVref') { cv=Math.abs(cr.vMin); mn="Min Vref (mV)"; }
 
-            if (critVal) {
-                datasets.push({ label: `Pass Criteria (≥ ${critVal})`, data: labels.map(()=>critVal), borderColor: '#ef4444', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false });
+            if (cv) {
+                datasets.push({ label: `Pass Criteria (≥ ${cv})`, data: labels.map(()=>cv), borderColor: '#ef4444', borderWidth: 2, borderDash: [5,5], pointRadius: 0, fill: false });
             }
 
             const ctx = document.getElementById('marginChart').getContext('2d');
@@ -841,7 +683,7 @@
             chartInstance = new Chart(ctx, {
                 type: cType === 'boxplot' ? 'boxplot' : 'line',
                 data: { labels: labels, datasets: datasets },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: metricName, font: { size: 12 } }, beginAtZero: true }, x: { ticks: { font: { size: 10 } } } }, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } }, interaction: { mode: 'index', axis: 'x', intersect: false } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: mn, font: { size: 12 } }, beginAtZero: true }, x: { ticks: { font: { size: 10 } } } }, plugins: { legend: { position: 'top', labels:{boxWidth:12, font:{size:11}} } }, interaction: { mode: 'index', axis: 'x', intersect: false } }
             });
         }
     </script>
