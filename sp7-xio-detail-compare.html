@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>PCIe Data Compare</title>
+<title>SP7 XIO Detail Compare</title>
 <style>
   /* 基礎容器樣式 */
   .main-container { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 20px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -49,7 +49,7 @@
 <body>
 
 <div class="main-container">
-  <h2>Device Data Compare & Ranking</h2>
+  <h2>SP7 XIO Detail Compare & Ranking</h2>
   
   <div class="upload-area" id="dropZone">
     <p>📁 請將 HTML 報表檔案或資料夾「拖曳」至此區域</p>
@@ -111,7 +111,6 @@
     const incomingFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.html'));
     
     incomingFiles.forEach(newFile => {
-      // 修正重複判斷邏輯：使用 webkitRelativePath (包含資料夾結構的完整路徑) 取代單純檔名
       const newFileId = newFile.webkitRelativePath || newFile.name;
       
       const isDuplicate = filesQueue.some(existingFile => {
@@ -139,7 +138,6 @@
       const fileItem = document.createElement('div');
       fileItem.className = 'file-item';
       
-      // 在清單中顯示資料夾路徑，方便識別
       const displayPath = file.webkitRelativePath || file.name; 
       
       fileItem.innerHTML = `
@@ -190,16 +188,13 @@
 
       lanes = lanes.map(v => v === Infinity ? null : v);
       
-      // 優化：優先使用您圖中的「資料夾名稱」來做為 Device 名稱
       let deviceName = file.name.replace('.html', '');
       if (file.webkitRelativePath) {
-         // 例如 VN_BBFV_PCIe3+4_SC17C...slot0/report.html -> 取出上一層的資料夾名稱
          const pathParts = file.webkitRelativePath.split('/');
          if (pathParts.length > 1) {
             deviceName = pathParts[pathParts.length - 2];
          }
       } else {
-         // 如果不是透過資料夾上傳，才用以前的正則去抓檔名裡的 0:0:3.4
          const match = deviceName.match(/\d+:\d+:\d+\.\d+/);
          if (match) deviceName = match[0];
       }
